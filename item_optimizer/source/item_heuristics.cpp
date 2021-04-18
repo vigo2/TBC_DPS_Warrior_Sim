@@ -113,7 +113,7 @@ double get_hit_effect_ap_equivalent(const Hit_effect& hit_effect, double total_a
     return hit_effects_ap;
 }
 
-double get_hit_crit_expertise_ap_equivalent(const Special_stats& special_stats, int relevant_skill)
+double get_hit_crit_expertise_ap_equivalent(const Special_stats& special_stats, Weapon_type weapon_type)
 {
     int target_defence_level = 365;
     int skill_diff = target_defence_level - 350;
