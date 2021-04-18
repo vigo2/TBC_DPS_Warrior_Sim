@@ -1,4 +1,4 @@
-#include "../include/Item_optimizer.hpp"
+#include "Item_optimizer.hpp"
 
 bool operator<(const Item_optimizer::Sim_result_t& left, const Item_optimizer::Sim_result_t& right)
 {
@@ -395,9 +395,9 @@ std::vector<Weapon> Item_optimizer::remove_weaker_weapons(const Weapon_socket we
                     if ((wep1.type == wep2.type) && is_strictly_weaker_wep(wep1, wep2, weapon_socket))
                     {
                         stronger_found++;
-                        debug_message += string_with_precision(stronger_found) + "/" +
-                                         string_with_precision(keep_n_stronger_items) + " since <b>" + wep2.name +
-                                         "</b> is better than <b>" + wep1.name + "</b> in all aspects.<br>";
+                        debug_message += String_helpers::string_with_precision(stronger_found) + "/" +
+                                         String_helpers::string_with_precision(keep_n_stronger_items) + " since <b>" +
+                                         wep2.name + "</b> is better than <b>" + wep1.name + "</b> in all aspects.<br>";
                     }
                     else
                     {
@@ -409,10 +409,10 @@ std::vector<Weapon> Item_optimizer::remove_weaker_weapons(const Weapon_socket we
                         if (stat_diff + wep_stat_diff > 0)
                         {
                             stronger_found++;
-                            debug_message += string_with_precision(stronger_found) + "/" +
-                                             string_with_precision(keep_n_stronger_items) + " since <b>" + wep2.name +
-                                             "</b> was estimated to be <b>" +
-                                             string_with_precision(stat_diff + wep_stat_diff, 3) +
+                            debug_message += String_helpers::string_with_precision(stronger_found) + "/" +
+                                             String_helpers::string_with_precision(keep_n_stronger_items) +
+                                             " since <b>" + wep2.name + "</b> was estimated to be <b>" +
+                                             String_helpers::string_with_precision(stat_diff + wep_stat_diff, 3) +
                                              " AP </b>better than <b>" + wep1.name + "</b>.<br>";
                         }
                     }
@@ -525,27 +525,27 @@ std::vector<Armor> Item_optimizer::remove_weaker_items(const std::vector<Armor>&
             {
                 if (armor1.index != armor2.index)
                 {
-                    if (is_strictly_weaker(armor1.special_stats + armor1.set_special_stats + armor1.use_special_stats +
-                                               armor1.hit_special_stats,
-                                           armor2.special_stats + armor2.hit_special_stats))
+                    Special_stats armor1_stats = armor1.special_stats + armor1.set_special_stats +
+                                                 armor1.use_special_stats + armor1.hit_special_stats;
+                    if (armor1_stats < armor2.special_stats + armor2.hit_special_stats)
                     {
                         stronger_found++;
-                        debug_message += string_with_precision(stronger_found) + "/" +
-                                         string_with_precision(keep_n_stronger_items) + " since <b>" + armor2.name +
-                                         "</b> is better than <b>" + armor1.name + "</b> in all aspects.<br>";
+                        debug_message += String_helpers::string_with_precision(stronger_found) + "/" +
+                                         String_helpers::string_with_precision(keep_n_stronger_items) + " since <b>" +
+                                         armor2.name + "</b> is better than <b>" + armor1.name +
+                                         "</b> in all aspects.<br>";
                     }
                     else
                     {
-                        double stat_diff = estimate_stat_diff(armor1.special_stats + armor1.set_special_stats +
-                                                                  armor1.use_special_stats + armor1.hit_special_stats,
-                                                              armor2.special_stats + armor2.use_special_stats +
-                                                                  armor2.hit_special_stats);
+                        double stat_diff = estimate_stat_diff(
+                            armor1_stats, armor2.special_stats + armor2.use_special_stats + armor2.hit_special_stats);
                         if (stat_diff > 0)
                         {
                             stronger_found++;
-                            debug_message += string_with_precision(stronger_found) + "/" +
-                                             string_with_precision(keep_n_stronger_items) + " since <b>" + armor2.name +
-                                             "</b> was estimated to be <b>" + string_with_precision(stat_diff, 3) +
+                            debug_message += String_helpers::string_with_precision(stronger_found) + "/" +
+                                             String_helpers::string_with_precision(keep_n_stronger_items) +
+                                             " since <b>" + armor2.name + "</b> was estimated to be <b>" +
+                                             String_helpers::string_with_precision(stat_diff, 3) +
                                              " AP </b>better than <b>" + armor1.name + "</b>.<br>";
                         }
                     }

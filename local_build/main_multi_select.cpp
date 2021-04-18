@@ -6,29 +6,6 @@
 int main()
 {
     clock_t startTime = clock();
-    Sim_interface sim_interface;
-
-    std::vector<std::string> armor_vec;
-    armor_vec.emplace_back("lionheart_helm");
-    armor_vec.emplace_back("stormrages_talisman_of_seething");
-    armor_vec.emplace_back("conquerors_spaulders");
-    armor_vec.emplace_back("shroud_of_dominion");
-    armor_vec.emplace_back("breastplate_of_undead_slaying");
-    armor_vec.emplace_back("bracers_of_undead_slaying");
-    armor_vec.emplace_back("gauntlets_of_undead_slaying");
-    armor_vec.emplace_back("girdle_of_the_mentor");
-    armor_vec.emplace_back("leggings_of_carnage");
-    armor_vec.emplace_back("chromatic_boots");
-    armor_vec.emplace_back("quick_strike_ring");
-    armor_vec.emplace_back("band_of_unnatural_forces");
-    armor_vec.emplace_back("kiss_of_the_spider");
-    armor_vec.emplace_back("badge_of_the_swarmguard");
-    armor_vec.emplace_back("nerubian_slavemaker");
-
-    std::vector<std::string> weapons_vec;
-    weapons_vec.emplace_back("thunderfury_blessed_blade");
-    weapons_vec.emplace_back("argent_avenger");
-    //    weapons_vec.emplace_back("manual_crowd_pummeler_1charge");
 
     //    mult_weapons_vec.emplace_back("persuader");
     //    mult_weapons_vec.emplace_back("gressil_dawn_of_ruin");
@@ -41,44 +18,7 @@ int main()
     //    mult_weapons_vec.emplace_back("maexxnas_fang");
     //    mult_weapons_vec.emplace_back("misplaced_servo_arm");
 
-    std::vector<std::string> compare_armor_vec;
-    //    compare_armor_vec.emplace_back("lionheart_helm");
-    //    compare_armor_vec.emplace_back("onyxia_tooth_pendant");
-    //    compare_armor_vec.emplace_back("truestrike_shoulders");
-    //    compare_armor_vec.emplace_back("cape_of_the_black_baron");
-    //    compare_armor_vec.emplace_back("savage_gladiator_chain");
-    //    compare_armor_vec.emplace_back("wristguards_of_stability");
-    //    compare_armor_vec.emplace_back("flameguard_gauntlets");
-    //    compare_armor_vec.emplace_back("onslaught_girdle");
-    //    compare_armor_vec.emplace_back("cloudkeeper_legplates");
-    //    compare_armor_vec.emplace_back("chromatic_boots");
-    //    compare_armor_vec.emplace_back("might_of_cenarius");
-    //    compare_armor_vec.emplace_back("master_dragonslayers_ring");
-    //    compare_armor_vec.emplace_back("badge_of_the_swarmguard");
-    //    compare_armor_vec.emplace_back("diamond_flask");
-    //    compare_armor_vec.emplace_back("blastershot");
-
-    std::vector<std::string> compare_weapons_vec;
-    //    compare_weapons_vec.emplace_back("thrash_blade");
-    //    compare_weapons_vec.emplace_back("assassination_blade");
-
     std::vector<std::string> mult_armor_vec;
-    //    mult_armor_vec.emplace_back("lionheart_helm");
-    //    mult_armor_vec.emplace_back("onyxia_tooth_pendant");
-    //    mult_armor_vec.emplace_back("truestrike_shoulders");
-    //    mult_armor_vec.emplace_back("cape_of_the_black_baron");
-    //    mult_armor_vec.emplace_back("savage_gladiator_chain");
-    //    mult_armor_vec.emplace_back("wristguards_of_stability");
-    //    mult_armor_vec.emplace_back("flameguard_gauntlets");
-    //    mult_armor_vec.emplace_back("onslaught_girdle");
-    //    mult_armor_vec.emplace_back("cloudkeeper_legplates");
-    //    mult_armor_vec.emplace_back("chromatic_boots");
-    //    mult_armor_vec.emplace_back("might_of_cenarius");
-    //    mult_armor_vec.emplace_back("master_dragonslayers_ring");
-    //    mult_armor_vec.emplace_back("badge_of_the_swarmguard");
-    //    mult_armor_vec.emplace_back("diamond_flask");
-    //    mult_armor_vec.emplace_back("blastershot");
-
     mult_armor_vec.emplace_back("lionheart_helm");
     mult_armor_vec.emplace_back("expert_goldminers_head");
     mult_armor_vec.emplace_back("mask_of_the_unforgiven");
@@ -465,53 +405,16 @@ int main()
 
     std::vector<int> talents_val{3, 3, 5, 1, 3, 2, 5, 5, 5, 5, 2, 5, 1, 5, 1, 1, 5};
 
-    Sim_input sim_input{{race},
-                        armor_vec,
-                        weapons_vec,
-                        buff_vec,
-                        ench_vec,
-                        {"mh_speed", "oh_speed", "crit", "hit"},
-                        sim_options,
-                        float_options_string,
-                        float_options_val,
-                        talents_string,
-                        talents_val,
-                        compare_armor_vec,
-                        compare_weapons_vec};
-
     Sim_input_mult sim_input_mult{{race},      mult_armor_vec,       mult_weapons_vec,  buff_vec,       ench_vec,
                                   sim_options, float_options_string, float_options_val, talents_string, talents_val};
 
-    //    auto sim_output = sim_interface.simulate(sim_input);
+    Sim_interface sim_interface{};
     auto sim_output = sim_interface.simulate_mult(sim_input_mult);
-
-    //    for (const auto &dmg_batch : sim_output.stat_weights)
-    //    {
-    //        std::cout << dmg_batch << "\n";
-    //    }
-    //
-    //    for (double dmg_source : sim_output.dmg_sources)
-    //    {
-    //        std::cout << "source = " << dmg_source << "\n";
-    //    }
-    //
-    //    std::cout << "extra = " << "\n";
-    //    for (const auto &message : sim_output.extra_stats)
-    //    {
-    //        std::cout << message << "\n";
-    //    }
-    //
-    //    for (const auto &dps : sim_output.mean_dps)
-    //    {
-    //        std::cout << "DPS = " << dps << "\n";
-    //    }
 
     for (const auto& message : sim_output.messages)
     {
         std::cout << message << "\n";
     }
-
-    //    std::cout << sim_output.extra_stats[1] << "\n";
 
     std::cout << "Code executed in: " << double(clock() - startTime) / (double)CLOCKS_PER_SEC << " seconds."
               << std::endl;

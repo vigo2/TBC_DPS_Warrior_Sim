@@ -1,5 +1,5 @@
 #include "Armory.hpp"
-#include "Combat_simulator.hpp"
+#include "item_heuristics.hpp"
 
 #include "gtest/gtest.h"
 
