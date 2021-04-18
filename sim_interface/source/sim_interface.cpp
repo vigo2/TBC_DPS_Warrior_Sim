@@ -599,7 +599,7 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
     }
     extra_info_string += "<b>Other:</b><br/>";
     double dodge_chance = yellow_ht[1] - yellow_ht[0];
-    extra_info_string += percent_to_str("Target dodge chance", dodge_chance, "(based on skill difference and expertise)") + "<br>"
+    extra_info_string += String_helpers::percent_to_str("Target dodge chance", dodge_chance, "(based on skill difference and expertise)") + "<br>"
                                                                                                               "<"
                                                                                                               "br>";
 
