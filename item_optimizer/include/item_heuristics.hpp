@@ -20,7 +20,7 @@ double get_character_ap_equivalent(const Special_stats& special_stats, const Wea
 double get_character_ap_equivalent(const Special_stats& special_stats, const Weapon& mh_wep, double sim_time,
                                    const std::vector<Use_effect>& use_effects);
 
-double get_hit_crit_expertise_ap_equivalent(const Special_stats& special_stats, int relevant_skill);
+double get_hit_crit_expertise_ap_equivalent(const Special_stats& special_stats, Weapon_type weapon_type);
 
 double get_hit_effect_ap_equivalent(const Hit_effect& hit_effect, double total_ap, double swing_speed, double factor);
 
