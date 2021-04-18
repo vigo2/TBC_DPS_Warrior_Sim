@@ -113,7 +113,7 @@ double get_hit_effect_ap_equivalent(const Hit_effect& hit_effect, double total_a
     return hit_effects_ap;
 }
 
-double get_hit_crit_skill_ap_equivalent(const Special_stats& special_stats, int relevant_skill)
+double get_hit_crit_expertise_ap_equivalent(const Special_stats& special_stats, int relevant_skill)
 {
     int target_defence_level = 365;
     int skill_diff = target_defence_level - 350;
@@ -278,16 +278,10 @@ double estimate_stat_diff(Special_stats special_stats1, Special_stats special_st
     diff.bonus_damage > 0 ? res_2.bonus_damage = diff.bonus_damage : res_1.bonus_damage = -diff.bonus_damage;
     diff.damage_mod_physical > 0 ? res_2.damage_mod_physical = diff.damage_mod_physical :
                                    res_1.damage_mod_physical = -diff.damage_mod_physical;
-    diff.axe_skill > 0 ? res_2.axe_skill = diff.axe_skill : res_1.axe_skill = -diff.axe_skill;
-    diff.sword_skill > 0 ? res_2.sword_skill = diff.sword_skill : res_1.sword_skill = -diff.sword_skill;
-    diff.mace_skill > 0 ? res_2.mace_skill = diff.mace_skill : res_1.mace_skill = -diff.mace_skill;
-    diff.dagger_skill > 0 ? res_2.dagger_skill = diff.dagger_skill : res_1.dagger_skill = -diff.dagger_skill;
-    diff.two_hand_sword_skill > 0 ? res_2.two_hand_sword_skill = diff.two_hand_sword_skill :
-                                    res_1.two_hand_sword_skill = -diff.two_hand_sword_skill;
-    diff.two_hand_axe_skill > 0 ? res_2.two_hand_axe_skill = diff.two_hand_axe_skill :
-                                  res_1.two_hand_axe_skill = -diff.two_hand_axe_skill;
-    diff.two_hand_mace_skill > 0 ? res_2.two_hand_mace_skill = diff.two_hand_mace_skill :
-                                   res_1.two_hand_mace_skill = -diff.two_hand_mace_skill;
+    diff.axe_expertise > 0 ? res_2.axe_expertise = diff.axe_expertise : res_1.axe_expertise = -diff.axe_expertise;
+    diff.sword_expertise > 0 ? res_2.sword_expertise = diff.sword_expertise : res_1.sword_expertise = -diff.sword_expertise;
+    diff.mace_expertise > 0 ? res_2.mace_expertise = diff.mace_expertise : res_1.mace_expertise = -diff.mace_expertise;
+    diff.expertise > 0 ? res_2.expertise = diff.expertise : res_1.expertise = -diff.expertise;
     double ap_1 = estimate_special_stats_high(res_1);
     double ap_2 = estimate_special_stats_low(res_2);
     return ap_2 - ap_1;

@@ -49,15 +49,12 @@ struct Special_stats
         return (this->hit < other.hit) &&
                (this->critical_strike < other.critical_strike) &&
                (this->attack_power < other.attack_power) &&
-               (this->axe_skill < other.axe_skill) &&
-               (this->sword_skill < other.sword_skill) &&
-               (this->mace_skill < other.mace_skill) &&
-               (this->dagger_skill < other.dagger_skill) &&
+               (this->axe_expertise < other.axe_expertise) &&
+               (this->sword_expertise < other.sword_expertise) &&
+               (this->mace_expertise < other.mace_expertise) &&
+               (this->expertise < other.expertise) &&
                (this->bonus_damage < other.bonus_damage) &&
-               (this->damage_mod_physical < other.damage_mod_physical) &&
-               (this->two_hand_sword_skill < other.two_hand_sword_skill) &&
-               (this->two_hand_mace_skill < other.two_hand_mace_skill) &&
-               (this->two_hand_axe_skill < other.two_hand_axe_skill);
+               (this->damage_mod_physical < other.damage_mod_physical);
     }
 
     Special_stats operator+(const Special_stats& rhs) const
@@ -68,17 +65,9 @@ struct Special_stats
             attack_power + rhs.attack_power,
             chance_for_extra_hit + rhs.chance_for_extra_hit,
             multiplicative_addition(haste, rhs.haste),
-            sword_skill + rhs.sword_skill,
-            axe_skill + rhs.axe_skill,
-            dagger_skill + rhs.dagger_skill,
-            mace_skill + rhs.mace_skill,
-            fist_skill + rhs.fist_skill,
             multiplicative_addition(damage_mod_physical, rhs.damage_mod_physical),
             multiplicative_addition(stat_multiplier, rhs.stat_multiplier),
             bonus_damage + rhs.bonus_damage,
-            two_hand_sword_skill + rhs.two_hand_sword_skill,
-            two_hand_axe_skill + rhs.two_hand_axe_skill,
-            two_hand_mace_skill + rhs.two_hand_mace_skill,
             multiplicative_addition(crit_multiplier, rhs.crit_multiplier),
             spell_crit + rhs.spell_crit,
             multiplicative_addition(damage_mod_spell, rhs.damage_mod_spell),
@@ -97,17 +86,9 @@ struct Special_stats
             attack_power - rhs.attack_power,
             chance_for_extra_hit - rhs.chance_for_extra_hit,
             multiplicative_subtraction(haste, rhs.haste),
-            sword_skill - rhs.sword_skill,
-            axe_skill - rhs.axe_skill,
-            dagger_skill - rhs.dagger_skill,
-            mace_skill - rhs.mace_skill,
-            fist_skill - rhs.fist_skill,
             multiplicative_subtraction(damage_mod_physical, rhs.damage_mod_physical),
             multiplicative_subtraction(stat_multiplier, rhs.stat_multiplier),
             bonus_damage - rhs.bonus_damage,
-            two_hand_sword_skill - rhs.two_hand_sword_skill,
-            two_hand_axe_skill - rhs.two_hand_axe_skill,
-            two_hand_mace_skill - rhs.two_hand_mace_skill,
             multiplicative_subtraction(crit_multiplier, rhs.crit_multiplier),
             spell_crit - rhs.spell_crit,
             multiplicative_subtraction(damage_mod_spell, rhs.damage_mod_spell),

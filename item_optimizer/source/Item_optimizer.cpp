@@ -237,13 +237,10 @@ bool is_strictly_weaker_wep(const Weapon_struct& wep_struct1, const Weapon_struc
     bool greater_eq = (special_stats2.hit >= special_stats1.hit) &&
                       (special_stats2.critical_strike >= special_stats1.critical_strike) &&
                       (special_stats2.attack_power >= special_stats1.attack_power) &&
-                      (special_stats2.axe_skill >= special_stats1.axe_skill) &&
-                      (special_stats2.sword_skill >= special_stats1.sword_skill) &&
-                      (special_stats2.mace_skill >= special_stats1.mace_skill) &&
-                      (special_stats2.dagger_skill >= special_stats1.dagger_skill) &&
-                      (special_stats2.two_hand_sword_skill >= special_stats1.two_hand_sword_skill) &&
-                      (special_stats2.two_hand_mace_skill >= special_stats1.two_hand_mace_skill) &&
-                      (special_stats2.two_hand_axe_skill >= special_stats1.two_hand_axe_skill);
+                      (special_stats2.axe_expertise >= special_stats1.axe_expertise) &&
+                      (special_stats2.sword_expertise >= special_stats1.sword_expertise) &&
+                      (special_stats2.mace_expertise >= special_stats1.mace_expertise) &&
+                      (special_stats2.expertise >= special_stats1.expertise);
 
     if (socket == Weapon_socket::main_hand)
     {
@@ -259,13 +256,10 @@ bool is_strictly_weaker_wep(const Weapon_struct& wep_struct1, const Weapon_struc
     bool greater = (special_stats2.hit > special_stats1.hit) ||
                    (special_stats2.critical_strike > special_stats1.critical_strike) ||
                    (special_stats2.attack_power > special_stats1.attack_power) ||
-                   (special_stats2.axe_skill > special_stats1.axe_skill) ||
-                   (special_stats2.sword_skill > special_stats1.sword_skill) ||
-                   (special_stats2.mace_skill > special_stats1.mace_skill) ||
-                   (special_stats2.dagger_skill > special_stats1.dagger_skill) ||
-                   (special_stats2.two_hand_sword_skill > special_stats1.two_hand_sword_skill) ||
-                   (special_stats2.two_hand_mace_skill > special_stats1.two_hand_mace_skill) ||
-                   (special_stats2.two_hand_axe_skill > special_stats1.two_hand_axe_skill);
+                   (special_stats2.axe_expertise > special_stats1.axe_expertise) ||
+                   (special_stats2.sword_expertise > special_stats1.sword_expertise) ||
+                   (special_stats2.mace_expertise > special_stats1.mace_expertise) ||
+                   (special_stats2.expertise > special_stats1.expertise);
 
     if (socket == Weapon_socket::main_hand)
     {
