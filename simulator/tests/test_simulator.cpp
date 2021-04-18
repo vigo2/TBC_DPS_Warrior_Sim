@@ -56,13 +56,13 @@ Combat_simulator_config get_test_config()
     config.combat.slam_rage_dd = 0.0;
 
     config.sim_time = 60.0;
-    config.main_target_level = 63.0;
-    config.main_target_initial_armor_ = 3731.0;
+    config.main_target_level = 73.0;
+    config.main_target_initial_armor_ = 7700.0;
     config.n_sunder_armor_stacks = 5.0;
     config.number_of_extra_targets = 0.0;
     config.extra_target_duration = 0.0;
     config.extra_target_initial_armor_ = 0.0;
-    config.extra_target_level = 60.0;
+    config.extra_target_level = 70.0;
     config.periodic_damage_interval_ = 0.0;
     config.periodic_damage_amount_ = 0.0;
     config.execute_phase_percentage_ = 0.0;
@@ -111,7 +111,7 @@ TEST(TestSuite, test_flurry)
     auto config = get_test_config();
     config.talents.flurry = 5;
     config.sim_time = 500.0;
-    config.main_target_level = 60;
+    config.main_target_level = 70;
 
     auto character = get_test_character();
     character.total_special_stats.critical_strike = 0;
@@ -199,7 +199,7 @@ TEST(TestSuite, test_dps_return)
     sim.simulate(character);
     double miss_chance = (8 * 0.8 + 20.0) / 100.0;
     double dodge_chance = 6.5 / 100.0;
-    double glancing_chance = 0.4;
+    double glancing_chance = 0.25;
     double hit_chance = (1 - dodge_chance - miss_chance - glancing_chance);
     double dps_white = 50 + 25;
     double expected_dps = dps_white * hit_chance + dps_white * 0.65 * glancing_chance;
