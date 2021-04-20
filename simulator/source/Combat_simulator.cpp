@@ -803,6 +803,11 @@ void Combat_simulator::hit_effects(Weapon_sim& weapon, Weapon_sim& main_hand_wea
                     swing_weapon(main_hand_weapon, main_hand_weapon, special_stats, rage, damage_sources,
                                  flurry_charges, hit_effect.attack_power_boost, true);
                 }
+                else
+                {
+                    // Decrement the proc statistics for extra hit if it got triggered by an extra hit
+                    proc_data_[hit_effect.name]--;
+                }
                 break;
             case Hit_effect::Type::damage_magic: {
                 // * 0.83 Assumes a static 17% chance to resist.
@@ -822,8 +827,11 @@ void Combat_simulator::hit_effects(Weapon_sim& weapon, Weapon_sim& main_hand_wea
                     simulator_cout("PROC: ", hit_effect.name, hit_result_to_string(hit.hit_result), " does ",
                                    int(hit.damage), " physical damage");
                 }
-                hit_effects(weapon, main_hand_weapon, special_stats, rage, damage_sources, flurry_charges,
-                            is_extra_attack);
+                if (hit.hit_result != Hit_result::miss && hit.hit_result != Hit_result::dodge)
+                {
+                    hit_effects(main_hand_weapon, main_hand_weapon, special_stats, rage, damage_sources, flurry_charges,
+                                is_extra_attack);
+                }
             }
             break;
             case Hit_effect::Type::stat_boost:
