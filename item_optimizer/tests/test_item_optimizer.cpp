@@ -236,7 +236,7 @@ TEST(TestSuite, test_multi_select_item_filter)
                        String_helpers::find_string(best_item_set, "kiss_of_the_spider") &&
                        String_helpers::find_string(best_item_set, "larvae_of_the_great_worm") &&
                        String_helpers::find_string(best_item_set, "crul_shorukh_edge_of_chaos") &&
-                       String_helpers::find_string(best_item_set, "dooms_edge");
+                       String_helpers::find_string(best_item_set, "chromatically_tempered_sword");
 
         if (success)
         {
