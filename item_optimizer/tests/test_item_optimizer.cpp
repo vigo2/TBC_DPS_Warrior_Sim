@@ -1,3 +1,4 @@
+@@ -0,0 +1,248 @@
 #include "sim_interface.hpp"
 #include "string_helpers.hpp"
 
@@ -12,6 +13,9 @@ std::vector<std::vector<std::string>> run_multiselect(const std::vector<std::str
                                                       const std::vector<extra_option>& extra_options = {})
 {
     std::vector<std::string> buff_vec;
+    buff_vec.emplace_back("rallying_cry");
+    buff_vec.emplace_back("dire_maul");
+    buff_vec.emplace_back("spirit_of_zandalar");
     buff_vec.emplace_back("blessing_of_kings");
     buff_vec.emplace_back("dense_stone_off_hand");
     buff_vec.emplace_back("elemental_stone_main_hand");
