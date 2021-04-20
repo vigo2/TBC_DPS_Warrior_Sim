@@ -342,7 +342,7 @@ std::string get_character_stat(const Character& character)
     out_string += print_stat("Strength: ", character.total_attributes.strength);
     out_string += print_stat("Agility: ", character.total_attributes.agility);
     out_string += print_stat("Hit: ", character.total_special_stats.hit);
-    out_string += print_stat("Expertise (before rounding down): ", character.total_special_stats.expertise);
+    out_string += print_stat("Expertise: ", character.total_special_stats.expertise);
     out_string += print_stat("Crit (spellbook): ", character.total_special_stats.critical_strike);
     out_string += print_stat("Attack Power: ", character.total_special_stats.attack_power);
     out_string += print_stat("Haste factor: ", 1 + character.total_special_stats.haste);
@@ -526,7 +526,7 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
     std::vector<std::string> damage_names = {"White MH",      "White OH",         "Bloodthirst", "Execute",
                                              "Heroic Strike", "Cleave",           "Whirlwind",   "Hamstring",
                                              "Deep Wounds",   "Item Hit Effects", "Overpower",   "Slam",
-                                             "Mortal Strike", "Sweeping Strikes", "Sword Specialization"};
+                                             "Mortal Strike", "Sweeping Strikes"};
     for (size_t i = 0; i < damage_time_lapse_raw.size(); i++)
     {
         double total_damage = 0;
@@ -550,7 +550,7 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
                  String_helpers::string_with_precision(
                      simulator.get_rage_lost_capped() / double(simulator.get_n_simulations()), 3) +
                  "</b><br>";
-    rage_info += "</b>Rage lost when changing stace: <b>" +
+    rage_info += "</b>Rage lost when changing stace (cutting rage at 25): <b>" +
                  String_helpers::string_with_precision(
                      simulator.get_rage_lost_stance() / double(simulator.get_n_simulations()), 3) +
                  "</b><br>";
@@ -633,25 +633,6 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
                 config.dpr_settings.compute_dpr_bt_ = false;
             }
         }
-        if (config.combat.use_mortal_strike)
-        {
-            double avg_ms_casts = static_cast<double>(dmg_dist.mortal_strike_count) / n_simulations_base;
-            if (avg_ms_casts > 0.0)
-            {
-                config.dpr_settings.compute_dpr_ms_ = true;
-                Combat_simulator simulator_dpr{};
-                simulator_dpr.set_config(config);
-                simulator_dpr.simulate(character, 0);
-                double delta_dps = dps_mean - simulator_dpr.get_dps_mean();
-                double dmg_tot = delta_dps * (config.sim_time - 1);
-                double dmg_per_hit = dmg_tot / avg_ms_casts;
-                double dmg_per_rage = dmg_per_hit / 30.0;
-                dpr_info += "<b>Mortal Strike</b>: <br>Damage per cast: <b>" + String_helpers::string_with_precision(dmg_per_hit, 4) +
-                            "</b><br>Average rage cost: <b>" + String_helpers::string_with_precision(30.0, 3) + "</b><br>DPR: <b>" +
-                            String_helpers::string_with_precision(dmg_per_rage, 4) + "</b><br>";
-                config.dpr_settings.compute_dpr_ms_ = false;
-            }
-        }
         if (config.combat.use_whirlwind)
         {
             double avg_ww_casts = static_cast<double>(dmg_dist.whirlwind_count) / n_simulations_base;
@@ -675,7 +656,7 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
         if (config.combat.use_slam)
         {
             double avg_sl_casts = static_cast<double>(dmg_dist.slam_count) / n_simulations_base;
-            if (avg_sl_casts > 1.0)
+            if (avg_sl_casts > 0.0)
             {
                 config.dpr_settings.compute_dpr_sl_ = true;
                 Combat_simulator simulator_dpr{};
@@ -695,7 +676,7 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
         if (config.combat.use_heroic_strike)
         {
             double avg_hs_casts = static_cast<double>(dmg_dist.heroic_strike_count) / n_simulations_base;
-            if (avg_hs_casts > 1.0)
+            if (avg_hs_casts > 0.0)
             {
                 config.dpr_settings.compute_dpr_hs_ = true;
                 Combat_simulator simulator_dpr{};
@@ -828,7 +809,7 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
         if (config.combat.use_slam && is_two_handed)
         {
             compute_talent_weight(simulator_talent, character, talents_info, "Improved Slam", config,
-                                  &Combat_simulator_config::talents_t::improved_slam, 2);
+                                  &Combat_simulator_config::talents_t::improved_slam, 5);
         }
 
         compute_talent_weight(simulator_talent, character, talents_info, "Improved Execute", config,
@@ -848,12 +829,6 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
 
         compute_talent_weight(simulator_talent, character, talents_info, "Death wish", config,
                               &Combat_simulator_config::talents_t::death_wish);
-
-        compute_talent_weight(simulator_talent, character, talents_info, "Rampage", config,
-                              &Combat_simulator_config::talents_t::rampage);
-        
-        compute_talent_weight(simulator_talent, character, talents_info, "Endless Rage", config,
-                              &Combat_simulator_config::talents_t::endless_rage);
 
         if (!is_two_handed)
         {
