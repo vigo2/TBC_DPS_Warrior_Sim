@@ -91,15 +91,15 @@ function load_naxxgear() {
     select_prebis(selected_items, selected_weapons, selected_enchants);
 }
 
-function load_p6pvebismult() {
+function load_naxxgearmult() {
     let selected_items = ["lionheart_helm", "stormrages_talisman_of_seething", "conquerors_spaulders",
-        "shroud_of_dominion", "plated_abomination_ribcage", "hive_defiler_wristguards",
-        "gauntlets_of_annihilation", "girdle_of_the_mentor", "legplates_of_carnage",
-        "chromatic_boots", "quick_strike_ring", "band_of_unnatural_forces",
-        "kiss_of_the_spider", "badge_of_the_swarmguard", "nerubian_slavemaker"];
-    let selected_weapons = ["the_hungering_cold", "iblis_blade_of_the_fallen_seraph"];
+    "shroud_of_dominion", "plated_abomination_ribcage", "hive_defiler_wristguards",
+    "gauntlets_of_annihilation", "girdle_of_the_mentor", "legplates_of_carnage",
+    "chromatic_boots", "quick_strike_ring", "band_of_unnatural_forces",
+    "kiss_of_the_spider", "badge_of_the_swarmguard", "nerubian_slavemaker"];
+    let selected_weapons = ["gressil_dawn_of_ruin", "the_hungering_cold"];
     let selected_enchants = ["+8 strength", "naxxramas", "+3 agility", "+4 stats", "+9 strength",
-        "+15 agility", "+8 strength", "+7 agility", "crusader", "crusader", "+4 stats", "+4 stats"];
+    "+15 agility", "+8 strength", "+7 agility", "crusader", "crusader", "+4 stats", "+4 stats"];
     select_prebis_mult(selected_items, selected_weapons, selected_enchants);
 }
 
