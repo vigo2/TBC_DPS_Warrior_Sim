@@ -37,6 +37,10 @@ void Combat_simulator_config::get_combat_simulator_config(const T& input)
     {
         combat.use_ms_in_exec_phase = true;
     }
+    if (String_helpers::find_string(input.options, "use_sl_in_exec_phase"))
+    {
+        combat.use_sl_in_exec_phase = true;
+    }
     if (String_helpers::find_string(input.options, "use_hs_in_exec_phase"))
     {
         combat.use_hs_in_exec_phase = true;
@@ -60,6 +64,10 @@ void Combat_simulator_config::get_combat_simulator_config(const T& input)
     if (String_helpers::find_string(input.options, "use_bloodthirst"))
     {
         combat.use_bloodthirst = true;
+    }
+    if (String_helpers::find_string(input.options, "use_rampage"))
+    {
+        combat.use_rampage = true;
     }
     if (String_helpers::find_string(input.options, "use_mortal_strike"))
     {
@@ -85,14 +93,9 @@ void Combat_simulator_config::get_combat_simulator_config(const T& input)
     {
         combat.deep_wounds = true;
     }
-    if (String_helpers::find_string(input.options, "heroic_strike_aq"))
-    {
-        combat.heroic_strike_damage = 157;
-    }
-    else
-    {
-        combat.heroic_strike_damage = 138;
-    }
+    
+    combat.heroic_strike_damage = 208;
+
     if (String_helpers::find_string(input.options, "first_hit_heroic_strike"))
     {
         combat.first_hit_heroic_strike = true;
@@ -137,7 +140,6 @@ void Combat_simulator_config::get_combat_simulator_config(const T& input)
         combat.overpower_rage_thresh = fv.find("overpower_rage_thresh_dd");
         combat.overpower_bt_cooldown_thresh = fv.find("overpower_bt_cooldown_thresh_dd");
         combat.overpower_ww_cooldown_thresh = fv.find("overpower_ww_cooldown_thresh_dd");
-        combat.slam_cd_thresh = fv.find("slam_cd_thresh_dd");
         combat.slam_spam_max_time = fv.find("slam_spam_max_time_dd");
         combat.slam_spam_rage = fv.find("slam_spam_rage_dd");
         combat.slam_rage_dd = fv.find("slam_rage_dd");
@@ -164,6 +166,7 @@ void Combat_simulator_config::get_combat_simulator_config(const T& input)
         talents.improved_heroic_strike = fv.find("improved_heroic_strike_talent");
         talents.overpower = fv.find("improved_overpower_talent");
         talents.unbridled_wrath = fv.find("unbridled_wrath_talent");
+        talents.mace_specialization = fv.find("mace_specialization_talent");
         talents.flurry = fv.find("flurry_talent");
         talents.anger_management = fv.find("anger_management_talent");
         talents.impale = fv.find("impale_talent");
@@ -177,5 +180,13 @@ void Combat_simulator_config::get_combat_simulator_config(const T& input)
         talents.bloodthirst = fv.find("bloodthirst_talent");
         talents.mortal_strike = fv.find("mortal_strike_talent");
         talents.sweeping_strikes = fv.find("sweeping_strikes_talent");
+        talents.improved_disciplines = fv.find("improved_disciplines_talent"); 
+        talents.improved_mortal_strike = fv.find("improved_mortal_strike_talent");
+        talents.endless_rage = fv.find("endless_rage_talent");
+        talents.weapon_mastery = fv.find("weapon_mastery_talent");
+        talents.precision = fv.find("precision_talent");
+        talents.improved_whirlwind = fv.find("improved_whirlwind_talent");
+        talents.improved_berserker_stance = fv.find("improved_berserker_stance_talent");
+        talents.rampage = fv.find("rampage_talent");
     }
 }

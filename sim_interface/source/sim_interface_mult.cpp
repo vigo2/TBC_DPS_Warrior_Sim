@@ -15,6 +15,7 @@ Sim_output_mult Sim_interface::simulate_mult(const Sim_input_mult& input)
 {
     clock_t start_time_main = clock();
     Buffs buffs{};
+   // Gems gems{};
     Item_optimizer item_optimizer;
 
     // Combat settings
@@ -24,6 +25,26 @@ Sim_output_mult Sim_interface::simulate_mult(const Sim_input_mult& input)
     {
         temp_buffs.emplace_back("mighty_rage_potion");
     }
+    else if (String_helpers::find_string(input.options, "haste_potion"))
+    {
+        temp_buffs.emplace_back("haste_potion");
+    }
+    else if (String_helpers::find_string(input.options, "insane_strength_potion"))
+    {
+        temp_buffs.emplace_back("insane_strength_potion");
+    }
+    else if (String_helpers::find_string(input.options, "heroic_potion"))
+    {
+        temp_buffs.emplace_back("heroic_potion");
+    }
+    if (String_helpers::find_string(input.options, "drums_of_battle"))
+    {
+        temp_buffs.emplace_back("drums_of_battle");
+    }
+    if (String_helpers::find_string(input.options, "bloodlust"))
+    {
+        temp_buffs.emplace_back("bloodlust");
+    }
     if (String_helpers::find_string(input.options, "full_polarity"))
     {
         double full_polarity_val =
@@ -31,6 +52,14 @@ Sim_output_mult Sim_interface::simulate_mult(const Sim_input_mult& input)
         item_optimizer.armory.buffs.full_polarity.special_stats.damage_mod_physical = full_polarity_val / 100.0;
         item_optimizer.armory.buffs.full_polarity.special_stats.damage_mod_spell = full_polarity_val / 100.0;
         temp_buffs.emplace_back("full_polarity");
+    }
+    if (String_helpers::find_string(input.options, "ferocious_inspiration"))
+    {
+        double ferocious_inspiration_val =
+            String_helpers::find_value(input.float_options_string, input.float_options_val, "ferocious_inspiration_dd");
+        item_optimizer.armory.buffs.ferocious_inspiration.special_stats.damage_mod_physical = ferocious_inspiration_val / 100.0;
+        item_optimizer.armory.buffs.ferocious_inspiration.special_stats.damage_mod_spell = ferocious_inspiration_val / 100.0;
+        temp_buffs.emplace_back("ferocious_inspiration");
     }
     if (String_helpers::find_string(input.options, "fungal_bloom"))
     {
@@ -69,12 +98,18 @@ Sim_output_mult Sim_interface::simulate_mult(const Sim_input_mult& input)
     item_optimizer.buffs = buffs;
     item_optimizer.buffs_vec = temp_buffs;
     item_optimizer.ench_vec = input.enchants;
+  // item_optimizer.gems = gems;
+    item_optimizer.gem_vec = input.gems;
     item_optimizer.talent_vec = input.talent_string;
     item_optimizer.talent_val_vec = input.talent_val;
     item_optimizer.item_setup(input.armor, input.weapons);
 
     // Simulator & Combat settings
     Combat_simulator_config config{input};
+    if (String_helpers::find_string(input.float_options_string, "seed"))
+    {
+        config.seed = String_helpers::find_value(input.float_options_string, input.float_options_val, "seed");
+    }
 
     std::string debug_message;
     item_optimizer.compute_combinations();
@@ -300,10 +335,10 @@ Sim_output_mult Sim_interface::simulate_mult(const Sim_input_mult& input)
                     temp_keepers.emplace_back(keeper);
                 }
             }
-            // Removed to many sets
+            // Removed too many sets
             if (temp_keepers.size() < 5)
             {
-                std::cout << "removed to many sets. Adding them back again\n";
+                std::cout << "removed too many sets. Adding them back again\n";
                 size_t attempts = 0;
                 while (temp_keepers.size() < 5)
                 {
@@ -488,6 +523,8 @@ Sim_output_mult Sim_interface::simulate_mult(const Sim_input_mult& input)
         message += "<b>Stats:</b><br>";
         message +=
             "Hit: " + String_helpers::string_with_precision(best_characters[i].total_special_stats.hit, 3) + " %<br>";
+        message +=
+            "Expertise (before rounding down): " + String_helpers::string_with_precision(best_characters[i].total_special_stats.expertise, 3) + " <br>";
         message += "Crit: " +
                    String_helpers::string_with_precision(best_characters[i].total_special_stats.critical_strike, 3) +
                    " %<br>";

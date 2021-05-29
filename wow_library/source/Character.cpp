@@ -5,16 +5,16 @@
 Character::Character(const Race& race, int level)
     : base_attributes{}, total_attributes{}, base_special_stats{}, total_special_stats{}, race{race}, level(level)
 {
-    int base_skill = level * 5;
-    base_special_stats = Special_stats{0,          0,          160, 0,          0,          base_skill,          base_skill,                      base_skill,
-                                       base_skill, base_skill, 0,   0,          0,          base_skill,          base_skill,                      base_skill, 
-                                       0,          0,          0,   0,          static_cast<double>(base_skill), static_cast<double>(base_skill), static_cast<double>(base_skill)};
+    base_special_stats = Special_stats{0,          0,          160, 0,          0,
+                                       0,          0,          0,   0,          0,  
+                                       0,          0,          0,   0,          0,
+                                       0,};
     switch (race)
     {
     case Race::human:
         base_attributes = Attributes{145, 96};
-        base_special_stats.sword_expertise = 1.25;
-        base_special_stats.mace_expertise = 1.25;
+        base_special_stats.sword_expertise = 5;
+        base_special_stats.mace_expertise = 5;
         base_special_stats.axe_expertise = 0.0;
         break;
     case Race::dwarf:
@@ -45,7 +45,7 @@ Character::Character(const Race& race, int level)
         base_attributes = Attributes{148, 93};
         base_special_stats.sword_expertise = 0.0;
         base_special_stats.mace_expertise = 0.0;
-        base_special_stats.axe_expertise = 1.25;
+        base_special_stats.axe_expertise = 5;
         break;
     case Race::tauren:
         base_attributes = Attributes{150, 91};
@@ -73,7 +73,7 @@ Character::Character(const Race& race, int level)
 Character character_setup(const Armory& armory, const std::string& race, const std::vector<std::string>& armor_vec,
                           const std::vector<std::string>& weapons_vec, const std::vector<std::string>& buffs_vec,
                           const std::vector<std::string>& talent_string, const std::vector<int>& talent_val,
-                          const std::vector<std::string>& ench_vec)
+                          const std::vector<std::string>& ench_vec, const std::vector<std::string>& gem_vec)
 {
     auto character = get_character_of_race(race);
 
@@ -104,6 +104,7 @@ Character character_setup(const Armory& armory, const std::string& race, const s
     }
 
     armory.add_enchants_to_character(character, ench_vec);
+    armory.add_gems_to_character(character, gem_vec);
     armory.add_buffs_to_character(character, buffs_vec);
     armory.add_talents_to_character(character, talent_string, talent_val);
 

@@ -97,6 +97,7 @@ struct Combat_simulator_config
     {
         bool use_bt_in_exec_phase{false};
         bool use_ms_in_exec_phase{false};
+        bool use_sl_in_exec_phase{false};
         bool use_hs_in_exec_phase{false};
         double whirlwind_rage_thresh{};
         double overpower_rage_thresh{};
@@ -110,6 +111,7 @@ struct Combat_simulator_config
         bool use_hamstring{false};
         bool use_slam{false};
         bool use_bloodthirst{false};
+        bool use_rampage{false};
         bool use_mortal_strike{false};
         bool use_sweeping_strikes{false};
         bool use_whirlwind{false};
@@ -118,6 +120,7 @@ struct Combat_simulator_config
         double hamstring_cd_thresh{};
         bool dont_use_hm_when_ss{false};
         double slam_cd_thresh{};
+        double rampage_use_thresh{};
         double hamstring_thresh_dd{};
         double initial_rage{};
         bool deep_wounds{false};
@@ -145,9 +148,12 @@ struct Combat_simulator_config
     {
         bool death_wish{false};
         bool anger_management{false};
+        bool endless_rage{false};
+        bool rampage{false};
         int improved_heroic_strike = 0;
         int flurry = 0;
         int unbridled_wrath = 0;
+        int mace_specialization = 0;
         int impale = 0;
         int overpower = 0;
         int improved_execute = 0;
@@ -159,6 +165,12 @@ struct Combat_simulator_config
         int bloodthirst = 0;
         int mortal_strike = 0;
         int sweeping_strikes = 0;
+        int improved_disciplines = 0;
+        int improved_mortal_strike = 0;
+        int weapon_mastery = 0;
+        int precision = 0;
+        int improved_whirlwind = 0;
+        int improved_berserker_stance = 0;
     } talents;
 };
 
@@ -259,38 +271,42 @@ public:
         Hit_result hit_result;
     };
 
-    void manage_flurry(Hit_result hit_result, Special_stats& special_stats, int& flurry_charges,
+    void manage_flurry_rampage(Hit_result hit_result, Special_stats& special_stats, int& flurry_charges, int& rampage_stacks, bool rampage_active = false,
                        bool is_ability = false);
 
     void swing_weapon(Weapon_sim& weapon, Weapon_sim& main_hand_weapon, Special_stats& special_stats, double& rage,
-                      Damage_sources& damage_sources, int& flurry_charges, double attack_power_bonus = 0,
+                      Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks, bool rampage_active = false, double attack_power_bonus = 0,
                       bool is_extra_attack = false);
+   
+    void sword_spec_hit(Weapon_sim& main_hand_weapon, Special_stats& special_stats, double& rage,
+                      Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks, bool rampage_active = false, double attack_power_bonus = 0);
 
     void hit_effects(Weapon_sim& weapon, Weapon_sim& main_hand_weapon, Special_stats& special_stats, double& rage,
-                     Damage_sources& damage_sources, int& flurry_charges, bool is_extra_attack = false);
+                     Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks, bool rampage_active = false, bool is_extra_attack = false,
+                     bool is_instant = true);
 
     void overpower(Weapon_sim& main_hand_weapon, Special_stats& special_stats, double& rage,
-                   Damage_sources& damage_sources, int& flurry_charges);
+                   Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks, bool rampage_active = false);
 
     bool start_cast_slam(bool mh_swing, double rage, double& swing_time_left);
 
     void slam(Weapon_sim& main_hand_weapon, Special_stats& special_stats, double& rage, Damage_sources& damage_sources,
-              int& flurry_charges);
+              int& flurry_charges, int& rampage_stacks, bool rampage_active = false);
 
     void mortal_strike(Weapon_sim& main_hand_weapon, Special_stats& special_stats, double& rage,
-                       Damage_sources& damage_sources, int& flurry_charges);
+                       Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks, bool rampage_active = false);
 
     void bloodthirst(Weapon_sim& main_hand_weapon, Special_stats& special_stats, double& rage,
-                     Damage_sources& damage_sources, int& flurry_charges);
+                     Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks, bool rampage_active = false);
 
-    void whirlwind(Weapon_sim& main_hand_weapon, Special_stats& special_stats, double& rage,
-                   Damage_sources& damage_sources, int& flurry_charges);
+    void whirlwind(Weapon_sim& main_hand_weapon, Weapon_sim& off_hand_weapon, Special_stats& special_stats, double& rage,
+                   Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks, bool rampage_active = false, bool is_dw = false);
 
     void execute(Weapon_sim& main_hand_weapon, Special_stats& special_stats, double& rage,
-                 Damage_sources& damage_sources, int& flurry_charges);
+                 Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks, bool rampage_active = false);
 
     void hamstring(Weapon_sim& main_hand_weapon, Special_stats& special_stats, double& rage,
-                   Damage_sources& damage_sources, int& flurry_charges);
+                   Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks, bool rampage_active = false);
 
     void simulate(const Character& character, size_t n_simulations, double init_mean, double init_variance,
                   size_t init_simulations);
@@ -302,11 +318,12 @@ public:
     Combat_simulator::Hit_outcome generate_hit(const Weapon_sim& weapon, double damage, Hit_type hit_type,
                                                Socket weapon_hand, const Special_stats& special_stats,
                                                Damage_sources& damage_sources, bool boss_target = true,
-                                               bool is_overpower = false, bool can_sweep = true);
+                                               bool is_overpower = false, bool can_sweep = true, bool is_whirlwind = false, bool is_melee_spell = false);
 
-    Combat_simulator::Hit_outcome generate_hit_oh(double damage);
+    Combat_simulator::Hit_outcome generate_hit_oh(double damage, bool is_whirlwind = false);
 
-    Combat_simulator::Hit_outcome generate_hit_mh(double damage, Hit_type hit_type, bool is_overpower = false);
+    Combat_simulator::Hit_outcome generate_hit_mh(double damage, Hit_type hit_type, bool is_overpower = false, 
+                                                  bool is_melee_spell = false);
 
     void compute_hit_table(const Special_stats& special_stats, Socket weapon_hand,
                            Weapon_socket weapon_socket, Weapon_type weapon_type);
@@ -331,6 +348,8 @@ public:
     void add_damage_source_to_time_lapse(std::vector<Damage_instance>& damage_instances);
 
     [[nodiscard]] std::vector<std::string> get_aura_uptimes() const;
+
+    [[nodiscard]] std::map<std::string, double> get_aura_uptimes_map() const { return buff_manager_.aura_uptime; };
 
     [[nodiscard]] std::map<std::string, int> get_proc_data() const { return proc_data_; };
 
@@ -368,6 +387,8 @@ public:
 
     [[nodiscard]] constexpr double get_hs_uptime() const { return heroic_strike_uptime_; }
 
+    [[nodiscard]] constexpr double get_rampage_uptime() const { return rampage_uptime_; }
+
     void init_histogram();
 
     void prune_histogram();
@@ -397,7 +418,7 @@ public:
     Combat_simulator_config config;
 
     const Use_effect deathwish = {
-        "Death_wish", Use_effect::Effect_socket::unique, {}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, .20}, -10, 30, 180, true};
+        "Death_wish", Use_effect::Effect_socket::unique, {}, {0, 0, 0, 0, 0, .20}, -10, 30, 180, true};
 
     const Use_effect recklessness = {
         "Recklessness", Use_effect::Effect_socket::unique, {}, {100, 0, 0}, 0, 15, 900, true};
@@ -415,7 +436,9 @@ private:
     std::vector<double> hit_table_white_oh_;
     std::vector<double> damage_multipliers_white_oh_;
     std::vector<double> hit_table_yellow_;
+    std::vector<double> hit_table_yellow_spell_;
     std::vector<double> hit_table_overpower_;
+    std::vector<double> hit_table_melee_spell_;
     std::vector<double> damage_multipliers_yellow_;
     std::vector<double> hit_table_two_hand_;
     Damage_sources damage_distribution_{};
@@ -440,6 +463,7 @@ private:
     double flurry_uptime_mh_{};
     double flurry_uptime_oh_{};
     double heroic_strike_uptime_{};
+    double rampage_uptime_{};
 
     int execute_rage_cost_{};
     int heroic_strike_rage_cost{};
@@ -449,6 +473,7 @@ private:
     double avg_rage_spent_executing_{};
     double rage_lost_stance_swap_{};
     double rage_lost_capped_{};
+    double p_mace_spec_{};
     double p_unbridled_wrath_{};
     double flurry_haste_factor_{};
     double dual_wield_damage_factor_{};
@@ -458,6 +483,7 @@ private:
     double tactical_mastery_rage_{0};
     bool deep_wounds_{false};
     bool use_bloodthirst_{false};
+    bool use_rampage_{false};
     bool use_mortal_strike_{false};
     bool use_sweeping_strikes_{false};
     int sweeping_strikes_charges_ = 0;
@@ -467,10 +493,10 @@ private:
     std::vector<Use_effect> use_effects_all_{};
     std::vector<Over_time_effect> over_time_effects_{};
     std::map<Damage_source, int> source_map{
-        {Damage_source::white_mh, 0},         {Damage_source::white_oh, 1},         {Damage_source::bloodthirst, 2},
-        {Damage_source::execute, 3},          {Damage_source::heroic_strike, 4},    {Damage_source::cleave, 5},
-        {Damage_source::whirlwind, 6},        {Damage_source::hamstring, 7},        {Damage_source::deep_wounds, 8},
-        {Damage_source::item_hit_effects, 9}, {Damage_source::overpower, 10},       {Damage_source::slam, 11},
+        {Damage_source::white_mh, 0},         {Damage_source::white_oh, 1},          {Damage_source::bloodthirst, 2},
+        {Damage_source::execute, 3},          {Damage_source::heroic_strike, 4},     {Damage_source::cleave, 5},
+        {Damage_source::whirlwind, 6},        {Damage_source::hamstring, 7},         {Damage_source::deep_wounds, 8},
+        {Damage_source::item_hit_effects, 9}, {Damage_source::overpower, 10},        {Damage_source::slam, 11},
         {Damage_source::mortal_strike, 12},   {Damage_source::sweeping_strikes, 13}};
 };
 

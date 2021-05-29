@@ -54,7 +54,7 @@ void item_upgrades(std::string& item_strengths_string, Character character_new, 
 
     Armor item_in_socket = character_new.get_item_from_socket(socket, first_item);
     Special_stats item_special_stats = item_in_socket.special_stats;
-    item_special_stats += item_in_socket.attributes.convert_to_special_stats(special_stats);
+    item_special_stats += item_in_socket.attributes.convert_to_special_stats(special_stats, character_new.talents.improved_berserker_stance * 0.02 + 1);
     std::vector<size_t> stronger_indexies{};
     if (item_in_socket.set_name == Set::none && item_in_socket.use_effects.empty() &&
         item_in_socket.hit_effects.empty())
@@ -64,7 +64,7 @@ void item_upgrades(std::string& item_strengths_string, Character character_new, 
             if (items[i].set_name == Set::none && items[i].use_effects.empty() && items[i].hit_effects.empty())
             {
                 Special_stats armor_special_stats = items[i].special_stats;
-                armor_special_stats += items[i].attributes.convert_to_special_stats(special_stats);
+                armor_special_stats += items[i].attributes.convert_to_special_stats(special_stats, character_new.talents.improved_berserker_stance * 0.02 + 1);
 
                 if (estimate_special_stats_smart_no_skill(item_special_stats, armor_special_stats))
                 {
@@ -342,7 +342,7 @@ std::string get_character_stat(const Character& character)
     out_string += print_stat("Strength: ", character.total_attributes.strength);
     out_string += print_stat("Agility: ", character.total_attributes.agility);
     out_string += print_stat("Hit: ", character.total_special_stats.hit);
-    out_string += print_stat("Expertise: ", character.total_special_stats.expertise);
+    out_string += print_stat("Expertise (before rounding down): ", character.total_special_stats.expertise);
     out_string += print_stat("Crit (spellbook): ", character.total_special_stats.critical_strike);
     out_string += print_stat("Attack Power: ", character.total_special_stats.attack_power);
     out_string += print_stat("Haste factor: ", 1 + character.total_special_stats.haste);
@@ -453,6 +453,26 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
     {
         temp_buffs.emplace_back("mighty_rage_potion");
     }
+    else if (String_helpers::find_string(input.options, "haste_potion"))
+    {
+        temp_buffs.emplace_back("haste_potion");
+    }
+    else if (String_helpers::find_string(input.options, "insane_strength_potion"))
+    {
+        temp_buffs.emplace_back("insane_strength_potion");
+    }
+    else if (String_helpers::find_string(input.options, "heroic_potion"))
+    {
+        temp_buffs.emplace_back("heroic_potion");
+    }
+    if (String_helpers::find_string(input.options, "drums_of_battle"))
+    {
+        temp_buffs.emplace_back("drums_of_battle");
+    }
+    if (String_helpers::find_string(input.options, "bloodlust"))
+    {
+        temp_buffs.emplace_back("bloodlust");
+    }
     if (String_helpers::find_string(input.options, "full_polarity"))
     {
         double full_polarity_val =
@@ -460,6 +480,14 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
         armory.buffs.full_polarity.special_stats.damage_mod_physical = full_polarity_val / 100.0;
         armory.buffs.full_polarity.special_stats.damage_mod_spell = full_polarity_val / 100.0;
         temp_buffs.emplace_back("full_polarity");
+    }
+    if (String_helpers::find_string(input.options, "ferocious_inspiration"))
+    {
+        double ferocious_inspiration_val =
+            String_helpers::find_value(input.float_options_string, input.float_options_val, "ferocious_inspiration_dd");
+        armory.buffs.ferocious_inspiration.special_stats.damage_mod_physical = ferocious_inspiration_val / 100.0;
+        armory.buffs.ferocious_inspiration.special_stats.damage_mod_spell = ferocious_inspiration_val / 100.0;
+        temp_buffs.emplace_back("ferocious_inspiration");
     }
     if (String_helpers::find_string(input.options, "fungal_bloom"))
     {
@@ -474,7 +502,7 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
     }
 
     const Character character = character_setup(armory, input.race[0], input.armor, input.weapons, temp_buffs,
-                                                input.talent_string, input.talent_val, input.enchants);
+                                                input.talent_string, input.talent_val, input.enchants, input.gems);
 
     // Simulator & Combat settings
     Combat_simulator_config config{input};
@@ -526,7 +554,7 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
     std::vector<std::string> damage_names = {"White MH",      "White OH",         "Bloodthirst", "Execute",
                                              "Heroic Strike", "Cleave",           "Whirlwind",   "Hamstring",
                                              "Deep Wounds",   "Item Hit Effects", "Overpower",   "Slam",
-                                             "Mortal Strike", "Sweeping Strikes"};
+                                             "Mortal Strike", "Sweeping Strikes", "Sword Specialization"};
     for (size_t i = 0; i < damage_time_lapse_raw.size(); i++)
     {
         double total_damage = 0;
@@ -550,7 +578,7 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
                  String_helpers::string_with_precision(
                      simulator.get_rage_lost_capped() / double(simulator.get_n_simulations()), 3) +
                  "</b><br>";
-    rage_info += "</b>Rage lost when changing stace (cutting rage at 25): <b>" +
+    rage_info += "</b>Rage lost when changing stace: <b>" +
                  String_helpers::string_with_precision(
                      simulator.get_rage_lost_stance() / double(simulator.get_n_simulations()), 3) +
                  "</b><br>";
@@ -571,7 +599,7 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
     double left_to_crit_cap_white_mh = std::max(100.0 - white_mh_ht.back(), 0.0);
     double yellow_crit = std::min(yellow_ht[3], 100.0) - yellow_ht[2];
     extra_info_string +=
-        String_helpers::percent_to_str("Yellow", yellow_crit, "chance to crit per cast (double roll suppression)",
+        String_helpers::percent_to_str("Yellow", yellow_crit, "chance to crit per cast",
                                        100 - yellow_crit * (1 + yellow_ht[1] / 100.0), "left to crit-cap");
     extra_info_string += String_helpers::percent_to_str("White main hand", white_mh_crit, "chance to crit",
                                                         left_to_crit_cap_white_mh, "left to crit-cap");
@@ -633,6 +661,25 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
                 config.dpr_settings.compute_dpr_bt_ = false;
             }
         }
+        if (config.combat.use_mortal_strike)
+        {
+            double avg_ms_casts = static_cast<double>(dmg_dist.mortal_strike_count) / n_simulations_base;
+            if (avg_ms_casts > 0.0)
+            {
+                config.dpr_settings.compute_dpr_ms_ = true;
+                Combat_simulator simulator_dpr{};
+                simulator_dpr.set_config(config);
+                simulator_dpr.simulate(character, 0);
+                double delta_dps = dps_mean - simulator_dpr.get_dps_mean();
+                double dmg_tot = delta_dps * (config.sim_time - 1);
+                double dmg_per_hit = dmg_tot / avg_ms_casts;
+                double dmg_per_rage = dmg_per_hit / 30.0;
+                dpr_info += "<b>Mortal Strike</b>: <br>Damage per cast: <b>" + String_helpers::string_with_precision(dmg_per_hit, 4) +
+                            "</b><br>Average rage cost: <b>" + String_helpers::string_with_precision(30.0, 3) + "</b><br>DPR: <b>" +
+                            String_helpers::string_with_precision(dmg_per_rage, 4) + "</b><br>";
+                config.dpr_settings.compute_dpr_ms_ = false;
+            }
+        }
         if (config.combat.use_whirlwind)
         {
             double avg_ww_casts = static_cast<double>(dmg_dist.whirlwind_count) / n_simulations_base;
@@ -676,7 +723,7 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
         if (config.combat.use_heroic_strike)
         {
             double avg_hs_casts = static_cast<double>(dmg_dist.heroic_strike_count) / n_simulations_base;
-            if (avg_hs_casts > 0.0)
+            if (avg_hs_casts > 1.0)
             {
                 config.dpr_settings.compute_dpr_hs_ = true;
                 Combat_simulator simulator_dpr{};
@@ -809,7 +856,7 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
         if (config.combat.use_slam && is_two_handed)
         {
             compute_talent_weight(simulator_talent, character, talents_info, "Improved Slam", config,
-                                  &Combat_simulator_config::talents_t::improved_slam, 5);
+                                  &Combat_simulator_config::talents_t::improved_slam, 2);
         }
 
         compute_talent_weight(simulator_talent, character, talents_info, "Improved Execute", config,
@@ -830,6 +877,12 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
         compute_talent_weight(simulator_talent, character, talents_info, "Death wish", config,
                               &Combat_simulator_config::talents_t::death_wish);
 
+        compute_talent_weight(simulator_talent, character, talents_info, "Rampage", config,
+                              &Combat_simulator_config::talents_t::rampage);
+        
+        compute_talent_weight(simulator_talent, character, talents_info, "Endless Rage", config,
+                              &Combat_simulator_config::talents_t::endless_rage);
+
         if (!is_two_handed)
         {
             compute_talent_weight(simulator_talent, character, talents_info, "Dual Wield Specialization", config,
@@ -842,7 +895,7 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
         Combat_simulator simulator_compare{};
         simulator_compare.set_config(config);
         Character character2 = character_setup(armory, input.race[0], input.compare_armor, input.compare_weapons,
-                                               temp_buffs, input.talent_string, input.talent_val, input.enchants);
+                                               temp_buffs, input.talent_string, input.talent_val, input.enchants, input.gems);
 
         simulator_compare.simulate(character2);
 
@@ -879,7 +932,7 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
         Item_optimizer item_optimizer{};
         item_optimizer.race = get_race(input.race[0]);
         Character character_new = character_setup(armory, input.race[0], input.armor, input.weapons, temp_buffs,
-                                                  input.talent_string, input.talent_val, input.enchants);
+                                                  input.talent_string, input.talent_val, input.enchants, input.gems);
         std::string dummy{};
         std::vector<Socket> all_sockets = {
             Socket::head, Socket::neck, Socket::shoulder, Socket::back, Socket::chest,   Socket::wrist,  Socket::hands,
@@ -1000,7 +1053,7 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
             {
                 Character char_plus = character;
                 Character char_minus = character;
-                Hit_effect extra_hit{"stat_weight_extra_hit", Hit_effect::Type::extra_hit, {}, {}, 0, 0, 0.05};
+                Hit_effect extra_hit{"stat_weight_extra_hit", Hit_effect::Type::extra_hit, {}, {}, 0, 0, 0, 0.05};
                 char_plus.weapons[0].hit_effects.emplace_back(extra_hit);
                 if (char_plus.is_dual_wield())
                 {

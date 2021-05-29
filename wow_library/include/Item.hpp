@@ -46,20 +46,65 @@ enum class Weapon_type
 enum class Set
 {
     none,
-    devilsaur,
-    valor,
-    black_dragonscale,
-    rare_pvp_set,
-    epic_pvp_set,
-    dal_rends,
-    warblade_of_the_hakkari,
-    major_mojo_infusion,
-    battlegear_of_heroism,
-    the_defilers_resolution,
-    battlegear_of_wrath,
-    dreadnaughts_battlegear,
-    battlegear_of_undead_slaying
+    ragesteel,
+    wastewalker,
+    doomplate,
+
 };
+
+/* enum class Gem_bonus
+{
+    none
+};
+
+
+struct Gem
+{
+    enum class Type
+    {
+    strength3, 
+    strength5,
+    strength4, 
+    strength6, 
+    strength8,
+    agility3, 
+    agility4, 
+    agility5,
+    agility6, 
+    agility10, 
+    AP20, 
+    AP24,
+    crit3,  
+    crit4,
+    crit5, 
+    crit6, 
+    crit8, 
+    crit10, 
+    crit12, 
+    hit4, 
+    hit6, 
+    hit8, 
+    hit10, 
+    hit12,
+    dmg3,  
+    agi12_critDmg3, 
+    haste_proc,
+    crit3_str3, 
+    crit4_str4, 
+    crit4_str5, 
+    crit5_str5,
+    empty,
+    none
+    };
+
+    Gem() = default;
+
+    explicit Gem(Type type) : type(type){};
+
+    Type type{};
+    Attributes attributes{};
+    Special_stats special_stats{};
+}; */
 
 struct Over_time_effect
 {
@@ -91,6 +136,8 @@ public:
     {
         none,
         extra_hit,
+        windfury_hit,
+        sword_spec,
         stat_boost,
         damage_physical,
         damage_magic,
@@ -100,7 +147,7 @@ public:
     Hit_effect() = default;
 
     Hit_effect(std::string name, Type type, Attributes attribute_boost, Special_stats special_stats_boost,
-               double damage, int duration, double probability, double attack_power_boost = 0, int n_targets = 1,
+               double damage, int duration, double cooldown, double probability, double attack_power_boost = 0, int n_targets = 1,
                int armor_reduction = 0, int max_stacks = 0, double ppm = 0.0, bool affects_both_weapons = false)
         : name(std::move(name))
         , type(type)
@@ -108,6 +155,7 @@ public:
         , special_stats_boost(special_stats_boost)
         , damage(damage)
         , duration(duration)
+        , cooldown(cooldown)
         , probability(probability)
         , attack_power_boost(attack_power_boost)
         , n_targets(n_targets)
@@ -116,9 +164,9 @@ public:
         , affects_both_weapons(affects_both_weapons)
         , max_stacks(max_stacks){};
 
-    inline Special_stats get_special_stat_equivalent(const Special_stats& special_stats) const
+    inline Special_stats get_special_stat_equivalent(const Special_stats& special_stats, double ap_multiplier) const
     {
-        return attribute_boost.convert_to_special_stats(special_stats) + special_stats_boost;
+        return attribute_boost.convert_to_special_stats(special_stats, ap_multiplier) + special_stats_boost;
     }
 
     std::string name;
@@ -127,6 +175,7 @@ public:
     Special_stats special_stats_boost;
     double damage;
     int duration;
+    double cooldown;
     double probability;
     double attack_power_boost;
     int n_targets;
@@ -134,6 +183,7 @@ public:
     double ppm;
     bool affects_both_weapons;
     int max_stacks;
+    double time_counter;
 };
 
 class Use_effect
@@ -164,9 +214,9 @@ public:
         , hit_effects(std::move(hit_effects))
         , over_time_effects(std::move(over_time_effects)){};
 
-    inline Special_stats get_special_stat_equivalent(const Special_stats& special_stats) const
+    inline Special_stats get_special_stat_equivalent(const Special_stats& special_stats, double ap_multiplier) const
     {
-        return attribute_boost.convert_to_special_stats(special_stats) + special_stats_boost;
+        return attribute_boost.convert_to_special_stats(special_stats, ap_multiplier) + special_stats_boost;
     }
 
     std::string name;
@@ -189,14 +239,30 @@ struct Enchant
         strength,
         strength7,
         strength9,
+        strength12,
+        strength15,
+        strength20,
         agility,
+        agility12,
         greater_agility,
         haste,
         crusader,
         minor_stats,
         major_stats,
+        ring_stats,
+        ring_damage,
         attack_power,
-        naxxramas
+        naxxramas,
+        damage,
+        ferocity,
+        greater_vengeance,
+        greater_blade,
+        exceptional_stats,
+        cobrahide,
+        nethercobra,
+        mongoose,
+        hit,
+        cats_swiftness
     };
 
     Enchant() = default;
@@ -240,6 +306,26 @@ struct Buff
     std::vector<Use_effect> use_effects{};
 };
 
+/* struct Gem
+{
+    Gem(std::string name, Attributes attributes, Special_stats special_stats, double bonus_damage = 0,
+         std::vector<Hit_effect> hit_effects = std::vector<Hit_effect>(),
+         std::vector<Use_effect> use_effects = std::vector<Use_effect>())
+        : name(std::move(name))
+        , attributes(attributes)
+        , special_stats(special_stats)
+        , bonus_damage(bonus_damage)
+        , hit_effects(std::move(hit_effects))
+        , use_effects(std::move(use_effects)){};
+
+    std::string name;
+    Attributes attributes;
+    Special_stats special_stats;
+    double bonus_damage;
+    std::vector<Hit_effect> hit_effects{};
+    std::vector<Use_effect> use_effects{};
+};
+ */
 struct Weapon_buff
 {
     Weapon_buff() = default;

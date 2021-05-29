@@ -87,6 +87,8 @@ public:
         }
     }
 
+    void add_gem(const Buff& buff) { buffs.emplace_back(buff); }
+
     void add_buff(const Buff& buff) { buffs.emplace_back(buff); }
 
     void add_weapon_buff(const Socket socket, const Weapon_buff& buff)
@@ -167,8 +169,10 @@ public:
     struct
     {
         bool booming_voice_talent{false};
-        int improved_battle_shout_talent{0};
+        int commanding_presence_talent{0};
+        int improved_berserker_stance{0};
         int sword_specialization{0};
+        int mace_specialization{0};
         int one_handed_weapon_specialization{0};
     } talents;
 
@@ -182,6 +186,7 @@ public:
     std::vector<Buff> buffs;
     std::vector<Set_bonus> set_bonuses;
     std::vector<Use_effect> use_effects;
+    //std::vector<Gem> gems;
     Race race;
     int level;
 };
@@ -189,7 +194,7 @@ public:
 Character character_setup(const Armory& armory, const std::string& race, const std::vector<std::string>& armor_vec,
                           const std::vector<std::string>& weapons_vec, const std::vector<std::string>& buffs_vec,
                           const std::vector<std::string>& talent_string, const std::vector<int>& talent_val,
-                          const std::vector<std::string>& ench_vec);
+                          const std::vector<std::string>& ench_vec, const std::vector<std::string>& gem_vec);
 
 Race get_race(const std::string& race);
 

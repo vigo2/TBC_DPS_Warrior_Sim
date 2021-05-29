@@ -307,18 +307,11 @@ int main()
     //    mult_weapons_vec.emplace_back("misplaced_servo_arm");
 
     std::vector<std::string> buff_vec;
-    buff_vec.emplace_back("rallying_cry");
-    buff_vec.emplace_back("dire_maul");
-    buff_vec.emplace_back("songflower");
-    buff_vec.emplace_back("warchiefs_blessing");
-    buff_vec.emplace_back("spirit_of_zandalar");
-    buff_vec.emplace_back("sayges_fortune");
     buff_vec.emplace_back("windfury_totem");
     buff_vec.emplace_back("blessing_of_kings");
     buff_vec.emplace_back("dense_stone_off_hand");
     buff_vec.emplace_back("elemental_stone_main_hand");
     buff_vec.emplace_back("battle_shout");
-    //    buff_vec.emplace_back("battle_shout_aq");
     //    buff_vec.emplace_back("strength_of_earth_totem");
     //    buff_vec.emplace_back("grace_of_air_totem");
 
@@ -328,6 +321,8 @@ int main()
     ench_vec.emplace_back("m+15 strength");
     //    ench_vec.emplace_back("mcrusader");
     ench_vec.emplace_back("ocrusader");
+
+    std::vector<std::string> gem_vec;
 
     std::string race = "orc";
 
@@ -339,7 +334,7 @@ int main()
         "use_overpower", "use_slam", "use_sweeping_strikes", "multi_target_mode",
         //        "wep_strengths",
         //        "fungal_bloom",
-        "full_polarity",
+        "full_polarity", "ferocious_inspiration",
         //        "item_strengths",
         "wep_strengths", "battle_squawk"};
 
@@ -376,6 +371,7 @@ int main()
         "slam_rage_dd",
         "full_polarity_dd",
         "battle_squawk_dd",
+        "ferocious_inspiration_dd",
         "max_optimize_time_dd",
     };
 
@@ -385,27 +381,28 @@ int main()
 
     std::vector<std::string> talents_string{
         "improved_heroic_strike_talent",
-        "improved_rend_talent",
-        "tactical_mastery_talent",
         "anger_management_talent",
         "deep_wounds_talent",
         "impale_talent",
         "cruelty_talent",
         "unbridled_wrath_talent",
-        "improved_battle_shout_talent",
+        "commanding_presence_talent",
         "dual_wield_specialization_talent",
         "improved_execute_talent",
         "enrage_talent",
-        "death_wish_talent",
+        "sweeping_strike_talent",
         "flurry_talent",
         "bloodthirst_talent",
-        "sweeping_strikes_talent",
-        "improved_slam_talent",
+        "weapon_mastery_talent",
+        "precision_talent",
+        "improved_whirlwind_talent",
+        "improved_berserker_stance_talent",
+        "rampage_talent"
     };
 
-    std::vector<int> talents_val{3, 3, 5, 1, 3, 2, 5, 5, 5, 5, 2, 5, 1, 5, 1, 1, 5};
+    std::vector<int> talents_val{3, 1, 3, 2, 5, 5, 5, 5, 2, 5, 1, 5, 1, 2, 3, 1, 5, 1};
 
-    Sim_input_mult sim_input_mult{{race},      mult_armor_vec,       mult_weapons_vec,  buff_vec,       ench_vec,
+    Sim_input_mult sim_input_mult{{race},      mult_armor_vec,       mult_weapons_vec,  buff_vec,       ench_vec, gem_vec,
                                   sim_options, float_options_string, float_options_val, talents_string, talents_val};
 
     Sim_interface sim_interface{};

@@ -19,7 +19,7 @@ enum class Damage_source
     whirlwind,
     hamstring,
     deep_wounds,
-    item_hit_effects
+    item_hit_effects,
 };
 
 struct Damage_instance
