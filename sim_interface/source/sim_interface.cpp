@@ -1007,7 +1007,7 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
                 char_minus.total_special_stats.critical_strike -= 2;
                 Stat_weight crit =
                     compute_stat_weight(simulator, char_plus, char_minus, "crit", 1, 2, dps_mean, dps_sample_std);
-                stat_weights.emplace_back("1%Crit " + std::to_string(crit.dps_plus) + " " +
+                stat_weights.emplace_back("1%Crit (22.08 Crit rating) " + std::to_string(crit.dps_plus) + " " +
                                           std::to_string(crit.std_dps_plus) + " " + std::to_string(crit.dps_minus) +
                                           " " + std::to_string(crit.std_dps_minus));
             }
@@ -1020,7 +1020,7 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
                 char_minus.total_special_stats.expertise -= 4;
                 Stat_weight expertise =
                     compute_stat_weight(simulator, char_plus, char_minus, "expertise", 1, 1, dps_mean, dps_sample_std);
-                stat_weights.emplace_back("1%Expertise " + std::to_string(expertise.dps_plus) + " " +
+                stat_weights.emplace_back("1%Expertise (4 Expertise) " + std::to_string(expertise.dps_plus) + " " +
                                           std::to_string(expertise.std_dps_plus) + " " + std::to_string(expertise.dps_minus) + " " +
                                           std::to_string(expertise.std_dps_minus));
             }
@@ -1033,7 +1033,7 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
                 char_minus.total_special_stats.hit -= 1;
                 Stat_weight hit =
                     compute_stat_weight(simulator, char_plus, char_minus, "hit", 1, 1, dps_mean, dps_sample_std);
-                stat_weights.emplace_back("1%Hit " + std::to_string(hit.dps_plus) + " " +
+                stat_weights.emplace_back("1%Hit (15.77 Hit rating)" + std::to_string(hit.dps_plus) + " " +
                                           std::to_string(hit.std_dps_plus) + " " + std::to_string(hit.dps_minus) + " " +
                                           std::to_string(hit.std_dps_minus));
             }
@@ -1045,7 +1045,7 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
                 char_minus.total_special_stats.haste = (char_minus.total_special_stats.haste + 1) / 1.1 - 1;
                 Stat_weight hit =
                     compute_stat_weight(simulator, char_plus, char_minus, "haste", 1, 10, dps_mean, dps_sample_std);
-                stat_weights.emplace_back("1%Haste " + std::to_string(hit.dps_plus) + " " +
+                stat_weights.emplace_back("1%Haste (15.77 Haste rating) " + std::to_string(hit.dps_plus) + " " +
                                           std::to_string(hit.std_dps_plus) + " " + std::to_string(hit.dps_minus) + " " +
                                           std::to_string(hit.std_dps_minus));
             }

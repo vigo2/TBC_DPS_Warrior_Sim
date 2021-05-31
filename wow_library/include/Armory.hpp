@@ -78,7 +78,10 @@ struct Buffs
                           0, 15, 120, true}}};
 
     Weapon_buff dense_stone{"dense_stone", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0}, 8};
-    Buff adamantite_stone{"adamantite_stone", Attributes{0.0, 0.0}, Special_stats{0.63, 0.0, 0.0}, 12};
+    // Adamantite stone for wep damage and for crit
+    Weapon_buff adamantite_stone_damage{"adamantite_stone_damage", Attributes{0.0, 0.0}, Special_stats{0.63, 0.0, 0.0}, 12};
+    Buff adamantite_stone_crit{"adamantite_stone_crit", Attributes{0.0, 0.0}, Special_stats{0.63, 0.0, 0.0}};
+    //
     Buff elemental_stone{"elemental_stone", Attributes{0.0, 0.0}, Special_stats{1.26, 0.0, 0.0}};
     Buff consecrated_sharpening_stone{"consecrated_sharpening_stone", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 100.0}};
 };
