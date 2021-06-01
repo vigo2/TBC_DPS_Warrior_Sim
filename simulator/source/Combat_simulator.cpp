@@ -119,6 +119,12 @@ void Combat_simulator::set_config(const Combat_simulator_config& new_config)
                                                  false});
     }
 
+    if (config.enable_blood_fury)
+    {
+        use_effects_all_.emplace_back(
+            Use_effect{"Blood_fury", Use_effect::Effect_socket::unique, {}, {0, 0, 282}, 0, 15, 120, true});
+    }
+
     if (config.essence_of_the_red_)
     {
         over_time_effects_.push_back(essence_of_the_red);
@@ -1308,14 +1314,6 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
         use_effects_all.push_back(use_effect);
     }
 
-    if (config.enable_blood_fury)
-    {
-        // TODO need strength multiplier to make this more accurate
-        double ap_boost =
-            character.total_attributes.convert_to_special_stats(character.total_special_stats, character.talents.improved_berserker_stance * 0.02 + 1).attack_power * 0.25;
-        use_effects_all.emplace_back(
-            Use_effect{"Blood_fury", Use_effect::Effect_socket::unique, {}, {0, 0, ap_boost}, 0, 15, 120, true});
-    }
     
     // if (config.talents.improved_berserker_stance > 0)
     // {
@@ -1888,13 +1886,7 @@ std::vector<std::pair<double, Use_effect>> Combat_simulator::get_use_effect_orde
     {
         use_effects_all.push_back(use_effect);
     }
-    if (config.enable_blood_fury)
-    {
-        double ap_boost =
-            character.total_attributes.convert_to_special_stats(character.total_special_stats, character.talents.improved_berserker_stance * 0.02 + 1).attack_power * 0.25;
-        use_effects_all.emplace_back(
-            Use_effect{"Blood_fury", Use_effect::Effect_socket::unique, {}, {0, 0, ap_boost}, 0, 15, 120, true});
-    }
+
     double ap_equiv{};
     if (character.is_dual_wield())
     {
