@@ -1690,7 +1690,10 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
                         rage -= 20;
                         crit_for_rampage = false;
                         rampage_active = true;
-                        rampage_stacks = 1;
+                        if (rampage_stacks < 1)
+                        {
+                            rampage_stacks = 1;
+                        }
                         simulator_cout("Rampage!");
                         simulator_cout("Current rage: ", int(rage));
                     }

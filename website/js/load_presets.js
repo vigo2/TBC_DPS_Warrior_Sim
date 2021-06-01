@@ -85,9 +85,21 @@ function load_naxxgear() {
         "gauntlets_of_annihilation", "girdle_of_the_mentor", "legplates_of_carnage",
         "chromatic_boots", "quick_strike_ring", "band_of_unnatural_forces",
         "kiss_of_the_spider", "badge_of_the_swarmguard", "nerubian_slavemaker"];
-    let selected_weapons = ["gressil_dawn_of_ruin", "the_hungering_cold", "might_of_menethil"];
+    let selected_weapons = ["gressil_dawn_of_ruin", "the_hungering_cold"];
     let selected_enchants = ["+8 strength", "naxxramas", "+3 agility", "+4 stats", "+9 strength",
-        "+15 agility", "+8 strength", "+7 agility", "crusader", "crusader", "+4 stats", "+4 stats"];
+        "+15 agility", "+8 strength", "+7 agility", "crusader", "crusader", "ring_1", "ring_2"];
+    select_prebis(selected_items, selected_weapons, selected_enchants);
+}
+
+function load_preraidbis() {
+    let selected_items = ["mask_of_the_deceiver", "choker_of_vile_intent", "ragesteel_shoulders",
+        "vengeance_wrap", "gladiators_plate_chestpiece", "black_felsteel_bracers",
+        "fel_leather_gloves", "deathforge_girdle", "midnight_legguards",
+        "fel_leather_boots", "band_of_unnatural_forces", "ring_of_arathi_warlords",
+        "bloodlust_brooch", "hourglass_of_the_unraveller", "mamas_insurance"];
+    let selected_weapons = ["dragonmaw", "gladiators_slicer", "lionheart_champion"];
+    let selected_enchants = ["ferocity", "greater_vengeance", "+12 agility", "+6 stats", "+12 strength",
+        "+15 strength", "nethercobra", "cats_swiftness", "mongoose", "mongoose", "ring_1", "ring_2"];
     select_prebis(selected_items, selected_weapons, selected_enchants);
 }
 
@@ -99,78 +111,18 @@ function load_naxxgearmult() {
     "kiss_of_the_spider", "badge_of_the_swarmguard", "nerubian_slavemaker"];
     let selected_weapons = ["gressil_dawn_of_ruin", "the_hungering_cold"];
     let selected_enchants = ["+8 strength", "naxxramas", "+3 agility", "+4 stats", "+9 strength",
-    "+15 agility", "+8 strength", "+7 agility", "crusader", "crusader", "+4 stats", "+4 stats"];
+    "+15 agility", "+8 strength", "+7 agility", "crusader", "crusader", "ring_1", "ring_2"];
     select_prebis_mult(selected_items, selected_weapons, selected_enchants);
 }
 
-function load_p5pvebismult() {
-    let selected_items = ["lionheart_helm", "barbed_choker", "mantle_of_wicked_revenge",
-        "cloak_of_the_fallen_god", "breastplate_of_annihilation", "hive_defiler_wristguards",
-        "gauntlets_of_annihilation", "onslaught_girdle", "conquerors_legguards",
-        "chromatic_boots", "quick_strike_ring", "circle_of_applied_force",
-        "jom_gabbar", "badge_of_the_swarmguard", "crossbow_of_imminent_doom"];
-    let selected_weapons = ["chromatically_tempered_sword", "maladath"];
-    let selected_enchants = ["+8 strength", "+30 attack_power", "+3 agility", "+4 stats", "+9 strength",
-        "+7 strength", "+8 strength", "+7 agility", "crusader", "crusader", "+4 stats", "+4 stats"];
-    select_prebis_mult(selected_items, selected_weapons, selected_enchants);
-}
-
-function load_p6pvebis() {
-    let selected_items = ["lionheart_helm", "stormrages_talisman_of_seething", "conquerors_spaulders",
-        "shroud_of_dominion", "plated_abomination_ribcage", "hive_defiler_wristguards",
-        "gauntlets_of_annihilation", "girdle_of_the_mentor", "leggings_of_carnage",
-        "chromatic_boots", "quick_strike_ring", "band_of_unnatural_forces",
-        "kiss_of_the_spider", "badge_of_the_swarmguard", "nerubian_slavemaker"];
-    let selected_weapons = ["the_hungering_cold", "iblis_blade_of_the_fallen_seraph", "might_of_menethil"];
-    let selected_enchants = ["+8 strength", "naxxramas", "+3 agility", "+4 stats", "+9 strength",
-        "+15 agility", "+8 strength", "+7 agility", "crusader", "crusader", "+4 stats", "+4 stats"];
-    select_prebis(selected_items, selected_weapons, selected_enchants);
-}
-
-function load_p5pvebis() {
-    let selected_items = ["lionheart_helm", "barbed_choker", "mantle_of_wicked_revenge",
-        "cloak_of_the_fallen_god", "breastplate_of_annihilation", "hive_defiler_wristguards",
-        "gauntlets_of_annihilation", "onslaught_girdle", "conquerors_legguards",
-        "chromatic_boots", "quick_strike_ring", "circle_of_applied_force",
-        "jom_gabbar", "badge_of_the_swarmguard", "crossbow_of_imminent_doom"];
-    let selected_weapons = ["chromatically_tempered_sword", "maladath", "bonereavers_edge"];
-    let selected_enchants = ["+8 strength", "+30 attack_power", "+3 agility", "+4 stats", "+9 strength",
-        "+7 strength", "+8 strength", "+7 agility", "crusader", "crusader", "+4 stats", "+4 stats"];
-    select_prebis(selected_items, selected_weapons, selected_enchants);
-}
-
-function load_p4pvebis() {
-    let selected_items = ["lionheart_helm", "the_eye_of_hakkar", "drake_talon_pauldrons",
-        "puissant_cape", "savage_gladiator_chain", "wristguards_of_stability",
-        "flameguard_gauntlets", "onslaught_girdle", "legguards_of_the_fallen_crusader",
-        "chromatic_boots", "quick_strike_ring", "circle_of_applied_force",
-        "diamond_flask", "hand_of_justice", "strikers_mark"];
-    let selected_weapons = ["chromatically_tempered_sword", "maladath", "bonereavers_edge"];
-    let selected_enchants = ["+8 strength", "+30 attack_power", "+3 agility", "+4 stats", "+9 strength",
-        "+7 strength", "+8 strength", "+7 agility", "crusader", "crusader", "+4 stats", "+4 stats"];
-    select_prebis(selected_items, selected_weapons, selected_enchants);
-}
-
-function load_p3pvebis() {
-    let selected_items = ["lionheart_helm", "onyxia_tooth_pendant", "drake_talon_pauldrons",
-        "puissant_cape", "savage_gladiator_chain", "wristguards_of_stability",
-        "flameguard_gauntlets", "onslaught_girdle", "legguards_of_the_fallen_crusader",
-        "chromatic_boots", "quick_strike_ring", "circle_of_applied_force",
-        "diamond_flask", "hand_of_justice", "strikers_mark"];
-    let selected_weapons = ["chromatically_tempered_sword", "maladath", "bonereavers_edge"];
-    let selected_enchants = ["+8 strength", "shoulder", "+3 agility", "+4 stats", "+9 strength",
-        "+7 strength", "+8 strength", "+7 agility", "crusader", "crusader", "+4 stats", "+4 stats"];
-    select_prebis(selected_items, selected_weapons, selected_enchants);
-}
-
-function load_p1prebis() {
-    let selected_items = ["lionheart_helm", "mark_of_fordring", "truestrike_shoulders",
-        "cape_of_the_black_baron", "savage_gladiator_chain", "battleborn_armbraces",
-        "devilsaur_gauntlets", "omokks_girth_restrainer", "devilsaur_leggings",
-        "battlechasers_greaves", "magnis_will", "blackstone_ring",
-        "blackhands_breadth", "hand_of_justice", "satyrs_bow"];
-    let selected_weapons = ["dal_rends_sacred_charge", "dal_rends_tribal_guardian", "treants_bane"];
-    let selected_enchants = ["+8 strength", "shoulder", "+3 agility", "+4 stats", "+9 strength",
-        "+7 strength", "+8 strength", "boots", "crusader", "crusader", "+4 stats", "+4 stats"];
-    select_prebis(selected_items, selected_weapons, selected_enchants);
+function load_preraidbismult() {
+    let selected_items = ["mask_of_the_deceiver", "choker_of_vile_intent", "ragesteel_shoulders",
+        "vengeance_wrap", "gladiators_plate_chestpiece", "black_felsteel_bracers",
+        "fel_leather_gloves", "deathforge_girdle", "midnight_legguards",
+        "fel_leather_boots", "band_of_unnatural_forces", "ring_of_arathi_warlords",
+        "bloodlust_brooch", "hourglass_of_the_unraveller", "mamas_insurance"];
+    let selected_weapons = ["dragonmaw", "gladiators_slicer", "lionheart_champion"];
+    let selected_enchants = ["ferocity", "greater_vengeance", "+12 agility", "+6 stats", "+12 strength",
+        "+15 strength", "nethercobra", "cats_swiftness", "mongoose", "mongoose", "ring_1", "ring_2"];
+    select_prebismult(selected_items, selected_weapons, selected_enchants);
 }
