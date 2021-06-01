@@ -1615,6 +1615,13 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
                         mortal_strike(weapons[0], special_stats, rage, damage_sources, flurry_charges, rampage_stacks, rampage_active);
                     }
                 }
+                if (use_bloodthirst_ && config.combat.use_bt_in_exec_phase)
+                {
+                    if (time_keeper_.blood_thirst_cd < 0.0 && time_keeper_.global_cd < 0 && rage > 30)
+                    {
+                        bloodthirst(weapons[0], special_stats, rage, damage_sources, flurry_charges, rampage_stacks, rampage_active);
+                    }
+                }
                 if (time_keeper_.global_cd < 0 && rage > execute_rage_cost_)
                 {
                     execute(weapons[0], special_stats, rage, damage_sources, flurry_charges, rampage_stacks, rampage_active);
@@ -1636,13 +1643,6 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
                             ability_queue_manager.queue_heroic_strike();
                             simulator_cout("Heroic strike activated");
                         }
-                    }
-                }
-                if (use_bloodthirst_ && config.combat.use_bt_in_exec_phase)
-                {
-                    if (time_keeper_.blood_thirst_cd < 0.0 && time_keeper_.global_cd < 0 && rage > 30)
-                    {
-                        bloodthirst(weapons[0], special_stats, rage, damage_sources, flurry_charges, rampage_stacks, rampage_active);
                     }
                 }
             }
