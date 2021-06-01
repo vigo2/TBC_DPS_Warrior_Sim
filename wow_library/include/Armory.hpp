@@ -127,6 +127,8 @@ struct Armory
 {
     std::vector<Armor> helmet_t
             {
+                {"mask_of_the_deceiver", Attributes{0.0, 32.0}, Special_stats{0.0, 1.0145846544071022, 64.0, 0, 0.0}, Socket::head}, 
+                {"cowl_of_beastly_rage", Attributes{29.0, 26.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.0}, Socket::head}, 
                 {"warbringer_battle-helm", Attributes{45.0, 0.0}, Special_stats{1.0869565217391306, 0.8877615726062144, 0.0, 0, 0.0}, Socket::head},
                 {"wastewalker_helm", Attributes{0.0, 0.0}, Special_stats{0.996376811594203, 1.14140773620799, 56.0, 0, 0.0}, Socket::head}, 
                 {"helm_of_the_claw", Attributes{0.0, 25.0}, Special_stats{0.0, 0.8877615726062144, 66.0, 0, 0.0}, Socket::head}, 
