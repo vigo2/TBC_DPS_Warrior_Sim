@@ -3,7 +3,7 @@
 
 This is classic warrior fury sim that is ported to TBC,
 the mechanics used in the simulator can be found in:
-https://wowwiki-archive.fandom.com/wiki/Attack_table
+https://github.com/magey/tbc-warrior/wiki/Attack-table
 
 # Website
 https://wow-fury-sim.herokuapp.com/
