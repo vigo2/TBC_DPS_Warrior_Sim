@@ -6,7 +6,7 @@ the mechanics used in the simulator can be found in:
 https://github.com/magey/tbc-warrior/wiki/Attack-table
 
 # Website
-https://wow-fury-sim.herokuapp.com/
+https://tbc-dps-warrior-sim.herokuapp.com/
 
 # Discord
 Feel free to join the Discord for Discussions, bug-reporting, if you have a wish of what you want to be added next, etc.
@@ -23,10 +23,13 @@ https://docs.microsoft.com/en-us/windows/wsl/install-win10
 ## Install Docker
 https://docs.docker.com/docker-for-windows/install/
 
+## Install Node.js
+https://nodejs.org/en/
+
 ## Compile and boot
 1. Start powershell
 2. .\docker_cmake.ps1
-3. .\docker_run.ps1
+3. node index.js
 
 ## Open in browser
-http://localhost:49160/
+http://127.0.0.1:5000/
