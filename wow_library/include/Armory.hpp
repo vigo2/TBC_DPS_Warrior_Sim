@@ -575,7 +575,7 @@ struct Armory
     std::vector<Weapon> daggers_t
             {
                 {"malchazeen", Attributes{0.0, 0.0}, Special_stats{0.0, 0.9512213682368160, 50.0, 0, 0.0}, 1.8, 132, 199, Weapon_socket::one_hand, Weapon_type::dagger},
-                {"the_night_blade", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0},1.8, 117.0, 176.0, Weapon_socket::one_hand, Weapon_type::dagger, {{"the_night_blade", Hit_effect::Type::reduce_armor, {}, {}, 0, 10, 0, 2.0*1.8/60.0,0, 1, 700, 3}}},
+                {"the_night_blade", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0},1.8, 117.0, 176.0, Weapon_socket::one_hand, Weapon_type::dagger, {{"the_night_blade", Hit_effect::Type::reduce_armor, {}, {}, 0, 10, 0, 2.0*1.8/60.0,0, 1, 435, 3}}},
             };
 
     std::vector<Weapon> maces_t
