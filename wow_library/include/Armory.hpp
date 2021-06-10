@@ -520,7 +520,7 @@ struct Armory
                 {"endbringer", Attributes{29.0, 0.0}, Special_stats{2.0380434782608696, 0.0, 0.0, 0, 0.0}, 3.4, 253, 381, Weapon_socket::two_hand, Weapon_type::sword}, 
                 {"illidari-bane_claymore", Attributes{0.0, 0.0}, Special_stats{1.6757246376811596, 0.0, 0.0, 0, 0.0}, 3.7, 276, 414, Weapon_socket::two_hand, Weapon_type::sword}, 
                 {"illidari-bane_claymore_demons", Attributes{0.0, 0.0}, Special_stats{1.6757246376811596, 0.0, 150.0, 0, 0.0}, 3.7, 276, 414, Weapon_socket::two_hand, Weapon_type::sword},
-                {"bonereavers_edge", Attributes{0.0, 0.0}, Special_stats{0.634057971, 0.0, 0.0},3.4, 206.0, 310.0, Weapon_socket::two_hand, Weapon_type::sword, {{"bonereavers_edge", Hit_effect::Type::reduce_armor, {}, {}, 0, 10, 0, 2.0*3.4/60.0,0, 1, 700, 3}}}, 
+                {"bonereavers_edge", Attributes{0.0, 0.0}, Special_stats{0.634057971, 0.0, 0.0},3.4, 206.0, 310.0, Weapon_socket::two_hand, Weapon_type::sword, {{"bonereavers_edge", Hit_effect::Type::reduce_armor, {}, {}, 0, 10, 0, 2.0*3.4/60.0, 0, 1, 700, 3}}}, 
             };
 
     std::vector<Weapon> two_handed_axes_polearm_t
@@ -575,7 +575,7 @@ struct Armory
     std::vector<Weapon> daggers_t
             {
                 {"malchazeen", Attributes{0.0, 0.0}, Special_stats{0.0, 0.9512213682368160, 50.0, 0, 0.0}, 1.8, 132, 199, Weapon_socket::one_hand, Weapon_type::dagger},
-                {"the_night_blade", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0},1.8, 117.0, 176.0, Weapon_socket::one_hand, Weapon_type::dagger, {{"the_night_blade", Hit_effect::Type::reduce_armor, {}, {}, 0, 10, 0, 2.0*1.8/60.0,0, 1, 435, 3}}},
+                {"the_night_blade", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0},1.8, 117.0, 176.0, Weapon_socket::one_hand, Weapon_type::dagger, {{"the_night_blade", Hit_effect::Type::reduce_armor, {}, {}, 0, 10, 0, 2.0*1.8/60.0, 0, 1, 435, 3}}},
             };
 
     std::vector<Weapon> maces_t
@@ -583,7 +583,7 @@ struct Armory
                 // main_hand / one_hand
                 {"dragonmaw", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.0}, 2.7, 172, 320, Weapon_socket::main_hand, Weapon_type::mace, {{"dragonmaw", Hit_effect::Type::stat_boost, {}, {0, 0, 0, 0, .134}, 0, 10, 0, 2.7 / 60}}}, 
                 {"fools_bane", Attributes{0.0, 0.0}, Special_stats{1.0869565217391306, 0.0, 30.0, 0, 0.0}, 2.6, 159, 296, Weapon_socket::main_hand, Weapon_type::mace},
-                {"drakefist_hammer", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.0}, 2.7, 159, 296, Weapon_socket::main_hand, Weapon_type::mace, {{"drakefist", Hit_effect::Type::stat_boost, {}, {0, 0, 0, 0, .134}, 0, 10, 0, 2.7 / 60}}}, 
+                {"drakefist_hammer", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.0}, 2.7, 159, 296, Weapon_socket::main_hand, Weapon_type::mace, {{"drakefist_hammer", Hit_effect::Type::stat_boost, {}, {0, 0, 0, 0, .134}, 0, 10, 0, 2.7 / 60}}}, 
                 {"runic_hammer", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 50.0, 0, 0.0}, 2.4, 140, 261, Weapon_socket::one_hand, Weapon_type::mace}, 
                 {"bloodskull_destroyer", Attributes{0.0, 0.0}, Special_stats{0.9510869565217392, 0.0, 22.0, 0, 0.0}, 2.6, 130, 243, Weapon_socket::one_hand, Weapon_type::mace}, 
                 {"terokks_nightmace", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.00, 0, 0, 0, 0, 0, 0, 4.819277108433735}, 2.0, 100, 187, Weapon_socket::one_hand, Weapon_type::mace}, 
