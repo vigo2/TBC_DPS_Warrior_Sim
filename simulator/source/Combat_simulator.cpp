@@ -964,7 +964,7 @@ void Combat_simulator::hit_effects(Weapon_sim& weapon, Weapon_sim& main_hand_wea
             case Hit_effect::Type::stat_boost:
                 simulator_cout("PROC: ", hit_effect.name, " stats increased for ", hit_effect.duration, "s");
                 buff_manager_.add(weapon.socket_name + "_" + hit_effect.name,
-                                  hit_effect.get_special_stat_equivalent(special_stats, ap_multiplier), hit_effect.duration);
+                                  hit_effect.get_special_stat_equivalent(special_stats, ap_multiplier + 1), hit_effect.duration);
                 break;
             case Hit_effect::Type::reduce_armor: {
                 if (current_armor_red_stacks_ < hit_effect.max_stacks)
