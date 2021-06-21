@@ -15,16 +15,29 @@ constexpr double rage_from_damage_taken(double damage)
     return damage * 5.0 / 2.0 / 274.7;
 }
 
-constexpr double rage_generation(double damage, Socket weapon_hand, double swing_speed)
+constexpr double rage_generation(double damage, Socket weapon_hand, double swing_speed, const Combat_simulator::Hit_result hit_result)
 {
-    
-    if (weapon_hand == Socket::main_hand)
+    if (hit_result == Combat_simulator::Hit_result::crit)
     {
-        return damage * rage_factor + (3.5 * swing_speed / 2);
+        if (weapon_hand == Socket::main_hand)
+        {
+            return damage * rage_factor + (7 * swing_speed / 2);
+        }
+        else
+        {
+            return damage * rage_factor + (3.5 * swing_speed / 2);
+        }
     }
     else
     {
-        return damage * rage_factor + (1.75 * swing_speed / 2);
+        if (weapon_hand == Socket::main_hand)
+        {
+            return damage * rage_factor + (3.5 * swing_speed / 2);
+        }
+        else
+        {
+            return damage * rage_factor + (1.75 * swing_speed / 2);
+        }
     }
     
 }
@@ -470,7 +483,7 @@ void Combat_simulator::compute_hit_table(const Special_stats& special_stats, Soc
         base_miss_chance = 5.0;
     }
     double dw_miss_chance =
-        (weapon_socket == Weapon_socket::two_hand) ? base_miss_chance : (base_miss_chance * 0.8 + 20.0);
+        (weapon_socket == Weapon_socket::two_hand) ? base_miss_chance : (base_miss_chance + 19.0);
     double corrected_hit = special_stats.hit - hit_penalty;
     double miss_chance = dw_miss_chance - std::max(corrected_hit, 0.0);
     miss_chance = std::max(miss_chance, 0.0);
@@ -538,9 +551,13 @@ void Combat_simulator::compute_hit_table(const Special_stats& special_stats, Soc
     }
 
     double glancing_penalty;
-    if (level_difference > 0)
+    if (level_difference == 3)
     {
-        glancing_penalty = 25.0 - (15.0 - level_difference * 5);
+        glancing_penalty = 25.0;
+    }
+    else if (level_difference == 2)
+    {
+        glancing_penalty = 15;
     }
     else
     {
@@ -932,8 +949,8 @@ void Combat_simulator::hit_effects(Weapon_sim& weapon, Weapon_sim& main_hand_wea
                 break;
             case Hit_effect::Type::sword_spec: {
                     simulator_cout("PROC: extra hit from: ", hit_effect.name);
-                    sword_spec_hit(main_hand_weapon, special_stats, rage, damage_sources,
-                                        flurry_charges, rampage_stacks, rampage_active, hit_effect.attack_power_boost);
+                    swing_weapon(main_hand_weapon, main_hand_weapon, special_stats, rage, damage_sources,
+                                        flurry_charges, rampage_stacks, rampage_active, hit_effect.attack_power_boost, false, true);
                 break;
             }
             case Hit_effect::Type::damage_magic: {
@@ -964,20 +981,38 @@ void Combat_simulator::hit_effects(Weapon_sim& weapon, Weapon_sim& main_hand_wea
             case Hit_effect::Type::stat_boost:
                 simulator_cout("PROC: ", hit_effect.name, " stats increased for ", hit_effect.duration, "s");
                 buff_manager_.add(weapon.socket_name + "_" + hit_effect.name,
-                                  hit_effect.get_special_stat_equivalent(special_stats, ap_multiplier + 1), hit_effect.duration);
+                                hit_effect.get_special_stat_equivalent(special_stats, ap_multiplier), hit_effect.duration);
                 break;
             case Hit_effect::Type::reduce_armor: {
-                if (current_armor_red_stacks_ < hit_effect.max_stacks)
+                if (hit_effect.name == "badge_of_the_swarmguard")
                 {
-                    recompute_mitigation_ = true;
-                    current_armor_red_stacks_++;
-                    armor_penetration_ = current_armor_red_stacks_ * hit_effect.armor_reduction;
-                    simulator_cout("PROC: ", hit_effect.name, ", current stacks: ", current_armor_red_stacks_);
+                    if (current_armor_red_stacks_ < hit_effect.max_stacks)
+                    {
+                        recompute_mitigation_ = true;
+                        current_armor_red_stacks_++;
+                        armor_penetration_badge_ = current_armor_red_stacks_ * hit_effect.armor_reduction;
+                        simulator_cout("PROC: ", hit_effect.name, ", current stacks: ", current_armor_red_stacks_);
+                    }
+                    else
+                    {
+                        simulator_cout("PROC: ", hit_effect.name,
+                                    ". At max stacks. Current stacks: ", current_armor_red_stacks_);
+                    }
                 }
                 else
                 {
-                    simulator_cout("PROC: ", hit_effect.name,
-                                   ". At max stacks. Current stacks: ", current_armor_red_stacks_);
+                    if (buff_manager_.arpen_stacks_counter < hit_effect.max_stacks)
+                    {
+                        buff_manager_.arpen_stacks_counter++;
+                        buff_manager_.modify_arpen_stacks(hit_effect, weapon.socket);
+                        simulator_cout("PROC: ", hit_effect.name, ", current stacks: ", buff_manager_.arpen_stacks_counter);
+                    }
+                    else
+                    {
+                        buff_manager_.modify_arpen_stacks(hit_effect, weapon.socket, true);
+                        simulator_cout("PROC: ", hit_effect.name,
+                                    ". At max stacks. Current stacks: ", buff_manager_.arpen_stacks_counter);
+                    }
                 }
             }
             break;
@@ -991,7 +1026,7 @@ void Combat_simulator::hit_effects(Weapon_sim& weapon, Weapon_sim& main_hand_wea
 
 void Combat_simulator::swing_weapon(Weapon_sim& weapon, Weapon_sim& main_hand_weapon, Special_stats& special_stats,
                                     double& rage, Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks, bool rampage_active,
-                                    double attack_power_bonus, bool is_extra_attack)
+                                    double attack_power_bonus, bool is_extra_attack, bool is_sword_spec)
 {
     std::vector<Hit_outcome> hit_outcomes{};
     hit_outcomes.reserve(2);
@@ -999,12 +1034,6 @@ void Combat_simulator::swing_weapon(Weapon_sim& weapon, Weapon_sim& main_hand_we
     if (weapon.socket == Socket::off_hand)
     {
         swing_damage *= dual_wield_damage_factor_;
-    }
-
-    // Reset swing timer only if it's not extra attack
-    if (!is_extra_attack)
-    {
-        weapon.internal_swing_timer = weapon.swing_speed / (1 + special_stats.haste);
     }
 
     // Check if heroic strike should be performed
@@ -1094,11 +1123,11 @@ void Combat_simulator::swing_weapon(Weapon_sim& weapon, Weapon_sim& main_hand_we
             if (config.talents.endless_rage)
             {
                 rage += 1.25 * 
-                rage_generation(hit_outcomes[0].damage, weapon.socket, weapon.swing_speed);
+                rage_generation(hit_outcomes[0].damage, weapon.socket, weapon.swing_speed, hit_outcomes[0].hit_result);
             }
             else
             {
-                rage += rage_generation(hit_outcomes[0].damage, weapon.socket, weapon.swing_speed);
+                rage += rage_generation(hit_outcomes[0].damage, weapon.socket, weapon.swing_speed, hit_outcomes[0].hit_result);
             }
             
         }
@@ -1106,13 +1135,12 @@ void Combat_simulator::swing_weapon(Weapon_sim& weapon, Weapon_sim& main_hand_we
         {
             if (config.talents.endless_rage)
             {
-                rage += 0.75 * 1.25 *
-                    rage_generation(swing_damage * armor_reduction_factor_ * (1 + special_stats.damage_mod_physical), weapon.socket, weapon.swing_speed);
+                rage += 1.25 *
+                    rage_generation(swing_damage * armor_reduction_factor_ * (1 + special_stats.damage_mod_physical), weapon.socket, weapon.swing_speed, hit_outcomes[0].hit_result);
             }
             else
             {
-                rage += 0.75 *
-                    rage_generation(swing_damage * armor_reduction_factor_ * (1 + special_stats.damage_mod_physical), weapon.socket, weapon.swing_speed);
+                rage += rage_generation(swing_damage * armor_reduction_factor_ * (1 + special_stats.damage_mod_physical), weapon.socket, weapon.swing_speed, hit_outcomes[0].hit_result);
             }
             simulator_cout("Rage gained since the enemy dodged.");
         }
@@ -1174,61 +1202,67 @@ void Combat_simulator::swing_weapon(Weapon_sim& weapon, Weapon_sim& main_hand_we
             }
         }
     }
+
+    // Reset swing timer only if it's not extra attack or sword spec
+    if (!is_extra_attack || !is_sword_spec)
+    {
+        weapon.internal_swing_timer = weapon.swing_speed / (1 + special_stats.haste);
+    }
 }
 
-void Combat_simulator::sword_spec_hit(Weapon_sim& main_hand_weapon, Special_stats& special_stats,
-                                    double& rage, Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks, bool rampage_active,
-                                    double attack_power_bonus)
-{
-    double damage = main_hand_weapon.swing(special_stats.attack_power + attack_power_bonus);
-    auto hit_outcome = generate_hit(main_hand_weapon, damage, Hit_type::white, main_hand_weapon.socket, special_stats, damage_sources);
-    if (config.talents.endless_rage)
-    {
-        rage += 1.25 * 
-        rage_generation(hit_outcome.damage, main_hand_weapon.socket, main_hand_weapon.swing_speed);
-    }
-    else
-    {
-        rage += rage_generation(hit_outcome.damage, main_hand_weapon.socket, main_hand_weapon.swing_speed);
-    }
+// Deprecated as sword spec works similarly to extra attack on TBCC
+// void Combat_simulator::sword_spec_hit(Weapon_sim& main_hand_weapon, Special_stats& special_stats,
+//                                     double& rage, Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks, bool rampage_active,
+//                                     double attack_power_bonus)
+// {
+//     double damage = main_hand_weapon.swing(special_stats.attack_power + attack_power_bonus);
+//     auto hit_outcome = generate_hit(main_hand_weapon, damage, Hit_type::white, main_hand_weapon.socket, special_stats, damage_sources);
+//     if (config.talents.endless_rage)
+//     {
+//         rage += 1.25 * 
+//         rage_generation(hit_outcome.damage, main_hand_weapon.socket, main_hand_weapon.swing_speed, hit_outcome.hit_result);
+//     }
+//     else
+//     {
+//         rage += rage_generation(hit_outcome.damage, main_hand_weapon.socket, main_hand_weapon.swing_speed, hit_outcome.hit_result);
+//     }
 
-    if (hit_outcome.hit_result == Hit_result::dodge)
-    {
-        if (config.talents.endless_rage)
-        {
-            rage += 0.75 * 1.25 *
-                rage_generation(damage * armor_reduction_factor_ * (1 + special_stats.damage_mod_physical), main_hand_weapon.socket, main_hand_weapon.swing_speed);
-        }
-        else
-        {
-            rage += 0.75 *
-                rage_generation(damage * armor_reduction_factor_ * (1 + special_stats.damage_mod_physical), main_hand_weapon.socket, main_hand_weapon.swing_speed);
-        }
-        simulator_cout("Rage gained since the enemy dodged.");
-    }
+//     if (hit_outcome.hit_result == Hit_result::dodge)
+//     {
+//         if (config.talents.endless_rage)
+//         {
+//             rage += 1.25 *
+//                 rage_generation(damage * armor_reduction_factor_ * (1 + special_stats.damage_mod_physical), main_hand_weapon.socket, main_hand_weapon.swing_speed, hit_outcome.hit_result);
+//         }
+//         else
+//         {
+//             rage += rage_generation(damage * armor_reduction_factor_ * (1 + special_stats.damage_mod_physical), main_hand_weapon.socket, main_hand_weapon.swing_speed, hit_outcome.hit_result);
+//         }
+//         simulator_cout("Rage gained since the enemy dodged.");
+//     }
     
-    if (rage > 100.0)
-    {
-        rage_lost_capped_ += rage - 100.0;
-        rage = 100.0;
-    }
+//     if (rage > 100.0)
+//     {
+//         rage_lost_capped_ += rage - 100.0;
+//         rage = 100.0;
+//     }
 
-    simulator_cout("Current rage: ", int(rage));
-    manage_flurry_rampage(hit_outcome.hit_result, special_stats, flurry_charges, rampage_stacks, rampage_active, true);
-    damage_sources.add_damage(Damage_source::white_mh, hit_outcome.damage, time_keeper_.time);
+//     simulator_cout("Current rage: ", int(rage));
+//     manage_flurry_rampage(hit_outcome.hit_result, special_stats, flurry_charges, rampage_stacks, rampage_active, true);
+//     damage_sources.add_damage(Damage_source::white_mh, hit_outcome.damage, time_keeper_.time);
 
-    // Unbridled wrath
-    if (get_uniform_random(1) < (p_unbridled_wrath_ * main_hand_weapon.swing_speed / 60) && hit_outcome.hit_result != Hit_result::dodge && hit_outcome.hit_result != Hit_result::miss)
-    {
-        rage += 1;
-        if (rage > 100.0)
-        {
-            rage_lost_capped_ += rage - 100.0;
-            rage = 100.0;
-        }
-        simulator_cout("Unbridled wrath. Current rage: ", int(rage));
-    }
-}
+//     // Unbridled wrath
+//     if (get_uniform_random(1) < (p_unbridled_wrath_ * main_hand_weapon.swing_speed / 60) && hit_outcome.hit_result != Hit_result::dodge && hit_outcome.hit_result != Hit_result::miss)
+//     {
+//         rage += 1;
+//         if (rage > 100.0)
+//         {
+//             rage_lost_capped_ += rage - 100.0;
+//             rage = 100.0;
+//         }
+//         simulator_cout("Unbridled wrath. Current rage: ", int(rage));
+//     }
+// }
 
 void Combat_simulator::simulate(const Character& character, size_t n_simulations, double init_mean,
                                 double init_variance, size_t init_simulations)
@@ -1363,11 +1397,12 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
         }
 
         recompute_mitigation_ = true;
+        buff_manager_.arpen_stacks_counter = 0;
         current_armor_red_stacks_ = 0;
-        armor_penetration_ = 0;
+        armor_penetration_badge_ = 0;
         rage_spent_on_execute_ = 0;
 
-        int flurry_charges = 0;
+        int flurry_charges = 0; 
         bool crit_for_rampage = false;
         bool rampage_active = false;
         int rampage_stacks = 0;
@@ -1475,11 +1510,17 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
                 buff_manager_.need_to_recompute_hittables = false;
             }
 
+            if (buff_manager_.need_to_recompute_mitigation)
+            {
+                recompute_mitigation_ = true;
+                buff_manager_.need_to_recompute_mitigation = false;
+            }
+
             if (buff_manager_.reset_armor_reduction)
             {
                 recompute_mitigation_ = true;
                 current_armor_red_stacks_ = 0;
-                armor_penetration_ = 0;
+                armor_penetration_badge_ = 0;
                 buff_manager_.reset_armor_reduction = false;
             }
 
@@ -1493,20 +1534,20 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
             if (recompute_mitigation_)
             {
                 int target_armor =
-                    config.main_target_initial_armor_ - armor_reduction_from_spells_ - armor_penetration_ - special_stats.gear_armor_pen;
+                    config.main_target_initial_armor_ - armor_reduction_from_spells_ - armor_penetration_badge_ - special_stats.gear_armor_pen;
                 if (apply_delayed_armor_reduction)
                 {
                     target_armor -= armor_reduction_delayed_;
                 }
                 target_armor = std::max(target_armor, 0);
-                armor_reduction_factor_ = 1 - armor_mitigation(target_armor, config.main_target_level);
+                armor_reduction_factor_ = 1 - armor_mitigation(target_armor, 70);
                 simulator_cout("Target armor: ", target_armor, ". Mitigation factor: ", 1 - armor_reduction_factor_,
                                "%.");
                 if (config.multi_target_mode_)
                 {
-                    int extra_target_armor = config.extra_target_initial_armor_ - armor_penetration_;
+                    int extra_target_armor = config.extra_target_initial_armor_ - armor_penetration_badge_;
                     extra_target_armor = std::max(extra_target_armor, 0);
-                    armor_reduction_factor_add = 1 - armor_mitigation(extra_target_armor, config.extra_target_level);
+                    armor_reduction_factor_add = 1 - armor_mitigation(extra_target_armor, 70);
 
                     simulator_cout("Extra targets armor: ", extra_target_armor,
                                    ". Mitigation factor: ", 1 - armor_reduction_factor_add, "%.");

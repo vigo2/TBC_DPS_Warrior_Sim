@@ -278,7 +278,7 @@ public:
 
     void swing_weapon(Weapon_sim& weapon, Weapon_sim& main_hand_weapon, Special_stats& special_stats, double& rage,
                       Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks, bool rampage_active = false, double attack_power_bonus = 0,
-                      bool is_extra_attack = false);
+                      bool is_extra_attack = false, bool is_sword_spec = false);
    
     void sword_spec_hit(Weapon_sim& main_hand_weapon, Special_stats& special_stats, double& rage,
                       Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks, bool rampage_active = false, double attack_power_bonus = 0);
@@ -456,7 +456,7 @@ private:
     double armor_reduction_factor_{};
     double armor_reduction_factor_add{};
     int current_armor_red_stacks_{};
-    int armor_penetration_{};
+    int armor_penetration_badge_{};
     int armor_reduction_from_spells_{};
     int armor_reduction_delayed_{};
     bool recompute_mitigation_{false};

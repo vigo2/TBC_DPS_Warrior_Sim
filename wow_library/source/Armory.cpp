@@ -417,7 +417,7 @@ void Armory::compute_total_stats(Character& character) const
         total_special_stats.attack_power += total_special_stats.attack_power * ap_multiplier;
     }
 
-    total_special_stats += total_attributes.convert_to_special_stats(total_special_stats, character.talents.improved_berserker_stance * 0.02 + 1);
+    total_special_stats += total_attributes.convert_to_special_stats(total_special_stats, character.talents.improved_berserker_stance * 0.02);
     character.total_attributes = total_attributes.multiply(total_special_stats);
     character.total_special_stats = total_special_stats;
     character.use_effects = use_effects;

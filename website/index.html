@@ -409,9 +409,8 @@
             <p class="select-title">Quick-select:</p><br>
             <button onclick="load_naxxgear()">Naxx gear</button>
             <button onclick="load_preraidbis()">Babyhoof's Preraid "BiS"</button>
-            <!-- <button onclick="load_p4pvebis()">P4 PvE-BiS</button> -->
-            <!-- <button onclick="load_p5pvebis()">P5 PvE-BiS</button> -->
-            <!-- <button onclick="load_p6pvebis()">P6 PvE-BiS</button> -->
+            <button onclick="load_p1armsbis()">Babyhoof's P1 Arms BiS</button>
+            <button onclick="load_p1furybis()">Babyhoof's P1 Fury BiS</button>
             <br><br>
             <!--armor begin1-->
             <span class="left_select">helmet</span><span class="middle_select">neck</span><span class="right_select">shoulder</span><br>
@@ -885,9 +884,12 @@
                 <option value="the_planar_edge"> The Planar Edge</option>
                 <option value="warbringer"> Warbringer</option>
                 <option value="none" disabled> --- DAGGERS --- </option>
+                <option value="guile_of_khoraazi"> Guile of Khoraazi</option>
                 <option value="malchazeen"> Malchazeen</option>
-                <!-- <option value="the_night_blade"> The Night Blade</option> -->
+                <option value="retainers_blade"> Retainer's Blade</option>
+                <option value="the_night_blade"> The Night Blade</option>
                 <option value="none" disabled> --- MACES --- </option>
+                <option value="blackout_truncheon"> Blackout Truncheon</option>
                 <option value="bloodskull_destroyer"> Bloodskull Destroyer</option>
                 <option value="dragonmaw"> Dragonmaw</option>
                 <option value="drakefist_hammer"> Drakefist Hammer</option>
@@ -930,9 +932,12 @@
                 <option value="the_harvester_of_souls"> The Harvester of Souls</option>
                 <option value="warbringer"> Warbringer</option>
                 <option value="none" disabled> --- DAGGERS --- </option>
+                <option value="guile_of_khoraazi"> Guile of Khoraazi</option>
                 <option value="malchazeen"> Malchazeen</option>
-                <!-- <option value="the_night_blade"> The Night Blade</option> -->
+                <option value="retainers_blade"> Retainer's Blade</option>
+                <option value="the_night_blade"> The Night Blade</option>
                 <option value="none" disabled> --- MACES --- </option>
+                <option value="blackout_truncheon"> Blackout Truncheon</option>
                 <option value="bloodskull_destroyer"> Bloodskull Destroyer</option>
                 <option value="runic_hammer"> Runic Hammer</option>
                 <option value="terokks_nightmace"> Terokks Nightmace</option>
@@ -949,7 +954,7 @@
             <select id="two_hand_dd" class="weapon-select">
                 <option value="none" selected disabled></option>
                 <option value="none" disabled> --- TWO_HANDED_SWORDS --- </option>
-                <!-- <option value="bonereavers_edge"> Bonereaver's Edge</option> -->
+                <option value="bonereavers_edge"> Bonereaver's Edge</option>
                 <option value="despair"> Despair</option>
                 <option value="endbringer"> Endbringer</option>
                 <option value="gladiators_greatsword"> Gladiators Greatsword</option>
@@ -984,6 +989,7 @@
                 <option value="trident_of_the_outcast_tribe"> Trident of the Outcast Tribe</option>
                 <option value="none" disabled> --- TWO_HANDED_MACES --- </option>
                 <option value="deep_thunder"> Deep Thunder</option>
+                <option value="might_of_menethil"> Might of Menethil</option>
                 <option value="stormherald"> Stormherald</option>
                 <option value="thunder"> Thunder</option>
             </select>
@@ -995,10 +1001,10 @@
         <div id="armor_multiple" style="display:none">
 
             <p class="select-title">Quick-select:</p><br>
-            <!-- <button onclick="load_naxxgear()">Example where phase 1 "pre-BiS" items are examined</button>
-            <button onclick="load_p5pvebismult()">Load P5 PvE-BiS</button> -->
             <button onclick="load_naxxgearmult()">Load Naxx gear</button>
             <button onclick="load_preraidbismult()">Load Babyhoof's Preraid "BiS"</button>
+            <button onclick="load_p1armsbismult()">Load Babyhoof's P1 Arms BiS</button>
+            <button onclick="load_p1furybismult()">Load Babyhoof's P1 Fury BiS</button>
             <br>
             Add/remove items: <b>ctrl + left-click</b>.<br>
             Add all items in a slot: Select an item box then press <b> ctrl + a</b>.<br><br>
@@ -1392,9 +1398,12 @@
                 <option value="the_planar_edge"> The Planar Edge</option>
                 <option value="warbringer"> Warbringer</option>
                 <option value="none" disabled> --- DAGGERS --- </option>
+                <option value="guile_of_khoraazi"> Guile of Khoraazi</option>
                 <option value="malchazeen"> Malchazeen</option>
-                <!-- <option value="the_night_blade"> The Night Blade</option> -->
+                <option value="retainers_blade"> Retainer's Blade</option>
+                <option value="the_night_blade"> The Night Blade</option>
                 <option value="none" disabled> --- MACES --- </option>
+                <option value="blackout_truncheon"> Blackout Truncheon</option>
                 <option value="bloodskull_destroyer"> Bloodskull Destroyer</option>
                 <option value="dragonmaw"> Dragonmaw</option>
                 <option value="drakefist_hammer"> Drakefist Hammer</option>
@@ -1410,7 +1419,7 @@
             </select>
             <select id="two_hand_weapons_dd_mult" size="10" class="weapon-select" multiple>
                 <option value="none" disabled> --- TWO_HANDED_SWORDS --- </option>
-                <!-- <option value="bonereavers_edge"> Bonereaver's Edge</option> -->
+                <option value="bonereavers_edge"> Bonereaver's Edge</option>
                 <option value="despair"> Despair</option>
                 <option value="endbringer"> Endbringer</option>
                 <option value="gladiators_greatsword"> Gladiators Greatsword</option>
@@ -1445,6 +1454,7 @@
                 <option value="trident_of_the_outcast_tribe"> Trident of the Outcast Tribe</option>
                 <option value="none" disabled> --- TWO_HANDED_MACES --- </option>
                 <option value="deep_thunder"> Deep Thunder</option>
+                <option value="might_of_menethil"> Might of Menethil</option>
                 <option value="stormherald"> Stormherald</option>
                 <option value="thunder"> Thunder</option>
             </select>
@@ -4212,7 +4222,7 @@
                 ('roasted_clefthoof', 
                 ['blessed_sunfruit',
                 'spicy_hot_talbuk', 'grilled_mudfish',
-                'ravager_dog', 'charred_bear_kabobs'] )">
+                'ravager_dog', 'charred_bear_kabobs'] )" checked>
             <label for="roasted_clefthoof"> Roasted Clefthoof</label><br>
 
             <input type="checkbox" id="spicy_hot_talbuk" onclick=
@@ -4220,7 +4230,7 @@
                 ('spicy_hot_talbuk', 
                 ['blessed_sunfruit', 'roasted_clefthoof', 
                 'grilled_mudfish',
-                'ravager_dog', 'charred_bear_kabobs'] )" checked>
+                'ravager_dog', 'charred_bear_kabobs'] )">
             <label for="spicy_hot_talbuk"> Spicy Hot Talbuk</label><br>
 
             <input type="checkbox" id="grilled_mudfish" onclick=
