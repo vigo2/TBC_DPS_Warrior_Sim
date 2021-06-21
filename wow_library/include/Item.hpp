@@ -164,7 +164,7 @@ public:
         , affects_both_weapons(affects_both_weapons)
         , max_stacks(max_stacks){};
 
-    inline Special_stats get_special_stat_equivalent(const Special_stats& special_stats, double ap_multiplier) const
+    inline Special_stats get_special_stat_equivalent(const Special_stats& special_stats, double ap_multiplier = 0) const
     {
         return attribute_boost.convert_to_special_stats(special_stats, ap_multiplier) + special_stats_boost;
     }
@@ -184,6 +184,7 @@ public:
     bool affects_both_weapons;
     int max_stacks;
     double time_counter;
+    int stacks_counter;
 };
 
 class Use_effect
@@ -214,7 +215,7 @@ public:
         , hit_effects(std::move(hit_effects))
         , over_time_effects(std::move(over_time_effects)){};
 
-    inline Special_stats get_special_stat_equivalent(const Special_stats& special_stats, double ap_multiplier) const
+    inline Special_stats get_special_stat_equivalent(const Special_stats& special_stats, double ap_multiplier = 0) const
     {
         return attribute_boost.convert_to_special_stats(special_stats, ap_multiplier) + special_stats_boost;
     }
@@ -306,26 +307,26 @@ struct Buff
     std::vector<Use_effect> use_effects{};
 };
 
-/* struct Gem
-{
-    Gem(std::string name, Attributes attributes, Special_stats special_stats, double bonus_damage = 0,
-         std::vector<Hit_effect> hit_effects = std::vector<Hit_effect>(),
-         std::vector<Use_effect> use_effects = std::vector<Use_effect>())
-        : name(std::move(name))
-        , attributes(attributes)
-        , special_stats(special_stats)
-        , bonus_damage(bonus_damage)
-        , hit_effects(std::move(hit_effects))
-        , use_effects(std::move(use_effects)){};
+// struct Gem
+// {
+//     Gem(std::string name, Attributes attributes, Special_stats special_stats, double bonus_damage = 0,
+//          std::vector<Hit_effect> hit_effects = std::vector<Hit_effect>(),
+//          std::vector<Use_effect> use_effects = std::vector<Use_effect>())
+//         : name(std::move(name))
+//         , attributes(attributes)
+//         , special_stats(special_stats)
+//         , bonus_damage(bonus_damage)
+//         , hit_effects(std::move(hit_effects))
+//         , use_effects(std::move(use_effects)){};
 
-    std::string name;
-    Attributes attributes;
-    Special_stats special_stats;
-    double bonus_damage;
-    std::vector<Hit_effect> hit_effects{};
-    std::vector<Use_effect> use_effects{};
-};
- */
+//     std::string name;
+//     Attributes attributes;
+//     Special_stats special_stats;
+//     double bonus_damage;
+//     std::vector<Hit_effect> hit_effects{};
+//     std::vector<Use_effect> use_effects{};
+// };
+
 struct Weapon_buff
 {
     Weapon_buff() = default;

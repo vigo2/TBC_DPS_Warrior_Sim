@@ -16,7 +16,7 @@ struct Special_stats
                   double haste = 0.0, double damage_mod_physical = 0, double stat_multiplier = 0,
                   double bonus_damage = 0, double crit_multiplier = 0, double spell_crit = 0,
                   double damage_mod_spell = 0, double expertise = 0.0, double sword_expertise = 0.0, double mace_expertise = 0.0, double axe_expertise = 0.0,
-                  double gear_armor_pen = 0)
+                  int gear_armor_pen = 0)
         : critical_strike{critical_strike}
         , hit{hit}
         , attack_power{attack_power}
@@ -121,7 +121,7 @@ struct Special_stats
     double sword_expertise{};
     double mace_expertise{};
     double axe_expertise{};
-    double gear_armor_pen{};
+    int gear_armor_pen{};
 };
 
 class Attributes
@@ -143,9 +143,10 @@ public:
         return {strength * multiplier, agility * multiplier};
     }
 
-    Special_stats convert_to_special_stats(const Special_stats& special_stats, double ap_multiplier) const
+    Special_stats convert_to_special_stats(const Special_stats& special_stats, double ap_multiplier = 0) const
     {
         double multiplier = special_stats.stat_multiplier + 1;
+        ap_multiplier += 1;
         return {agility / 33 * multiplier, 0, strength * 2 * multiplier * ap_multiplier};
     }
 

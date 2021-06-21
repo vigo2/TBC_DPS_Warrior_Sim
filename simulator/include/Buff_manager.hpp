@@ -38,11 +38,13 @@ struct Combat_buff
     Combat_buff() = default;
     ~Combat_buff() = default;
 
-    Combat_buff(Special_stats special_stats, double duration_left)
-        : special_stats(special_stats), duration_left(duration_left){};
+    Combat_buff(Special_stats special_stats, double duration_left, bool is_independent_stacks = false, bool is_shared_stacks = false)
+        : special_stats(special_stats), duration_left(duration_left), is_independent_stacks(is_independent_stacks), is_shared_stacks(is_shared_stacks){};
 
     Special_stats special_stats{};
     double duration_left{};
+    bool is_independent_stacks{};
+    bool is_shared_stacks{};
 };
 
 struct Hit_buff
@@ -63,6 +65,7 @@ public:
         performance_mode = performance_mode_in;
         stat_gains.clear();
         hit_gains.clear();
+        hit_stacks.clear();
         over_time_buffs.clear();
         simulation_special_stats = &special_stats;
         hit_effects_mh = &hit_effects_mh_input;
@@ -94,6 +97,7 @@ public:
     void increment_stat_gains(double current_time, double dt, double& rage, double& rage_lost_stance, bool debug,
                               std::vector<std::string>& debug_msg)
     {
+        int stacks = 1;
         for (auto it = stat_gains.begin(); it != stat_gains.end();)
         {
             if (!performance_mode && current_time > 0.0)
@@ -115,12 +119,70 @@ public:
                         rage = tactical_mastery_rage_;
                     }
                 }
+
+                if (it->second.is_independent_stacks == true)
+                {
+                    stacks = 0;
+                    for (auto& hit_effects_mh : (*hit_effects_mh))
+                    {
+                        if (it->first == hit_effects_mh.name)
+                        {
+                            stacks = hit_effects_mh.stacks_counter;
+                            hit_effects_mh.stacks_counter = 0;
+                            break;
+                        }
+                    }
+                    if (!(stacks > 0))
+                    {
+                        for (auto& hit_effects_oh : (*hit_effects_oh))
+                        {
+                            if (it->first == hit_effects_oh.name)
+                            {
+                                stacks = hit_effects_oh.stacks_counter;
+                                hit_effects_oh.stacks_counter = 0;
+                                break;
+                            }
+                        } 
+                    }
+                }
+                else if (it->second.is_shared_stacks == true)
+                {
+                    arpen_stacks_counter = stacks;
+                    arpen_stacks_counter = 0;
+                    need_to_recompute_mitigation = true;
+                    // for (auto& hit_effects_mh : (*hit_effects_mh))
+                    // {
+                    //     if (it->first == hit_effects_mh.name)
+                    //     {
+                    //         stacks = hit_effects_mh.stacks_counter;
+                    //         hit_effects_mh.stacks_counter = 0;
+                    //         break;
+                    //     }
+                    // }
+                    // for (auto& hit_effects_oh : (*hit_effects_oh))
+                    // {
+                    //     if (it->first == hit_effects_oh.name)
+                    //     {
+                    //         stacks = hit_effects_oh.stacks_counter;
+                    //         hit_effects_oh.stacks_counter = 0;
+                    //         break;
+                    //     }
+                    // } 
+                }
+
+                for (int i = 0; i < stacks; ++i)
+                {
+                    (*simulation_special_stats) -= it->second.special_stats;
+                }
+                it = stat_gains.erase(it);
+                // if (it->second.special_stats.gear_armor_pen > 0.0)
+                // {
+                //     need_to_recompute_mitigation = true;
+                // }
                 if (it->second.special_stats.hit > 0.0 || it->second.special_stats.critical_strike > 0.0)
                 {
                     need_to_recompute_hittables = true;
                 }
-                (*simulation_special_stats) -= it->second.special_stats;
-                it = stat_gains.erase(it);
             }
             else
             {
@@ -210,7 +272,7 @@ public:
                 }
                 else
                 {
-                    add(use_effect.name, use_effect.get_special_stat_equivalent(*simulation_special_stats, ap_multiplier + 1),
+                    add(use_effect.name, use_effect.get_special_stat_equivalent(*simulation_special_stats, ap_multiplier),
                         use_effect.duration);
                 }
                 if (use_effect.rage_boost != 0.0)
@@ -308,7 +370,7 @@ public:
         }
     }
 
-    void reset_icd(Hit_effect& hit_effect)
+    void reset_icd(const Hit_effect& hit_effect)
     {
         // hit_effect.time_counter = hit_effect.cooldown;
         size_t i = 0;
@@ -339,6 +401,55 @@ public:
         }
     }
 
+    void modify_arpen_stacks(Hit_effect& hit_effect, Socket weapon_hand, bool at_max_stacks = false)
+    {
+        size_t i = 0;
+        int armor_reduction = 0;
+        need_to_recompute_mitigation = true;
+        if (weapon_hand == Socket::main_hand)
+        {
+            while(i < (*hit_effects_mh).size())
+            {
+                if (hit_effect.name == (*hit_effects_mh)[i].name && !(at_max_stacks))
+                {
+                    armor_reduction = hit_effect.armor_reduction;
+                    add((*hit_effects_mh)[i].name, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, armor_reduction}, (*hit_effects_mh)[i].duration, false, true);
+                    break;
+                }
+                else if (hit_effect.name == (*hit_effects_mh)[i].name)
+                {
+                    add((*hit_effects_mh)[i].name, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, (*hit_effects_mh)[i].duration, false, true);
+                    break;
+                }
+                else
+                {
+                    i++;
+                }
+            }
+        }
+        else
+        {
+            while(i < (*hit_effects_oh).size())
+            {
+                if (hit_effect.name == (*hit_effects_oh)[i].name && !(at_max_stacks))
+                {
+                    armor_reduction = hit_effect.armor_reduction;
+                    add((*hit_effects_oh)[i].name, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, armor_reduction}, (*hit_effects_oh)[i].duration, false, true);
+                    break;
+                }   
+                else if (hit_effect.name == (*hit_effects_oh)[i].name)
+                {
+                    add((*hit_effects_oh)[i].name, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, armor_reduction}, (*hit_effects_oh)[i].duration, false, true);
+                    break;
+                }
+                else
+                {
+                    i++;
+                }
+            }
+        }
+    }
+
     void increment(double dt, double current_time, double& rage, double& rage_lost_stance, double& global_cooldown,
                    bool debug, std::vector<std::string>& debug_msg, double ap_multiplier)
     {
@@ -346,23 +457,31 @@ public:
         increment_icd(dt);
         increment_stat_gains(current_time, dt, rage, rage_lost_stance, debug, debug_msg);
         increment_hit_gains(current_time, dt, debug, debug_msg);
+        // increment_hit_stacks(current_time, dt, debug, debug_msg);
         increment_use_effects(current_time, rage, global_cooldown, debug, debug_msg, ap_multiplier);
         increment_over_time_buffs(current_time, rage, debug, debug_msg);
     }
 
-    void add(const std::string& name, const Special_stats& special_stats, double duration_left)
+    void add(const std::string& name, const Special_stats& special_stats, double duration_left, bool is_independent_stacks = false, bool is_shared_stacks = false)
     {
         // Insert the buff in stat gains vector. If it exists increase the duration of the buff
-        auto kv_pair = stat_gains.insert({name, {special_stats, duration_left}});
+        auto kv_pair = stat_gains.insert({name, {special_stats, duration_left, is_independent_stacks, is_shared_stacks}});
         if (!kv_pair.second)
         {
             kv_pair.first->second.duration_left = duration_left;
-            return;
+            if (!(is_independent_stacks) && !(is_shared_stacks))
+            {
+                return;
+            }
         }
         (*simulation_special_stats) += special_stats;
         if (special_stats.hit > 0.0 || special_stats.critical_strike > 0.0)
         {
             need_to_recompute_hittables = true;
+        }
+        if (special_stats.gear_armor_pen > 0.0)
+        {
+            need_to_recompute_mitigation = true;
         }
         if (duration_left < next_event)
         {
@@ -406,10 +525,12 @@ public:
 
     bool need_to_recompute_hittables{false};
     bool reset_armor_reduction{false};
+    bool need_to_recompute_mitigation{false};
     bool performance_mode{false};
     Special_stats* simulation_special_stats;
     std::map<std::string, Combat_buff> stat_gains;
     std::vector<Hit_buff> hit_gains;
+    std::vector<Hit_buff> hit_stacks;
     std::vector<Over_time_buff> over_time_buffs;
     std::vector<Hit_effect>* hit_effects_mh;
     std::vector<Hit_effect>* hit_effects_oh;
@@ -420,6 +541,7 @@ public:
     double deep_wounds_damage{};
     double tactical_mastery_rage_{};
     std::vector<double> deep_wounds_timestamps{};
+    int arpen_stacks_counter{0};
 };
 
 #endif // WOW_SIMULATOR_BUFF_MANAGER_HPP
