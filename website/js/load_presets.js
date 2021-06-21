@@ -109,9 +109,9 @@ function load_p1armsbis() {
         "gauntlets_of_martial_perfection", "girdle_of_the_endless_pit", "skulkers_greaves",
         "ironstriders_of_urgency", "ring_of_a_thousand_marks", "mithril_band_of_the_unscarred",
         "bloodlust_brooch", "hourglass_of_the_unraveller", "mamas_insurance"];
-    let selected_weapons = [" ", " ", "lionheart_champion"];
+    let selected_weapons = ["none", "none", "lionheart_champion"];
     let selected_enchants = ["ferocity", "naxxramas", "+12 agility", "+6 stats", "+12 strength",
-        "+15 strength", "nethercobra", "cats_swiftness", "mongoose", " ", "ring_1", "ring_2"];
+        "+15 strength", "nethercobra", "cats_swiftness", "mongoose", "off_hand", "ring_1", "ring_2"];
     select_prebis(selected_items, selected_weapons, selected_enchants);
     load_talent_standard_arms();
     unique_checkboxes('two_hand_mode', ['dual_wield_mode', 'two_hand_mode']);
@@ -163,9 +163,9 @@ function load_p1armsbismult() {
         "gauntlets_of_martial_perfection", "girdle_of_the_endless_pit", "skulkers_greaves",
         "ironstriders_of_urgency", "ring_of_a_thousand_marks", "mithril_band_of_the_unscarred",
         "bloodlust_brooch", "hourglass_of_the_unraveller", "mamas_insurance"];
-    let selected_weapons = [" ", " ", "lionheart_champion"];
+    let selected_weapons = ["none", "none", "lionheart_champion"];
     let selected_enchants = ["ferocity", "naxxramas", "+12 agility", "+6 stats", "+12 strength",
-        "+15 strength", "nethercobra", "cats_swiftness", "mongoose", " ", "ring_1", "ring_2"];
+        "+15 strength", "nethercobra", "cats_swiftness", "mongoose", "off_hand", "ring_1", "ring_2"];
     select_prebis_mult(selected_items, selected_weapons, selected_enchants);
     load_talent_standard_arms();
 }
