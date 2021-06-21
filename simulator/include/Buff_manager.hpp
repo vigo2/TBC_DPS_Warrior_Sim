@@ -147,7 +147,7 @@ public:
                 }
                 else if (it->second.is_shared_stacks == true)
                 {
-                    arpen_stacks_counter = stacks;
+                    stacks = arpen_stacks_counter;
                     arpen_stacks_counter = 0;
                     need_to_recompute_mitigation = true;
                     // for (auto& hit_effects_mh : (*hit_effects_mh))
@@ -170,7 +170,7 @@ public:
                     // } 
                 }
 
-                for (int i = 0; i < stacks; ++i)
+                for (int i = 0; i < stacks; i++)
                 {
                     (*simulation_special_stats) -= it->second.special_stats;
                 }
