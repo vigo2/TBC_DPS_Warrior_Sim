@@ -49,6 +49,7 @@ enum class Set
     ragesteel,
     wastewalker,
     doomplate,
+    warbringer,
 
 };
 

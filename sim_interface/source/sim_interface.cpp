@@ -692,10 +692,10 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
                 double delta_dps = dps_mean - simulator_dpr.get_dps_mean();
                 double dmg_tot = delta_dps * (config.sim_time - 1);
                 double dmg_per_hit = dmg_tot / avg_ww_casts;
-                double dmg_per_rage = dmg_per_hit / 25.0;
+                double dmg_per_rage = dmg_per_hit / (25.0 - double(5.0 * character.set_bonus_effect.warbringer_2_set));
                 dpr_info += "<b>Whirlwind</b>: <br>Damage per cast: <b>" +
                             String_helpers::string_with_precision(dmg_per_hit, 4) + "</b><br>Average rage cost: <b>" +
-                            String_helpers::string_with_precision(25.0, 3) + "</b><br>DPR: <b>" +
+                            String_helpers::string_with_precision(25.0 - double(5.0 * character.set_bonus_effect.warbringer_2_set), 3) + "</b><br>DPR: <b>" +
                             String_helpers::string_with_precision(dmg_per_rage, 4) + "</b><br>";
                 config.dpr_settings.compute_dpr_ww_ = false;
             }

@@ -342,6 +342,18 @@ void Armory::compute_total_stats(Character& character) const
                 total_attributes += set_bonus.attributes;
                 total_special_stats += set_bonus.special_stats;
                 character.set_bonuses.emplace_back(set_bonus);
+                if (set_bonus.name == "warbringer")
+                {
+                    if (set_bonus.pieces == 4)
+                    {
+                        character.set_bonus_effect.warbringer_4_set = true;
+                        character.set_bonus_effect.warbringer_2_set = 1;
+                    }
+                    else
+                    {
+                        character.set_bonus_effect.warbringer_2_set = 1;
+                    }
+                }
             }
         }
     }

@@ -385,6 +385,7 @@ Combat_simulator::Hit_outcome Combat_simulator::generate_hit(const Weapon_sim& w
         {
             hit_outcome.damage *= armor_reduction_factor_add * (1 + special_stats.damage_mod_physical);
         }
+        hit_outcome.damage *= dual_wield_damage_factor_;
         cout_damage_parse(hit_type, weapon_hand, hit_outcome);
     }
 
@@ -666,6 +667,10 @@ void Combat_simulator::slam(Weapon_sim& main_hand_weapon, Special_stats& special
     if (hit_outcome.hit_result == Hit_result::dodge || hit_outcome.hit_result == Hit_result::miss)
     {
         rage -= 3;
+        if (hit_outcome.hit_result == Hit_result::dodge && config.set_bonus_effect.warbringer_4_set)
+        {
+            rage += 2;
+        }
     }
     else
     {
@@ -694,6 +699,10 @@ void Combat_simulator::mortal_strike(Weapon_sim& main_hand_weapon, Special_stats
     if (hit_outcome.hit_result == Hit_result::dodge || hit_outcome.hit_result == Hit_result::miss)
     {
         rage -= 6;
+        if (hit_outcome.hit_result == Hit_result::dodge && config.set_bonus_effect.warbringer_4_set)
+        {
+            rage += 2;
+        }
     }
     else
     {
@@ -725,6 +734,10 @@ void Combat_simulator::bloodthirst(Weapon_sim& main_hand_weapon, Special_stats& 
     if (hit_outcome.hit_result == Hit_result::dodge || hit_outcome.hit_result == Hit_result::miss)
     {
         rage -= 6;
+        if (hit_outcome.hit_result == Hit_result::dodge && config.set_bonus_effect.warbringer_4_set)
+        {
+            rage += 2;
+        }
     }
     else
     {
@@ -781,7 +794,7 @@ void Combat_simulator::whirlwind(Weapon_sim& main_hand_weapon, Weapon_sim& off_h
 {
     if (config.dpr_settings.compute_dpr_ww_)
     {
-        rage -= 25;
+        rage -= 25 - (5 * config.set_bonus_effect.warbringer_2_set);
         time_keeper_.whirlwind_cd = 10 - config.talents.improved_whirlwind;
         time_keeper_.global_cd = 1.5;
         return;
@@ -818,7 +831,7 @@ void Combat_simulator::whirlwind(Weapon_sim& main_hand_weapon, Weapon_sim& off_h
             }
         }
     }
-    rage -= 25;
+    rage -= 25 - (5 * config.set_bonus_effect.warbringer_2_set);
     time_keeper_.whirlwind_cd = 10 - config.talents.improved_whirlwind;
     time_keeper_.global_cd = 1.5;
     Hit_result result_used_for_flurry = Hit_result::TBD;
@@ -854,6 +867,10 @@ void Combat_simulator::execute(Weapon_sim& main_hand_weapon, Special_stats& spec
     if (hit_outcome.hit_result == Hit_result::dodge || hit_outcome.hit_result == Hit_result::miss)
     {
         rage *= 0.8;
+        if (hit_outcome.hit_result == Hit_result::dodge && config.set_bonus_effect.warbringer_4_set)
+        {
+            rage += 2;
+        }
     }
     else
     {
@@ -886,6 +903,10 @@ void Combat_simulator::hamstring(Weapon_sim& main_hand_weapon, Special_stats& sp
     if (hit_outcome.hit_result == Hit_result::dodge || hit_outcome.hit_result == Hit_result::miss)
     {
         rage -= 2;
+        if (hit_outcome.hit_result == Hit_result::dodge && config.set_bonus_effect.warbringer_4_set)
+        {
+            rage += 2;
+        }
     }
     else
     {
@@ -1053,6 +1074,10 @@ void Combat_simulator::swing_weapon(Weapon_sim& weapon, Weapon_sim& main_hand_we
         if (hit_outcomes[0].hit_result == Hit_result::dodge || hit_outcomes[0].hit_result == Hit_result::miss)
         {
             rage -= 0.2 * heroic_strike_rage_cost; // Refund rage for missed/dodged heroic strikes.
+            if (hit_outcomes[0].hit_result == Hit_result::dodge && config.set_bonus_effect.warbringer_4_set)
+            {
+                rage += 2;
+            }
         }
         else
         {
@@ -1141,6 +1166,10 @@ void Combat_simulator::swing_weapon(Weapon_sim& weapon, Weapon_sim& main_hand_we
             else
             {
                 rage += rage_generation(swing_damage * armor_reduction_factor_ * (1 + special_stats.damage_mod_physical), weapon.socket, weapon.swing_speed, hit_outcomes[0].hit_result);
+            }
+            if (config.set_bonus_effect.warbringer_4_set)
+            {
+                rage += 2;
             }
             simulator_cout("Rage gained since the enemy dodged.");
         }
@@ -1333,6 +1362,9 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
             }
         }
     }
+    // Passing set bonuses that are not stats from character to config
+    config.set_bonus_effect.warbringer_2_set = character.set_bonus_effect.warbringer_2_set;
+    config.set_bonus_effect.warbringer_4_set = character.set_bonus_effect.warbringer_4_set;
 
     const bool is_dual_wield = character.is_dual_wield();
     const auto hit_effects_mh_copy = weapons[0].hit_effects;
@@ -1782,7 +1814,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
                     {
                         use_ww &= time_keeper_.mortal_strike_cd > config.combat.whirlwind_bt_cooldown_thresh;
                     }
-                    if (time_keeper_.whirlwind_cd < 0.0 && rage > config.combat.whirlwind_rage_thresh && rage > 25 &&
+                    if (time_keeper_.whirlwind_cd < 0.0 && rage > config.combat.whirlwind_rage_thresh && rage > 25 - (5 * config.set_bonus_effect.warbringer_2_set) &&
                         time_keeper_.global_cd < 0 && use_ww)
                     {
                         if(weapons[0].weapon_socket == Weapon_socket::two_hand)

@@ -174,6 +174,12 @@ struct Combat_simulator_config
         int improved_whirlwind = 0;
         int improved_berserker_stance = 0;
     } talents;
+
+    struct set_bonus_effect_t
+    {
+        int warbringer_2_set{0};
+        bool warbringer_4_set{false};
+    } set_bonus_effect;
 };
 
 class Combat_simulator

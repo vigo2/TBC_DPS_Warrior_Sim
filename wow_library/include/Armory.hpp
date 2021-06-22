@@ -129,7 +129,7 @@ struct Armory
             {
                 {"mask_of_the_deceiver", Attributes{0.0, 32.0}, Special_stats{0.0, 1.0145846544071022, 64.0, 0, 0.0}, Socket::head}, 
                 {"cowl_of_beastly_rage", Attributes{29.0, 26.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.0}, Socket::head}, 
-                {"warbringer_battle-helm", Attributes{45.0, 0.0}, Special_stats{1.0869565217391306, 0.8877615726062144, 0.0, 0, 0.0}, Socket::head},
+                {"warbringer_battle-helm", Attributes{45.0, 0.0}, Special_stats{1.0869565217391306, 0.8877615726062144, 0.0, 0, 0.0}, Socket::head, Set::warbringer},
                 {"wastewalker_helm", Attributes{0.0, 0.0}, Special_stats{0.996376811594203, 1.14140773620799, 56.0, 0, 0.0}, Socket::head}, 
                 {"helm_of_the_claw", Attributes{0.0, 25.0}, Special_stats{0.0, 0.8877615726062144, 66.0, 0, 0.0}, Socket::head}, 
                 {"helm_of_assassination", Attributes{0.0, 0.0}, Special_stats{1.1322463768115942, 0.0, 66.0, 0, 0.0}, Socket::head}, 
@@ -188,7 +188,7 @@ struct Armory
                 {"ripfiend_shoulderplates", Attributes{39.0, 0.0}, Special_stats{0.996376811594203, 0.8243500317057705, 0.0, 0, 0.0}, Socket::shoulder}, 
                 {"ragesteel_shoulders", Attributes{32.0, 0.0}, Special_stats{0.7699275362318841, 0.570703868103995, 0.0, 0, 0.0}, Socket::shoulder, Set::ragesteel}, 
                 {"bladed_shoulderpads_of_the_merciless", Attributes{0.0, 0.0}, Special_stats{0.9510869565217392, 0.8243500317057705, 58.0, 0, 0.0}, Socket::shoulder}, 
-                {"warbringer_shoulderplates", Attributes{32.0, 22.0}, Special_stats{0.0, 0.8243500317057705, 0.0, 0, 0.0}, Socket::shoulder}, 
+                {"warbringer_shoulderplates", Attributes{32.0, 22.0}, Special_stats{0.0, 0.8243500317057705, 0.0, 0, 0.0}, Socket::shoulder, Set::warbringer}, 
                 {"gladiators_plate_shoulders", Attributes{22.0, 0.0}, Special_stats{1.0416666666666667, 0.0, 0.0, 0, 0.0}, Socket::shoulder}, 
                 {"mantle_of_perenolde", Attributes{0.0, 0.0}, Special_stats{1.0416666666666667, 1.4584654407102093, 20.0, 0, 0.0}, Socket::shoulder}, 
                 {"wastewalker_shoulderpads", Attributes{0.0, 25.0}, Special_stats{0.0, 1.0145846544071022, 34.0, 0, 0.0}, Socket::shoulder}, 
@@ -232,7 +232,7 @@ struct Armory
                 {"bulwark_of_kings", Attributes{35.0, 0.0}, Special_stats{1.6757246376811596, 1.4584654407102093, 0.0, 0, 0.0}, Socket::chest, Set::none, {}, {{"bulwark_of_kings", Use_effect::Effect_socket::shared, {150, 0}, {}, 0, 15, 900, true}}}, 
                 {"terrorweave_tunic", Attributes{0.0, 0.0}, Special_stats{1.1322463768115942, 1.3316423589093216, 96.0, 0, 0.0}, Socket::chest}, 
                 {"breastplate_of_kings", Attributes{31.0, 0.0}, Special_stats{1.403985507246377, 1.2682308180088777, 0.0, 0, 0.0}, Socket::chest}, 
-                {"warbringer_breastplate", Attributes{44.0, 0.0}, Special_stats{1.177536231884058, 0.0, 0.0, 0, 0.0}, Socket::chest}, 
+                {"warbringer_breastplate", Attributes{44.0, 0.0}, Special_stats{1.177536231884058, 0.0, 0.0, 0, 0.0}, Socket::chest, Set::warbringer}, 
                 {"ebon_netherscale_breastplate", Attributes{0.0, 0.0}, Special_stats{1.403985507246377, 0.0, 80.0, 0, 0.0}, Socket::chest}, 
                 {"gladiators_plate_chestpiece", Attributes{23.0, 0.0}, Special_stats{1.358695652173913, 0.7609384908053266, 0.0, 0, 0.0}, Socket::chest}, 
                 {"twisting_nether_chain_shirt", Attributes{0.0, 0.0}, Special_stats{1.4945652173913044, 0.0, 68.0, 0, 0.0}, Socket::chest}, 
@@ -255,6 +255,7 @@ struct Armory
                 {"plated_abomination_ribcage", Attributes{45.0, 0.0}, Special_stats{0.6340579710144928, 0.6341154090044389, 0.0, 0, 0.0}, Socket::chest}, 
                 {"maghari_scouts_tunic", Attributes{0.0, 23.0}, Special_stats{0.0, 0.7609384908053266, 86.0, 0, 0.0}, Socket::chest}, 
                 {"high_warlords_plate_chestpiece", Attributes{12.0, 0.0}, Special_stats{1.0869565217391306, 0.0, 0.0, 0, 0.0}, Socket::chest}, 
+                {"chestguard_of_no_remorse", Attributes{0.0, 0.0}, Special_stats{0.9510869565, 0.0, 0.0, 92, 0.0}, Socket::chest},
             };
 
     std::vector<Armor> wrists_t
@@ -288,7 +289,7 @@ struct Armory
                 {"liars_tongue_gloves", Attributes{0.0, 0.0}, Special_stats{1.177536231884058, 0.0, 72.0, 0, 0.0}, Socket::hands}, 
                 {"fel_leather_gloves", Attributes{0.0, 0.0}, Special_stats{1.0869565217391306, 1.077996195307546, 36.0, 0, 0.0}, Socket::hands}, 
                 {"grips_of_deftness", Attributes{0.0, 29.0}, Special_stats{0.0, 0.0, 60.0, 0, 0.00, 0, 0, 0, 0, 0, 0, 3.804692454026633}, Socket::hands}, 
-                {"warbringer_gauntlets", Attributes{34.0, 23.0}, Special_stats{0.0, 1.14140773620799, 0.0, 0, 0.0}, Socket::hands}, 
+                {"warbringer_gauntlets", Attributes{34.0, 23.0}, Special_stats{0.0, 1.14140773620799, 0.0, 0, 0.0}, Socket::hands, Set::warbringer}, 
                 {"ragesteel_gloves", Attributes{35.0, 0.0}, Special_stats{1.2228260869565217, 0.0, 0.0, 0, 0.0}, Socket::hands, Set::ragesteel}, 
                 {"windstrike_gloves", Attributes{36.0, 18.0}, Special_stats{0.0, 1.077996195307546, 0.0, 0, 0.0}, Socket::hands}, 
                 {"felfury_gauntlets", Attributes{0.0, 0.0}, Special_stats{1.2228260869565217, 0.0, 40.0, 0, 0.0}, Socket::hands}, 
@@ -354,7 +355,7 @@ struct Armory
                 {"skulkers_greaves", Attributes{0.0, 32.0}, Special_stats{0.0, 1.7755231452124287, 64.0, 0, 0.0}, Socket::legs}, 
                 {"fel_leather_leggings", Attributes{0.0, 0.0}, Special_stats{1.1322463768115942, 1.585288522511097, 52.0, 0, 0.0}, Socket::legs}, 
                 {"midnight_legguards", Attributes{0.0, 0.0}, Special_stats{1.2228260869565217, 1.077996195307546, 64.0, 0, 0.0}, Socket::legs}, 
-                {"warbringer_greaves", Attributes{51.0, 0.0}, Special_stats{1.6757246376811596, 0.0, 0.0, 0, 0.0}, Socket::legs}, 
+                {"warbringer_greaves", Attributes{51.0, 0.0}, Special_stats{1.6757246376811596, 0.0, 0.0, 0, 0.0}, Socket::legs, Set::warbringer}, 
                 {"clefthoof_hide_leggings", Attributes{30.0, 30.0}, Special_stats{0.0, 1.077996195307546, 0.0, 0, 0.00, 0, 0, 0, 0, 0, 0, 4.56563094483196}, Socket::legs}, 
                 {"vanquishers_legplates", Attributes{36.0, 0.0}, Special_stats{1.0416666666666667, 0.0, 0.0, 0, 0.0}, Socket::legs}, 
                 {"gladiators_plate_legguards", Attributes{40.0, 0.0}, Special_stats{1.6304347826086958, 0.7609384908053266, 0.0, 0, 0.0}, Socket::legs}, 
@@ -608,6 +609,8 @@ struct Armory
             {"ragesteel",               Attributes{0, 0}, Special_stats{0, 1.26, 0},  2, Set::ragesteel},
             {"wastewalker",               Attributes{0, 0}, Special_stats{0, 2.21, 0},  2, Set::wastewalker},
             {"doomplate",               Attributes{0, 0}, Special_stats{0, 2.21, 0},  2, Set::doomplate},
+            {"warbringer",               Attributes{0, 0}, Special_stats{0, 0, 0},  2, Set::warbringer},
+            {"warbringer",               Attributes{0, 0}, Special_stats{0, 0, 0},  4, Set::warbringer},
     };
 
     std::vector<Armor> get_items_in_socket(Socket socket) const;

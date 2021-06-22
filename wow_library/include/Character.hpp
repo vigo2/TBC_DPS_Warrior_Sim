@@ -176,6 +176,12 @@ public:
         int one_handed_weapon_specialization{0};
     } talents;
 
+    struct
+    {
+        int warbringer_2_set{0};
+        bool warbringer_4_set{false};
+    } set_bonus_effect;
+
     Attributes base_attributes;
     Attributes total_attributes;
     Special_stats base_special_stats;
