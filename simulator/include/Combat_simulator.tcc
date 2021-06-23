@@ -147,6 +147,7 @@ void Combat_simulator_config::get_combat_simulator_config(const T& input)
         combat.slam_spam_max_time = fv.find("slam_spam_max_time_dd");
         combat.slam_spam_rage = fv.find("slam_spam_rage_dd");
         combat.slam_rage_dd = fv.find("slam_rage_dd");
+        combat.slam_latency = fv.find("slam_latency_dd");
 
         sim_time = fv.find("fight_time_dd");
 

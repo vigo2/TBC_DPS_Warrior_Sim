@@ -50,7 +50,7 @@ Combat_simulator_config get_config_with_everything_deactivated()
     config.combat.overpower_rage_thresh = 0.0;
     config.combat.overpower_bt_cooldown_thresh = 0.0;
     config.combat.overpower_ww_cooldown_thresh = 0.0;
-    config.combat.slam_cd_thresh = 0.0;
+    config.combat.slam_latency = 0.0;
     config.combat.slam_spam_max_time = 0.0;
     config.combat.slam_spam_rage = 0.0;
     config.combat.slam_rage_dd = 0.0;

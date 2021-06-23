@@ -121,7 +121,7 @@ struct Combat_simulator_config
         bool use_heroic_strike{false};
         double hamstring_cd_thresh{};
         bool dont_use_hm_when_ss{false};
-        double slam_cd_thresh{};
+        double slam_latency{};
         double rampage_use_thresh{};
         double hamstring_thresh_dd{};
         double initial_rage{};
@@ -136,6 +136,7 @@ struct Combat_simulator_config
     struct dpr_t
     {
         bool compute_dpr_sl_{false};
+        bool compute_dpr_sl_no_latency_{false};
         bool compute_dpr_ms_{false};
         bool compute_dpr_bt_{false};
         bool compute_dpr_op_{false};

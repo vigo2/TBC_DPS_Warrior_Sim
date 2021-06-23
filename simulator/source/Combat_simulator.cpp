@@ -640,11 +640,11 @@ bool Combat_simulator::start_cast_slam(bool mh_swing, double rage, double& swing
         {
             if ((mh_swing && rage > config.combat.slam_rage_dd) || rage > config.combat.slam_spam_rage)
             {
-                simulator_cout("Starting to channel slam.");
-                slam_manager.queue_slam(time_keeper_.time);
-                time_keeper_.global_cd = 1.5;
+                simulator_cout("Starting to channel slam.", " Latency: ", config.combat.slam_latency,"s");
+                slam_manager.queue_slam(time_keeper_.time + config.combat.slam_latency);
+                time_keeper_.global_cd = 1.5 + config.combat.slam_latency;
                 // We have started 'channeling' so set a value for the swing time for now which is larger than GCD
-                swing_time_left = 1.6;
+                swing_time_left = 1.6 + config.combat.slam_latency;
                 return true;
             }
         }
@@ -658,6 +658,7 @@ void Combat_simulator::slam(Weapon_sim& main_hand_weapon, Special_stats& special
     if (config.dpr_settings.compute_dpr_sl_)
     {
         get_uniform_random(100) < hit_table_yellow_[1] ? rage -= 3 : rage -= 15;
+        time_keeper_.global_cd = 1.5;
         return;
     }
     simulator_cout("Slam!");
@@ -1447,6 +1448,8 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
         int oh_hits_w_flurry = 0;
         int oh_hits_w_heroic = 0;
         int mh_hits_w_rampage = 0;
+
+        double swing_speed = 0;
 
         for (auto& wep : weapons)
         {

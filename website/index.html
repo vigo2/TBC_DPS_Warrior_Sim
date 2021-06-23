@@ -4436,6 +4436,8 @@
             <input type="number" id="slam_spam_rage_dd" name="quantity" min="15" max="100" value="100"><br>
             <label for="slam_spam_max_time_dd">Never cast slam when weapon swing timer is less than:</label>
             <input type="number" id="slam_spam_max_time_dd" name="quantity" min="0.0" max="4.0" value="1.5"step="0.1"><br>
+            <label for="slam_latency_dd">Delay slam after a melee hit (Latency) for:</label>
+            <input type="number" id="slam_latency_dd" name="quantity" min="0.0" max="4.0" value="0.0"step="0.01"> seconds<br>
             <input type="checkbox" id="use_sl_in_exec_phase">
             <label for="use_sl_in_exec_phase"> Use slam in execute phase</label><br>    
         </div>
@@ -4789,7 +4791,7 @@
         "max_optimize_time_dd", "number_of_extra_targets_dd", "extra_target_armor_dd", "extra_target_level_dd",
         "periodic_damage_interval_dd", "periodic_damage_amount_dd", "execute_phase_percentage_dd",
         "re_queue_abilities_dd", "stat_weight_mh_speed_dd", "stat_weight_oh_speed_dd",
-        "slam_spam_max_time_dd", "slam_spam_rage_dd", "slam_rage_dd", "berserking_haste_dd",
+        "slam_spam_max_time_dd", "slam_latency_dd", "slam_spam_rage_dd", "slam_rage_dd", "berserking_haste_dd",
         "full_polarity_dd", "extra_target_duration_dd", "battle_squawk_dd", "rampage_use_thresh_dd", "ferocious_inspiration_dd", "unleashed_rage_dd"];
 
     let sim_options = ["faerie_fire", "exposed_armor", "curse_of_recklessness", "death_wish", "enable_blood_fury",
