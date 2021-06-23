@@ -1577,7 +1577,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
                                "%.");
                 if (config.multi_target_mode_)
                 {
-                    int extra_target_armor = config.extra_target_initial_armor_ - armor_penetration_badge_;
+                    int extra_target_armor = config.extra_target_initial_armor_ - armor_penetration_badge_ - special_stats.gear_armor_pen;
                     extra_target_armor = std::max(extra_target_armor, 0);
                     armor_reduction_factor_add = 1 - armor_mitigation(extra_target_armor, 70);
 

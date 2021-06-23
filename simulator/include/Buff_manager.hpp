@@ -147,7 +147,7 @@ public:
                 }
                 else if (it->second.is_shared_stacks == true)
                 {
-                    arpen_stacks_counter = stacks;
+                    stacks = arpen_stacks_counter;
                     arpen_stacks_counter = 0;
                     need_to_recompute_mitigation = true;
                     // for (auto& hit_effects_mh : (*hit_effects_mh))
@@ -168,10 +168,9 @@ public:
                     //         break;
                     //     }
                     // } 
-                    
                 }
 
-                for (int i = 0; i < stacks; ++i)
+                for (int i = 0; i < stacks; i++)
                 {
                     (*simulation_special_stats) -= it->second.special_stats;
                 }
@@ -480,10 +479,10 @@ public:
         {
             need_to_recompute_hittables = true;
         }
-        if (special_stats.gear_armor_pen > 0.0)
-        {
-            need_to_recompute_mitigation = true;
-        }
+        // if (special_stats.gear_armor_pen > 0.0)
+        // {
+        //     need_to_recompute_mitigation = true;
+        // }
         if (duration_left < next_event)
         {
             next_event = duration_left;
