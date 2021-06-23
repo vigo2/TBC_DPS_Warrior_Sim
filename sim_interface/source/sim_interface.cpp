@@ -714,7 +714,7 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
                 double avg_mh_dmg =
                     static_cast<double>(dmg_dist.white_mh_damage) / static_cast<double>(dmg_dist.white_mh_count);
                 double avg_mh_rage_lost = avg_mh_dmg * 3.75 / 274.7 + (3.5 * character.weapons[0].swing_speed / 2);
-                double sl_cast_time = 1.5 - 0.5 * config.talents.improved_slam;
+                double sl_cast_time = 1.5 - 0.5 * config.talents.improved_slam + config.combat.slam_latency;
                 double dmg_per_hit = dmg_tot / avg_sl_casts;
                 double dmg_per_rage = dmg_per_hit / (15.0 + avg_mh_rage_lost * sl_cast_time / character.weapons[0].swing_speed);
                 dpr_info += "<b>Slam</b>: <br>Damage per cast: <b>" +
