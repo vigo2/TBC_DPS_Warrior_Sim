@@ -1689,16 +1689,55 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
                 }
                 if (use_mortal_strike_ && config.combat.use_ms_in_exec_phase)
                 {
-                    if (time_keeper_.mortal_strike_cd < 0.0 && time_keeper_.global_cd < 0 && rage > 30)
+                    bool ms_ww = true;
+                    if (config.combat.use_whirlwind)
+                    {
+                        ms_ww = std::max(time_keeper_.whirlwind_cd, 0.1) > config.combat.bt_whirlwind_cooldown_thresh;
+                    }
+                    if (time_keeper_.mortal_strike_cd < 0.0 && time_keeper_.global_cd < 0 && rage > 30 && ms_ww)
                     {
                         mortal_strike(weapons[0], special_stats, rage, damage_sources, flurry_charges, rampage_stacks, rampage_active);
                     }
                 }
                 if (use_bloodthirst_ && config.combat.use_bt_in_exec_phase)
                 {
-                    if (time_keeper_.blood_thirst_cd < 0.0 && time_keeper_.global_cd < 0 && rage > 30)
+                    bool bt_ww = true;
+                    if (config.combat.use_whirlwind)
+                    {
+                        bt_ww = std::max(time_keeper_.whirlwind_cd, 0.1) > config.combat.bt_whirlwind_cooldown_thresh;
+                    }
+                    if (time_keeper_.blood_thirst_cd < 0.0 && time_keeper_.global_cd < 0 && rage > 30 && bt_ww)
                     {
                         bloodthirst(weapons[0], special_stats, rage, damage_sources, flurry_charges, rampage_stacks, rampage_active);
+                    }
+                }
+                if (config.combat.use_whirlwind && config.combat.use_ww_in_exec_phase)
+                {
+                    bool use_ww = true;
+                    if (use_rampage_)
+                    {
+                        use_ww = time_keeper_.rampage_cd > 3.0;
+                    }
+                    if (use_bloodthirst_)
+                    {
+                        use_ww = std::max(time_keeper_.blood_thirst_cd, 0.1) > config.combat.whirlwind_bt_cooldown_thresh;
+                    }
+                    if (use_mortal_strike_)
+                    {
+                        use_ww = std::max(time_keeper_.mortal_strike_cd, 0.1) > config.combat.whirlwind_bt_cooldown_thresh;
+                    }
+                    if (time_keeper_.whirlwind_cd < 0.0 && rage > config.combat.whirlwind_rage_thresh && rage > 25 - (5 * config.set_bonus_effect.warbringer_2_set) &&
+                        time_keeper_.global_cd < 0 && use_ww)
+                    {
+                        if(weapons[0].weapon_socket == Weapon_socket::two_hand)
+                        {
+                            whirlwind(weapons[0], weapons[0], special_stats, rage, damage_sources, flurry_charges, rampage_stacks, rampage_active);
+                        }
+                        else
+                        {
+                            whirlwind(weapons[0], weapons[1], special_stats, rage, damage_sources, flurry_charges, rampage_stacks, rampage_active, 1);
+                        }
+                        
                     }
                 }
                 if (time_keeper_.global_cd < 0 && rage > execute_rage_cost_)
@@ -1788,7 +1827,12 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
 
                 if (use_bloodthirst_)
                 {
-                    if (time_keeper_.blood_thirst_cd < 0.0 && time_keeper_.global_cd < 0 && rage > 30)
+                    bool bt_ww = true;
+                    if (config.combat.use_whirlwind)
+                    {
+                        bt_ww = std::max(time_keeper_.whirlwind_cd, 0.1) > config.combat.bt_whirlwind_cooldown_thresh;
+                    }
+                    if (time_keeper_.blood_thirst_cd < 0.0 && time_keeper_.global_cd < 0 && rage > 30 && bt_ww)
                     {
                         bloodthirst(weapons[0], special_stats, rage, damage_sources, flurry_charges, rampage_stacks, rampage_active);
                     }
@@ -1796,7 +1840,12 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
 
                 if (use_mortal_strike_)
                 {
-                    if (time_keeper_.mortal_strike_cd < 0.0 && time_keeper_.global_cd < 0 && rage > 30)
+                    bool ms_ww = true;
+                    if (config.combat.use_whirlwind)
+                    {
+                        ms_ww = std::max(time_keeper_.whirlwind_cd, 0.1) > config.combat.bt_whirlwind_cooldown_thresh;
+                    }
+                    if (time_keeper_.mortal_strike_cd < 0.0 && time_keeper_.global_cd < 0 && rage > 30 && ms_ww)
                     {
                         mortal_strike(weapons[0], special_stats, rage, damage_sources, flurry_charges, rampage_stacks, rampage_active);
                     }
@@ -1811,11 +1860,11 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
                     }
                     if (use_bloodthirst_)
                     {
-                        use_ww = time_keeper_.blood_thirst_cd > config.combat.whirlwind_bt_cooldown_thresh;
+                        use_ww = std::max(time_keeper_.blood_thirst_cd, 0.1) > config.combat.whirlwind_bt_cooldown_thresh;
                     }
                     if (use_mortal_strike_)
                     {
-                        use_ww &= time_keeper_.mortal_strike_cd > config.combat.whirlwind_bt_cooldown_thresh;
+                        use_ww = std::max(time_keeper_.mortal_strike_cd, 0.1) > config.combat.whirlwind_bt_cooldown_thresh;
                     }
                     if (time_keeper_.whirlwind_cd < 0.0 && rage > config.combat.whirlwind_rage_thresh && rage > 25 - (5 * config.set_bonus_effect.warbringer_2_set) &&
                         time_keeper_.global_cd < 0 && use_ww)
