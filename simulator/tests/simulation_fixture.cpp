@@ -66,7 +66,6 @@ Combat_simulator_config get_config_with_everything_deactivated()
     config.periodic_damage_interval_ = 0.0;
     config.periodic_damage_amount_ = 0.0;
     config.execute_phase_percentage_ = 0.0;
-    config.ability_queue_rage_thresh_ = 0.0;
     config.berserking_haste_ = 0.0;
 
     config.talents.improved_heroic_strike = 0;
@@ -107,7 +106,7 @@ public:
     {
         config = get_config_with_everything_deactivated();
 
-        Weapon wep = Weapon{"test_wep", {}, {}, 2.0, 100, 100, Weapon_socket::one_hand, Weapon_type::axe};
+        auto wep = Weapon{"test_wep", {}, {}, 2.0, 100, 100, Weapon_socket::one_hand, Weapon_type::axe};
         character.equip_weapon(wep, wep);
 
         Armory armory{};

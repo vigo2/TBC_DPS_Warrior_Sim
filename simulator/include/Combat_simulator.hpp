@@ -79,8 +79,6 @@ struct Combat_simulator_config
     bool multi_target_mode_{};
     bool first_global_sunder_{};
 
-    bool ability_queue_{};
-    double ability_queue_rage_thresh_{};
     double berserking_haste_{};
     double unleashed_rage_start_{};
 
@@ -270,13 +268,9 @@ public:
 
     struct Hit_outcome
     {
-        Hit_outcome()
-        {
-            damage = 0;
-            hit_result = Hit_result::TBD;
-        };
+        Hit_outcome() : damage(0), hit_result(Hit_result::TBD) {}
 
-        Hit_outcome(double damage, Hit_result hit_result) : damage{damage}, hit_result{hit_result} {};
+        Hit_outcome(double damage, Hit_result hit_result) : damage{damage}, hit_result{hit_result} {}
 
         double damage;
         Hit_result hit_result;
@@ -287,11 +281,8 @@ public:
 
     void swing_weapon(Weapon_sim& weapon, Weapon_sim& main_hand_weapon, Special_stats& special_stats, double& rage,
                       Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks, bool rampage_active = false, double attack_power_bonus = 0,
-                      bool is_extra_attack = false, bool is_sword_spec = false);
+                      bool is_extra_attack = false);
    
-    void sword_spec_hit(Weapon_sim& main_hand_weapon, Special_stats& special_stats, double& rage,
-                      Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks, bool rampage_active = false, double attack_power_bonus = 0);
-
     void hit_effects(Weapon_sim& weapon, Weapon_sim& main_hand_weapon, Special_stats& special_stats, double& rage,
                      Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks, bool rampage_active = false, bool is_extra_attack = false,
                      bool is_instant = true);
@@ -326,7 +317,9 @@ public:
 
     static double get_uniform_random(double r_max) { return rand() * r_max / RAND_MAX; }
 
-    Combat_simulator::Hit_outcome generate_hit(const Weapon_sim& weapon, double damage, Hit_type hit_type,
+    double rage_generation(double damage, const Weapon_sim& weapon, Hit_result hit_result);
+
+    Combat_simulator::Hit_outcome generate_hit(const Weapon_sim& main_hand_weapon, double damage, Hit_type hit_type,
                                                Socket weapon_hand, const Special_stats& special_stats,
                                                Damage_sources& damage_sources, bool boss_target = true,
                                                bool is_overpower = false, bool can_sweep = true, bool is_whirlwind = false, bool is_melee_spell = false);
@@ -392,9 +385,7 @@ public:
 
     std::vector<int>& get_hist_y() { return hist_y; }
 
-    [[nodiscard]] constexpr double get_flurry_uptime_mh() const { return flurry_uptime_mh_; }
-
-    [[nodiscard]] constexpr double get_flurry_uptime_oh() const { return flurry_uptime_oh_; }
+    [[nodiscard]] constexpr double get_flurry_uptime() const { return flurry_uptime_; }
 
     [[nodiscard]] constexpr double get_hs_uptime() const { return heroic_strike_uptime_; }
 
@@ -449,7 +440,6 @@ private:
     std::vector<double> hit_table_yellow_;
     std::vector<double> hit_table_yellow_spell_;
     std::vector<double> hit_table_overpower_;
-    std::vector<double> hit_table_melee_spell_;
     std::vector<double> damage_multipliers_yellow_;
     std::vector<double> hit_table_two_hand_;
     Damage_sources damage_distribution_{};
@@ -471,8 +461,7 @@ private:
     bool recompute_mitigation_{false};
     int number_of_extra_targets_{};
 
-    double flurry_uptime_mh_{};
-    double flurry_uptime_oh_{};
+    double flurry_uptime_{};
     double heroic_strike_uptime_{};
     double rampage_uptime_{};
 
@@ -488,8 +477,6 @@ private:
     double p_unbridled_wrath_{};
     double flurry_haste_factor_{};
     double dual_wield_damage_factor_{};
-    bool dpr_heroic_strike_queued_{false};
-    bool dpr_cleave_queued_{false};
 
     double tactical_mastery_rage_{0};
     bool deep_wounds_{false};
