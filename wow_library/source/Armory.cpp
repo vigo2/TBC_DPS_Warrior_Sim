@@ -1192,7 +1192,7 @@ void Armory::add_gems_to_character(Character& character, const std::vector<std::
         character.add_gem(gems.dmg_3);
     }
 
-    gem_counter = std::count(gem_vec.begin(), gem_vec.end(), "+12 agi +3% crit dmg");
+    gem_counter = std::count(gem_vec.begin(), gem_vec.end(), "agi critDmg");
     for (i = 0; i < gem_counter; i++)
     {
         character.add_gem(gems.agi_12_critDmg_3);

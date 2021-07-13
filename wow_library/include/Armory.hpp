@@ -113,7 +113,7 @@ struct Gems
     Buff hit_12{"hit_12", Attributes {0, 0}, Special_stats {0.0, 0.76, 0.0}};
     Buff ap_20{"ap_20", Attributes {0, 0}, Special_stats {0.0, 0.0, 20}};
     Buff ap_24{"ap_24", Attributes {0, 0}, Special_stats {0.0, 0.0, 24}};
-    Buff dmg_3{"dmg_3", Attributes {0, 0}, Special_stats {0.0, 0.0, 0.0, 0, 0, 0, 3}};
+    Buff dmg_3{"dmg_3", Attributes {0, 0}, Special_stats {0.0, 0.0, 0.0, 0, 0, 0, 0, 3}};
     Buff crit_3_str_3{"crit_3_str_3", Attributes {3, 0}, Special_stats {0.13, 0.0, 0.0}};
     Buff crit_4_str_4{"crit_4_str_4", Attributes {4, 0}, Special_stats {0.18, 0.0, 0.0}};
     Buff crit_4_str_5{"crit_4_str_5", Attributes {5, 0}, Special_stats {0.18, 0.0, 0.0}};
