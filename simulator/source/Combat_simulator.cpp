@@ -353,6 +353,10 @@ Combat_simulator::Hit_outcome Combat_simulator::generate_hit(const Weapon_sim& m
             hit_outcome.damage *= armor_reduction_factor_add * (1 + special_stats.damage_mod_physical);
         }
         hit_outcome.damage *= dual_wield_damage_factor_;
+        if (!is_whirlwind)
+        {
+            hit_type = Hit_type::white;
+        }
         cout_damage_parse(hit_type, weapon_hand, hit_outcome);
     }
 
