@@ -11,21 +11,17 @@ public:
     constexpr bool time_for_swing(double dt)
     {
         internal_swing_timer -= dt;
-        return internal_swing_timer < 0.0;
+        return internal_swing_timer < 0;
     }
 
-    constexpr double swing(double attack_power) const { return average_damage + attack_power * swing_speed / 14; }
+    [[nodiscard]] double swing(double attack_power) const
+    {
+        return average_damage + attack_power * swing_speed / 14;
+    }
 
-    constexpr double normalized_swing(double attack_power)
+    [[nodiscard]] double normalized_swing(double attack_power) const
     {
         return average_damage + attack_power * normalized_swing_speed / 14;
-    }
-
-    constexpr void compute_weapon_damage(double bonus_damage)
-    {
-        min_damage += bonus_damage;
-        max_damage += bonus_damage;
-        average_damage = (min_damage + max_damage) / 2;
     }
 
     const double swing_speed;

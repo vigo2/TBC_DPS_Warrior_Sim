@@ -55,29 +55,25 @@ void Damage_sources::add_damage(Damage_source source, double damage, double time
         white_oh_damage += damage;
         white_oh_count++;
         break;
+    case Damage_source::slam:
+        slam_damage += damage;
+        slam_count++;
+        break;
+    case Damage_source::deep_wounds:
+        deep_wounds_damage += damage;
+        deep_wounds_count++;
+        break;
     case Damage_source::bloodthirst:
         bloodthirst_damage += damage;
         bloodthirst_count++;
-        break;
-    case Damage_source::sweeping_strikes:
-        sweeping_strikes_damage += damage;
-        sweeping_strikes_count++;
         break;
     case Damage_source::mortal_strike:
         mortal_strike_damage += damage;
         mortal_strike_count++;
         break;
-    case Damage_source::slam:
-        slam_damage += damage;
-        slam_count++;
-        break;
-    case Damage_source::overpower:
-        overpower_damage += damage;
-        overpower_count++;
-        break;
-    case Damage_source::execute:
-        execute_damage += damage;
-        execute_count++;
+    case Damage_source::whirlwind:
+        whirlwind_damage += damage;
+        whirlwind_count++;
         break;
     case Damage_source::heroic_strike:
         heroic_strike_damage += damage;
@@ -87,17 +83,21 @@ void Damage_sources::add_damage(Damage_source source, double damage, double time
         cleave_damage += damage;
         cleave_count++;
         break;
-    case Damage_source::whirlwind:
-        whirlwind_damage += damage;
-        whirlwind_count++;
+    case Damage_source::sweeping_strikes:
+        sweeping_strikes_damage += damage;
+        sweeping_strikes_count++;
+        break;
+    case Damage_source::overpower:
+        overpower_damage += damage;
+        overpower_count++;
+        break;
+    case Damage_source::execute:
+        execute_damage += damage;
+        execute_count++;
         break;
     case Damage_source::hamstring:
         hamstring_damage += damage;
         hamstring_count++;
-        break;
-    case Damage_source::deep_wounds:
-        deep_wounds_damage += damage;
-        deep_wounds_count++;
         break;
     case Damage_source::item_hit_effects:
         item_hit_effects_damage += damage;

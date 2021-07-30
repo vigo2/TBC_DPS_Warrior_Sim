@@ -91,6 +91,15 @@ public:
 
     void add_gem(const Buff& buff) { buffs.emplace_back(buff); }
 
+    [[nodiscard]] bool has_buff(const Buff& buff) const
+    {
+        for (const auto& b : buffs)
+        {
+            if (b.name == buff.name) return true;
+        }
+        return false;
+    }
+
     void add_buff(const Buff& buff) { buffs.emplace_back(buff); }
 
     void add_weapon_buff(const Socket socket, const Weapon_buff& buff)
@@ -105,9 +114,9 @@ public:
         }
     }
 
-    bool is_dual_wield() const { return weapons.size() == 2; }
+    [[nodiscard]] bool is_dual_wield() const { return weapons.size() == 2; }
 
-    bool has_weapon_of_type(Weapon_type weapon_type) const
+    [[nodiscard]] bool has_weapon_of_type(Weapon_type weapon_type) const
     {
         for (const auto& wep : weapons)
         {
@@ -121,19 +130,13 @@ public:
 
     bool has_item(const std::string& item_name)
     {
-        for (const auto& armor_piece : armor)
+        for (const auto& a : armor)
         {
-            if (armor_piece.name == item_name)
-            {
-                return true;
-            }
+            if (a.name == item_name) return true;
         }
-        for (const auto& wep : weapons)
+        for (const auto& w : weapons)
         {
-            if (wep.name == item_name)
-            {
-                return true;
-            }
+            if (w.name == item_name) return true;
         }
         return false;
     }
@@ -207,6 +210,8 @@ Character character_setup(const Armory& armory, const std::string& race, const s
 Race get_race(const std::string& race);
 
 Character get_character_of_race(const std::string& race);
+
+std::ostream& operator<<(std::ostream& os, const Race& race);
 
 std::ostream& operator<<(std::ostream& os, const Character& character);
 

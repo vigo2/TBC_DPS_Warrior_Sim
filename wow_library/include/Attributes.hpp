@@ -170,8 +170,8 @@ public:
     double agility;
 };
 
-std::ostream& operator<<(std::ostream& os, Special_stats const& special_stats);
+std::ostream& operator<<(std::ostream& os, const Special_stats& special_stats);
 
-std::ostream& operator<<(std::ostream& os, Attributes const& stats);
+std::ostream& operator<<(std::ostream& os, const Attributes& stats);
 
 #endif // WOW_SIMULATOR_STATS_HPP

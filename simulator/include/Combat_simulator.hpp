@@ -202,15 +202,9 @@ public:
         TBD
     };
 
-    enum class Hit_type
-    {
-        white,
-        yellow
-    };
-
     struct Ability_queue_manager
     {
-        bool is_ability_queued() { return heroic_strike_queued || cleave_queued; }
+        [[nodiscard]] bool is_ability_queued() const { return heroic_strike_queued || cleave_queued; }
 
         void queue_heroic_strike()
         {
@@ -244,19 +238,19 @@ public:
             slam_cast_time_stamp_ = 0.0;
         };
 
-        bool is_slam_casting() { return slam_casting_; }
+        [[nodiscard]] bool is_slam_casting() const { return slam_casting_; }
 
         void cast_slam(double time_stamp)
         {
             slam_casting_ = true;
-            slam_cast_time_stamp_ = time_stamp;
+            slam_cast_time_stamp_ = time_stamp + slam_cast_time_;
         }
 
         void finish_slam() { slam_casting_ = false; }
 
-        double time_left(double current_time)
+        [[nodiscard]] double time_left(double current_time) const
         {
-            return slam_casting_ ? slam_cast_time_ - (current_time - slam_cast_time_stamp_) : 100.0;
+            return slam_casting_ ? slam_cast_time_stamp_ - current_time : 100.0;
         }
 
         double slam_cast_time_ = 0.0;
@@ -305,7 +299,7 @@ public:
         {
         }
 
-        Hit_table() = default;
+        Hit_table() : name_(), miss_(0), dodge_(0), glance_(0), crit_(0), dm_() {}
 
         [[nodiscard]] const std::string& name() const { return name_; }
 
@@ -377,8 +371,8 @@ public:
     void hamstring(Weapon_sim& main_hand_weapon, Special_stats& special_stats, double& rage,
                    Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks);
 
-    void simulate(const Character& character, size_t n_simulations, double init_mean, double init_variance,
-                  size_t init_simulations);
+    void simulate(const Character& character, int n_simulations, double init_mean, double init_variance,
+                  int init_simulations);
 
     void simulate(const Character& character, int init_iteration = 0, bool log_data = false, bool reset_dps = true);
 
@@ -409,9 +403,9 @@ public:
 
     [[nodiscard]] std::vector<std::string> get_aura_uptimes() const;
 
-    [[nodiscard]] std::map<std::string, double> get_aura_uptimes_map() const { return buff_manager_.aura_uptime; };
+    [[nodiscard]] std::unordered_map<std::string, double> get_aura_uptimes_map() const { return buff_manager_.aura_uptime; };
 
-    [[nodiscard]] std::map<std::string, int> get_proc_data() const { return proc_data_; };
+    [[nodiscard]] std::unordered_map<std::string, int> get_proc_data() const { return proc_data_; };
 
     [[nodiscard]] std::vector<std::string> get_proc_statistics() const;
 
@@ -453,7 +447,7 @@ public:
 
     void normalize_timelapse();
 
-    std::string hit_result_to_string(Combat_simulator::Hit_result hit_result);
+    static std::string hit_result_to_string(Combat_simulator::Hit_result hit_result);
 
     void print_statement(const std::string& t) { debug_topic_ += t; }
 
@@ -537,7 +531,7 @@ private:
     int sweeping_strikes_charges_ = 0;
 
     std::vector<std::vector<double>> damage_time_lapse{};
-    std::map<std::string, int> proc_data_{};
+    std::unordered_map<std::string, int> proc_data_{};
     std::vector<Use_effect> use_effects_all_{};
     std::vector<Over_time_effect> over_time_effects_{};
     std::map<Damage_source, int> source_map{

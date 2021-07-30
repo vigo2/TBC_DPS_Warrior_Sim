@@ -148,7 +148,7 @@ public:
     Hit_effect() = default;
 
     Hit_effect(std::string name, Type type, Attributes attribute_boost, Special_stats special_stats_boost,
-               double damage, int duration, double cooldown, double probability, double attack_power_boost = 0, int n_targets = 1,
+               double damage, double duration, double cooldown, double probability, double attack_power_boost = 0, int n_targets = 1,
                int armor_reduction = 0, int max_stacks = 0, double ppm = 0.0, bool affects_both_weapons = false)
         : name(std::move(name))
         , type(type)
@@ -175,7 +175,7 @@ public:
     Attributes attribute_boost;
     Special_stats special_stats_boost;
     double damage;
-    int duration;
+    double duration;
     double cooldown;
     double probability;
     double attack_power_boost;
@@ -216,6 +216,7 @@ public:
         , hit_effects(std::move(hit_effects))
         , over_time_effects(std::move(over_time_effects)){};
 
+    // FIXME ap_multiplier is used for attributes, but not for special_stats...
     inline Special_stats get_special_stat_equivalent(const Special_stats& special_stats, double ap_multiplier = 0) const
     {
         return attribute_boost.convert_to_special_stats(special_stats, ap_multiplier) + special_stats_boost;

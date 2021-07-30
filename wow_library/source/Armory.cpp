@@ -358,6 +358,11 @@ void Armory::compute_total_stats(Character& character) const
         }
     }
 
+    if (character.race == Race::draenei && !character.has_buff(buffs.heroic_presence))
+    {
+        character.add_buff(buffs.heroic_presence);
+    }
+
     for (const auto& buff : character.buffs)
     {
         total_attributes += buff.attributes;
@@ -480,9 +485,9 @@ bool Armory::check_if_weapons_valid(std::vector<Weapon>& weapons) const
 {
     bool is_valid{true};
     is_valid &= weapons.size() <= 2;
-    is_valid &= (weapons[0].socket != Socket::off_hand);
     if (weapons.size() == 2)
     {
+        is_valid &= (weapons[0].socket != Socket::off_hand);
         is_valid &= (weapons[1].socket != Socket::main_hand);
     }
     if (weapons.size() == 1)
@@ -1221,9 +1226,7 @@ void Armory::add_buffs_to_character(Character& character, const std::vector<std:
     // Player buffs
     if (String_helpers::find_string(buffs_vec, "battle_shout"))
     {
-
         character.add_buff(buffs.battle_shout);
-
     }
     if (String_helpers::find_string(buffs_vec, "blessing_of_kings"))
     {
@@ -1232,7 +1235,6 @@ void Armory::add_buffs_to_character(Character& character, const std::vector<std:
     if (String_helpers::find_string(buffs_vec, "blessing_of_might"))
     {
         character.add_buff(buffs.blessing_of_might);
-
     }
     if (String_helpers::find_string(buffs_vec, "windfury_totem"))
     {

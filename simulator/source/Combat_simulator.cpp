@@ -108,7 +108,7 @@ void Combat_simulator::set_config(const Combat_simulator_config& new_config)
     }
 }
 
-std::string Combat_simulator::hit_result_to_string(const Combat_simulator::Hit_result hit_result)
+std::string Combat_simulator::hit_result_to_string(const Hit_result hit_result)
 {
     switch (hit_result)
     {
@@ -288,21 +288,27 @@ Combat_simulator::Hit_outcome Combat_simulator::generate_hit(const Weapon_sim& m
     {
         if (hit_outcome.hit_result == Combat_simulator::Hit_result::crit)
         {
-            buff_manager_.add_over_time_effect(
-                {"Deep_wounds",
-                 {},
-                 0,
-                 (1 + special_stats.damage_mod_physical) * config.talents.deep_wounds * 0.2 * main_hand_weapon.swing(special_stats.attack_power) / 4,
-                 3,
-                 12},
-                int(time_keeper_.time));
+            buff_manager_.add_over_time_buff({"Deep_wounds",
+                                              {},
+                                              0,
+                                              (1 + special_stats.damage_mod_physical) * config.talents.deep_wounds *
+                                                  0.2 * main_hand_weapon.swing(special_stats.attack_power) / 4,
+                                              3,
+                                              12},
+                                             time_keeper_.time);
         }
     }
 
-    if (hit_outcome.hit_result == Combat_simulator::Hit_result::dodge)
+    if (config.combat.use_overpower && hit_outcome.hit_result == Combat_simulator::Hit_result::dodge)
     {
         simulator_cout("Overpower aura gained!");
-        buff_manager_.add("overpower_aura", {}, 5.0);
+        time_keeper_.gain_overpower_aura();
+    }
+
+    if (use_rampage_ && hit_outcome.hit_result == Combat_simulator::Hit_result::crit)
+    {
+        simulator_cout("Rampage aura gained!");
+        time_keeper_.gain_rampage_aura();
     }
 
     return hit_outcome;
@@ -436,7 +442,7 @@ bool Combat_simulator::start_cast_slam(bool mh_swing, double rage, double& swing
     bool use_sl = true;
     if (use_rampage_)
     {
-        use_sl &= time_keeper_.rampage_cd > 3.0;
+        use_sl &= time_keeper_.rampage_cd() > 3.0;
     }
     if (use_sl)
     {
@@ -446,7 +452,7 @@ bool Combat_simulator::start_cast_slam(bool mh_swing, double rage, double& swing
             {
                 simulator_cout("Starting to cast slam.", " Latency: ", config.combat.slam_latency,"s");
                 slam_manager.cast_slam(time_keeper_.time + config.combat.slam_latency);
-                time_keeper_.global_cd = 1.5 + config.combat.slam_latency;
+                time_keeper_.global_cast(1.5 + config.combat.slam_latency);
                 swing_time_left = config.sim_time;
                 return true;
             }
@@ -461,7 +467,7 @@ void Combat_simulator::slam(Weapon_sim& main_hand_weapon, Special_stats& special
     if (config.dpr_settings.compute_dpr_sl_)
     {
         hit_table_yellow_mh_.isMissOrDodge() ? rage -= 3 : rage -= 15;
-        time_keeper_.global_cd = 1.5;
+        time_keeper_.global_cast(1.5);
         return;
     }
     simulator_cout("Slam!");
@@ -492,8 +498,8 @@ void Combat_simulator::mortal_strike(Weapon_sim& main_hand_weapon, Special_stats
     if (config.dpr_settings.compute_dpr_ms_)
     {
         hit_table_yellow_mh_.isMissOrDodge() ? rage -= 6 : rage -= 30;
-        time_keeper_.mortal_strike_cd = 6.0 - (config.talents.improved_mortal_strike * 0.2);
-        time_keeper_.global_cd = 1.5;
+        time_keeper_.mortal_strike_cast(6.0 - config.talents.improved_mortal_strike * 0.2);
+        time_keeper_.global_cast(1.5);
         return;
     }
     simulator_cout("Mortal Strike!");
@@ -514,8 +520,8 @@ void Combat_simulator::mortal_strike(Weapon_sim& main_hand_weapon, Special_stats
         maybe_gain_flurry(hit_outcome.hit_result, flurry_charges, special_stats);
         hit_effects(main_hand_weapon, main_hand_weapon, special_stats, rage, damage_sources, flurry_charges, rampage_stacks);
     }
-    time_keeper_.mortal_strike_cd = 6.0 - (config.talents.improved_mortal_strike * 0.2);
-    time_keeper_.global_cd = 1.5;
+    time_keeper_.mortal_strike_cast(6.0 - config.talents.improved_mortal_strike * 0.2);
+    time_keeper_.global_cast(1.5);
     damage_sources.add_damage(Damage_source::mortal_strike, hit_outcome.damage, time_keeper_.time);
     simulator_cout("Current rage: ", int(rage));
 }
@@ -526,8 +532,8 @@ void Combat_simulator::bloodthirst(Weapon_sim& main_hand_weapon, Special_stats& 
     if (config.dpr_settings.compute_dpr_bt_)
     {
         hit_table_yellow_mh_.isMissOrDodge() ? rage -= 6 : rage -= 30;
-        time_keeper_.blood_thirst_cd = 6.0;
-        time_keeper_.global_cd = 1.5;
+        time_keeper_.blood_thirst_cast(6.0);
+        time_keeper_.global_cast(1.5);
         return;
     }
     simulator_cout("Bloodthirst!");
@@ -549,8 +555,8 @@ void Combat_simulator::bloodthirst(Weapon_sim& main_hand_weapon, Special_stats& 
         maybe_gain_flurry(hit_outcome.hit_result, flurry_charges, special_stats);
         hit_effects(main_hand_weapon, main_hand_weapon, special_stats, rage, damage_sources, flurry_charges, rampage_stacks);
     }
-    time_keeper_.blood_thirst_cd = 6.0;
-    time_keeper_.global_cd = 1.5;
+    time_keeper_.blood_thirst_cast(6.0);
+    time_keeper_.global_cast(1.5);
     damage_sources.add_damage(Damage_source::bloodthirst, hit_outcome.damage, time_keeper_.time);
     simulator_cout("Current rage: ", int(rage));
 }
@@ -565,14 +571,14 @@ void Combat_simulator::overpower(Weapon_sim& main_hand_weapon, Special_stats& sp
             rage = tactical_mastery_rage_;
         }
         rage -= 5;
-        buff_manager_.add("battle_stance", {-3.0, 0, 0}, 1.5);
-        time_keeper_.overpower_cd = 5.0;
-        time_keeper_.global_cd = 1.5;
+        // FIXME!!! buff_manager_.add("battle_stance", {-3.0, 0, 0}, 1.5);
+        time_keeper_.overpower_cast(5.0);
+        time_keeper_.global_cast(1.5);
         return;
     }
     simulator_cout("Changed stance: Battle Stance.");
     simulator_cout("Overpower!");
-    buff_manager_.add("battle_stance", {-3.0, 0, 0}, 1.5);
+    // FIXME!!! buff_manager_.add("battle_stance", {-3.0, 0, 0}, 1.5);
     double damage = main_hand_weapon.normalized_swing(special_stats.attack_power) + 35;
     auto hit_outcome = generate_hit(main_hand_weapon, damage, main_hand_weapon, hit_table_overpower_, special_stats,
                                     damage_sources);
@@ -587,8 +593,8 @@ void Combat_simulator::overpower(Weapon_sim& main_hand_weapon, Special_stats& sp
         maybe_gain_flurry(hit_outcome.hit_result, flurry_charges, special_stats);
         hit_effects(main_hand_weapon, main_hand_weapon, special_stats, rage, damage_sources, flurry_charges, rampage_stacks);
     }
-    time_keeper_.overpower_cd = 5.0;
-    time_keeper_.global_cd = 1.5;
+    time_keeper_.overpower_cast(5.0);
+    time_keeper_.global_cast(1.5);
     damage_sources.add_damage(Damage_source::overpower, hit_outcome.damage, time_keeper_.time);
     simulator_cout("Current rage: ", int(rage));
 }
@@ -599,8 +605,8 @@ void Combat_simulator::whirlwind(Weapon_sim& main_hand_weapon, Weapon_sim& off_h
     if (config.dpr_settings.compute_dpr_ww_)
     {
         rage -= 25 - (5 * config.set_bonus_effect.warbringer_2_set);
-        time_keeper_.whirlwind_cd = 10 - config.talents.improved_whirlwind;
-        time_keeper_.global_cd = 1.5;
+        time_keeper_.whirlwind_cast(10 - config.talents.improved_whirlwind);
+        time_keeper_.global_cast(1.5);
         return;
     }
     simulator_cout("Whirlwind! #targets = boss + ", number_of_extra_targets_, " adds");
@@ -631,8 +637,8 @@ void Combat_simulator::whirlwind(Weapon_sim& main_hand_weapon, Weapon_sim& off_h
         }
     }
     rage -= 25 - (5 * config.set_bonus_effect.warbringer_2_set);
-    time_keeper_.whirlwind_cd = 10 - config.talents.improved_whirlwind;
-    time_keeper_.global_cd = 1.5;
+    time_keeper_.whirlwind_cast(10 - config.talents.improved_whirlwind);
+    time_keeper_.global_cast(1.5);
     damage_sources.add_damage(Damage_source::whirlwind, total_damage, time_keeper_.time);
     simulator_cout("Current rage: ", int(rage));
 }
@@ -644,7 +650,7 @@ void Combat_simulator::execute(Weapon_sim& main_hand_weapon, Special_stats& spec
     {
         simulator_cout("Execute (DPR)!");
         rage -= execute_rage_cost_;
-        time_keeper_.global_cd = 1.5;
+        time_keeper_.global_cast(1.5);
         if (hit_table_yellow_mh_.isMissOrDodge()) return;
         rage_spent_on_execute_ += rage;
         rage = 0;
@@ -655,7 +661,7 @@ void Combat_simulator::execute(Weapon_sim& main_hand_weapon, Special_stats& spec
     auto hit_outcome = generate_hit(main_hand_weapon, damage, main_hand_weapon, hit_table_yellow_mh_, special_stats,
                                     damage_sources);
     rage -= execute_rage_cost_;
-    time_keeper_.global_cd = 1.5;
+    time_keeper_.global_cast(1.5);
     if (hit_outcome.hit_result == Hit_result::miss || hit_outcome.hit_result == Hit_result::dodge)
     {
         if (hit_outcome.hit_result == Hit_result::dodge && config.set_bonus_effect.warbringer_4_set)
@@ -680,14 +686,14 @@ void Combat_simulator::hamstring(Weapon_sim& main_hand_weapon, Special_stats& sp
     if (config.dpr_settings.compute_dpr_ha_)
     {
         hit_table_yellow_mh_.isMissOrDodge() ? rage -= 2 : rage -= 10;
-        time_keeper_.global_cd = 1.5;
+        time_keeper_.global_cast(1.5);
         return;
     }
     simulator_cout("Hamstring!");
     double damage = 63;
     auto hit_outcome =
         generate_hit(main_hand_weapon, damage, main_hand_weapon, hit_table_yellow_mh_, special_stats, damage_sources);
-    time_keeper_.global_cd = 1.5;
+    time_keeper_.global_cast(1.5);
     if (hit_outcome.hit_result == Hit_result::miss || hit_outcome.hit_result == Hit_result::dodge)
     {
         rage -= 2;
@@ -736,27 +742,13 @@ void Combat_simulator::hit_effects(Weapon_sim& weapon, Weapon_sim& main_hand_wea
         {
             probability = hit_effect.probability;
         }
-        if (r < probability && hit_effect.time_counter <= 0)
+        if (r < probability && hit_effect.time_counter <= time_keeper_.time)
         {
             //simulator_cout("Proc PPM: ", hit_effect.ppm, " Proc chance: ", probability, "Proc ICD: ");
-            buff_manager_.reset_icd(hit_effect);
+            buff_manager_.reset_icd(hit_effect, time_keeper_.time);
             proc_data_[hit_effect.name]++;
             switch (hit_effect.type)
             {
-            case Hit_effect::Type::extra_hit: {
-                if (!is_extra_attack)
-                {
-                    simulator_cout("PROC: extra hit from: ", hit_effect.name);
-                    swing_weapon(main_hand_weapon, main_hand_weapon, special_stats, rage, damage_sources,
-                                 flurry_charges, rampage_stacks, hit_effect.attack_power_boost, true);
-                }
-                else
-                {
-                    // Decrement the proc statistics for extra hit if it got triggered by an extra hit
-                    proc_data_[hit_effect.name]--;
-                }
-                break;
-            }
             case Hit_effect::Type::windfury_hit: {
                 if (!is_extra_attack && !is_instant)
                 {
@@ -772,9 +764,31 @@ void Combat_simulator::hit_effects(Weapon_sim& weapon, Weapon_sim& main_hand_wea
                 break;
             }
             case Hit_effect::Type::sword_spec: {
+                simulator_cout("PROC: extra hit from: ", hit_effect.name);
+                swing_weapon(main_hand_weapon, main_hand_weapon, special_stats, rage, damage_sources,
+                             flurry_charges, rampage_stacks, hit_effect.attack_power_boost, false);
+                break;
+            }
+            case Hit_effect::Type::extra_hit: {
+                if (!is_extra_attack)
+                {
                     simulator_cout("PROC: extra hit from: ", hit_effect.name);
                     swing_weapon(main_hand_weapon, main_hand_weapon, special_stats, rage, damage_sources,
-                                        flurry_charges, rampage_stacks, hit_effect.attack_power_boost, false);
+                                 flurry_charges, rampage_stacks, hit_effect.attack_power_boost, true);
+                }
+                else
+                {
+                    // Decrement the proc statistics for extra hit if it got triggered by an extra hit
+                    proc_data_[hit_effect.name]--;
+                }
+                break;
+            }
+            case Hit_effect::Type::stat_boost: {
+                simulator_cout("PROC: ", hit_effect.name, " stats increased for ", hit_effect.duration, "s");
+                Hit_effect clone(hit_effect);
+                //clone.name = weapon.socket_name + "_" + hit_effect.name;
+                clone.special_stats_boost = hit_effect.get_special_stat_equivalent(special_stats, ap_multiplier);
+                buff_manager_.add_combat_buff(clone, time_keeper_.time);
                 break;
             }
             case Hit_effect::Type::damage_magic: {
@@ -802,13 +816,6 @@ void Combat_simulator::hit_effects(Weapon_sim& weapon, Weapon_sim& main_hand_wea
                 }
                 break;
             }
-            case Hit_effect::Type::stat_boost: {
-                simulator_cout("PROC: ", hit_effect.name, " stats increased for ", hit_effect.duration, "s");
-                buff_manager_.add(weapon.socket_name + "_" + hit_effect.name,
-                                  hit_effect.get_special_stat_equivalent(special_stats, ap_multiplier),
-                                  hit_effect.duration);
-                break;
-            }
             case Hit_effect::Type::reduce_armor: {
                 if (hit_effect.name == "badge_of_the_swarmguard")
                 {
@@ -830,12 +837,12 @@ void Combat_simulator::hit_effects(Weapon_sim& weapon, Weapon_sim& main_hand_wea
                     if (buff_manager_.arpen_stacks_counter < hit_effect.max_stacks)
                     {
                         buff_manager_.arpen_stacks_counter++;
-                        buff_manager_.modify_arpen_stacks(hit_effect, weapon.socket);
+                        // FIXME buff_manager_.modify_arpen_stacks(hit_effect, weapon.socket);
                         simulator_cout("PROC: ", hit_effect.name, ", current stacks: ", buff_manager_.arpen_stacks_counter);
                     }
                     else
                     {
-                        buff_manager_.modify_arpen_stacks(hit_effect, weapon.socket, true);
+                        // FIXME buff_manager_.modify_arpen_stacks(hit_effect, weapon.socket, true);
                         simulator_cout("PROC: ", hit_effect.name,
                                     ". At max stacks. Current stacks: ", buff_manager_.arpen_stacks_counter);
                     }
@@ -1008,8 +1015,8 @@ void update_swing_timers(Weapon_sim& mh, Weapon_sim& oh, double oldHaste, double
     }
 }
 
-void Combat_simulator::simulate(const Character& character, size_t n_simulations, double init_mean,
-                                double init_variance, size_t init_simulations)
+void Combat_simulator::simulate(const Character& character, int n_simulations, double init_mean,
+                                double init_variance, int init_simulations)
 {
     dps_distribution_.mean_ = init_mean;
     dps_distribution_.variance_ = init_variance;
@@ -1093,7 +1100,6 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
         use_effects_all.push_back(use_effect);
     }
 
-    
     if (config.enable_unleashed_rage > 0)
     {
         double ap_boost = 
@@ -1131,12 +1137,12 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
         if (is_dual_wield)
         {
             weapons[1].hit_effects = hit_effects_oh_copy;
-            buff_manager_.initialize(special_stats, use_effect_order, weapons[0].hit_effects, weapons[1].hit_effects,
+            buff_manager_.initialize(special_stats, damage_sources, use_effect_order, weapons[0].hit_effects, weapons[1].hit_effects,
                                      tactical_mastery_rage_, config.performance_mode);
         }
         else
         {
-            buff_manager_.initialize(special_stats, use_effect_order, weapons[0].hit_effects, hit_effects_oh_copy,
+            buff_manager_.initialize(special_stats, damage_sources, use_effect_order, weapons[0].hit_effects, hit_effects_oh_copy,
                                      tactical_mastery_rage_, config.performance_mode);
         }
 
@@ -1147,7 +1153,6 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
         rage_spent_on_execute_ = 0;
 
         int flurry_charges = 0; 
-        bool crit_for_rampage = false;
         int rampage_stacks = 0;
         bool apply_delayed_armor_reduction = false;
         bool execute_phase = false;
@@ -1159,7 +1164,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
         int oh_hits_w_heroic = 0;
         int mh_hits_w_rampage = 0;
 
-        weapons[0].internal_swing_timer = 0.0;
+        weapons[0].internal_swing_timer = 0;
         if (is_dual_wield) weapons[1].internal_swing_timer = 0.5 * (weapons[1].swing_speed / (1 + special_stats.haste)); // de-sync mh/oh swing timers
 
         // To avoid local max/min results from running a specific run time
@@ -1189,7 +1194,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
                     use_effect_dt = 1e-5;
                     if (buff_manager_.use_effect_order.back().second.triggers_gcd)
                     {
-                        use_effect_dt = (time_keeper_.global_cd > 0.0) ? time_keeper_.global_cd : use_effect_dt;
+                        use_effect_dt = time_keeper_.global_ready() ? use_effect_dt : time_keeper_.global_cd();
                     }
                 }
                 double dt =
@@ -1197,7 +1202,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
                 time_keeper_.increment(dt);
                 std::vector<std::string> debug_msg{};
                 double ap_multiplier = config.talents.improved_berserker_stance * 0.02 + config.enable_unleashed_rage * 0.1;
-                buff_manager_.increment(dt, time_keeper_.time, rage, rage_lost_stance_swap_, time_keeper_.global_cd,
+                buff_manager_.increment(dt, time_keeper_.time, rage, rage_lost_stance_swap_, time_keeper_,
                                         config.display_combat_debug, debug_msg, ap_multiplier);
                 for (const auto& msg : debug_msg)
                 {
@@ -1208,7 +1213,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
 
         for (const auto& over_time_effect : over_time_effects_)
         {
-            buff_manager_.add_over_time_effect(over_time_effect, 0);
+            buff_manager_.add_over_time_buff(over_time_effect, 0);
         }
 
         // First global sunder
@@ -1222,7 +1227,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
         while (time_keeper_.time < sim_time)
         {
             double mh_dt = weapons[0].internal_swing_timer;
-            double oh_dt = is_dual_wield ? weapons[1].internal_swing_timer : 1000.0;
+            double oh_dt = is_dual_wield ? weapons[1].internal_swing_timer : 1000;
             double oldHaste = special_stats.haste;
             double buff_dt = buff_manager_.get_dt(time_keeper_.time);
             double slam_dt = slam_manager.time_left(time_keeper_.time);
@@ -1231,7 +1236,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
             time_keeper_.increment(dt);
             std::vector<std::string> debug_msg{};
             double ap_multiplier = config.talents.improved_berserker_stance * 0.02 + config.enable_unleashed_rage * 0.1;
-            buff_manager_.increment(dt, time_keeper_.time, rage, rage_lost_stance_swap_, time_keeper_.global_cd,
+            buff_manager_.increment(dt, time_keeper_.time, rage, rage_lost_stance_swap_, time_keeper_,
                                     config.display_combat_debug, debug_msg, ap_multiplier);
             for (const auto& msg : debug_msg)
             {
@@ -1338,21 +1343,21 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
 
             if (use_sweeping_strikes_)
             {
-                if (rage > 30.0 && time_keeper_.global_cd < 0.0 && time_keeper_.sweeping_strikes_cd < 0.0)
+                if (rage > 30.0 && time_keeper_.global_ready() && time_keeper_.sweeping_strikes_ready())
                 {
                     simulator_cout("Sweeping strikes!");
                     sweeping_strikes_charges_ = 10;
-                    time_keeper_.sweeping_strikes_cd = 30;
-                    time_keeper_.global_cd = 1.5;
+                    time_keeper_.sweeping_strikes_cast(30);
+                    time_keeper_.global_cast(1.5);
                 }
             }
 
             if (first_global_sunder)
             {
-                if (time_keeper_.global_cd < 0 && rage > 15)
+                if (time_keeper_.global_ready() && rage > 15)
                 {
                     simulator_cout("Sunder Armor!");
-                    time_keeper_.global_cd = 1.5;
+                    time_keeper_.global_cast(1.5);
                     rage -= 15;
                     first_global_sunder = false;
                 }
@@ -1361,7 +1366,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
             {
                 if (weapons[0].weapon_socket == Weapon_socket::two_hand && config.combat.use_slam && config.combat.use_sl_in_exec_phase)
                 {
-                    if (!slam_manager.is_slam_casting() && time_keeper_.global_cd < 0.0)
+                    if (!slam_manager.is_slam_casting() && time_keeper_.global_ready())
                     {
                         if (start_cast_slam(mh_swing, rage, weapons[0].internal_swing_timer))
                         {
@@ -1374,7 +1379,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
                         slam_manager.finish_slam();
                         weapons[0].internal_swing_timer = 0;
                         update_swing_timers(weapons[0], is_dual_wield ? weapons[1] : weapons[0], oldHaste, special_stats.haste);
-                        if (time_keeper_.global_cd < 0.0)
+                        if (time_keeper_.global_ready())
                         {
                             if (start_cast_slam(mh_swing, rage, weapons[0].internal_swing_timer))
                             {
@@ -1393,9 +1398,9 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
                     bool ms_ww = true;
                     if (config.combat.use_whirlwind)
                     {
-                        ms_ww = std::max(time_keeper_.whirlwind_cd, 0.1) > config.combat.bt_whirlwind_cooldown_thresh;
+                        ms_ww = std::max(time_keeper_.whirlwind_cd(), 0.1) > config.combat.bt_whirlwind_cooldown_thresh;
                     }
-                    if (time_keeper_.mortal_strike_cd < 0.0 && time_keeper_.global_cd < 0 && rage > 30 && ms_ww)
+                    if (time_keeper_.mortal_strike_ready() && time_keeper_.global_ready() && rage > 30 && ms_ww)
                     {
                         mortal_strike(weapons[0], special_stats, rage, damage_sources, flurry_charges, rampage_stacks);
                     }
@@ -1405,9 +1410,9 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
                     bool bt_ww = true;
                     if (config.combat.use_whirlwind)
                     {
-                        bt_ww = std::max(time_keeper_.whirlwind_cd, 0.1) > config.combat.bt_whirlwind_cooldown_thresh;
+                        bt_ww = std::max(time_keeper_.whirlwind_cd(), 0.1) > config.combat.bt_whirlwind_cooldown_thresh;
                     }
-                    if (time_keeper_.blood_thirst_cd < 0.0 && time_keeper_.global_cd < 0 && rage > 30 && bt_ww)
+                    if (time_keeper_.blood_thirst_ready() && time_keeper_.global_ready() && rage > 30 && bt_ww)
                     {
                         bloodthirst(weapons[0], special_stats, rage, damage_sources, flurry_charges, rampage_stacks);
                     }
@@ -1417,18 +1422,18 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
                     bool use_ww = true;
                     if (use_rampage_)
                     {
-                        use_ww = time_keeper_.rampage_cd > 3.0;
+                        use_ww = time_keeper_.rampage_cd() > 3.0;
                     }
                     if (use_bloodthirst_)
                     {
-                        use_ww = std::max(time_keeper_.blood_thirst_cd, 0.1) > config.combat.whirlwind_bt_cooldown_thresh;
+                        use_ww = std::max(time_keeper_.blood_thirst_cd(), 0.1) > config.combat.whirlwind_bt_cooldown_thresh;
                     }
                     if (use_mortal_strike_)
                     {
-                        use_ww = std::max(time_keeper_.mortal_strike_cd, 0.1) > config.combat.whirlwind_bt_cooldown_thresh;
+                        use_ww = std::max(time_keeper_.mortal_strike_cd(), 0.1) > config.combat.whirlwind_bt_cooldown_thresh;
                     }
-                    if (time_keeper_.whirlwind_cd < 0.0 && rage > config.combat.whirlwind_rage_thresh && rage > 25 - (5 * config.set_bonus_effect.warbringer_2_set) &&
-                        time_keeper_.global_cd < 0 && use_ww)
+                    if (time_keeper_.whirlwind_ready() && rage > config.combat.whirlwind_rage_thresh && rage > 25 - (5 * config.set_bonus_effect.warbringer_2_set) &&
+                        time_keeper_.global_ready() && use_ww)
                     {
                         if (is_dual_wield)
                         {
@@ -1441,7 +1446,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
 
                     }
                 }
-                if (time_keeper_.global_cd < 0 && rage > execute_rage_cost_)
+                if (time_keeper_.global_ready() && rage > execute_rage_cost_)
                 {
                     execute(weapons[0], special_stats, rage, damage_sources, flurry_charges, rampage_stacks);
                 }
@@ -1469,7 +1474,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
             {
                 if (weapons[0].weapon_socket == Weapon_socket::two_hand && config.combat.use_slam)
                 {
-                    if (!slam_manager.is_slam_casting() && time_keeper_.global_cd < 0.0)
+                    if (!slam_manager.is_slam_casting() && time_keeper_.global_ready())
                     {
                         if (start_cast_slam(mh_swing, rage, weapons[0].internal_swing_timer))
                         {
@@ -1482,7 +1487,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
                         slam_manager.finish_slam();
                         weapons[0].internal_swing_timer = 0;
                         update_swing_timers(weapons[0], is_dual_wield ? weapons[1] : weapons[0], oldHaste, special_stats.haste);
-                        if (time_keeper_.global_cd < 0.0)
+                        if (time_keeper_.global_ready())
                         {
                             if (start_cast_slam(mh_swing, rage, weapons[0].internal_swing_timer))
                             {
@@ -1499,17 +1504,11 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
 
                 if (use_rampage_)
                 {
-                    // TODO create a proper crit detection without using flurry charges
-                    if (flurry_charges > 0)
+                    if (time_keeper_.rampage_cd() < config.combat.rampage_use_thresh && time_keeper_.global_ready() && rage > 20 && time_keeper_.can_do_rampage())
                     {
-                        crit_for_rampage = true;
-                    }
-                    if (time_keeper_.rampage_cd < config.combat.rampage_use_thresh && time_keeper_.global_cd < 0 && rage > 20 && crit_for_rampage)
-                    {
-                        time_keeper_.rampage_cd = 30.0;
-                        time_keeper_.global_cd = 1.5;
+                        time_keeper_.rampage_cast(30.0);
+                        time_keeper_.global_cast(1.5);
                         rage -= 20;
-                        crit_for_rampage = false;
                         if (rampage_stacks == 0)
                         {
                             double rampage_ap = 50 * (1 + config.talents.improved_berserker_stance * 0.02 + config.enable_unleashed_rage * 0.1);
@@ -1519,7 +1518,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
                         simulator_cout("Rampage!");
                         simulator_cout("Current rage: ", int(rage));
                     }
-                    else if (time_keeper_.rampage_cd < 0.0 && rampage_stacks > 0)
+                    else if (time_keeper_.rampage_cd() < 0.0 && rampage_stacks > 0)
                     {
                         double rampage_ap = 50 * (1 + config.talents.improved_berserker_stance * 0.02 + config.enable_unleashed_rage * 0.1) * rampage_stacks;
                         special_stats -= {0, 0, rampage_ap};
@@ -1533,9 +1532,9 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
                     bool bt_ww = true;
                     if (config.combat.use_whirlwind)
                     {
-                        bt_ww = std::max(time_keeper_.whirlwind_cd, 0.1) > config.combat.bt_whirlwind_cooldown_thresh;
+                        bt_ww = std::max(time_keeper_.whirlwind_cd(), 0.1) > config.combat.bt_whirlwind_cooldown_thresh;
                     }
-                    if (time_keeper_.blood_thirst_cd < 0.0 && time_keeper_.global_cd < 0 && rage > 30 && bt_ww)
+                    if (time_keeper_.blood_thirst_ready() && time_keeper_.global_ready() && rage > 30 && bt_ww)
                     {
                         bloodthirst(weapons[0], special_stats, rage, damage_sources, flurry_charges, rampage_stacks);
                     }
@@ -1546,9 +1545,9 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
                     bool ms_ww = true;
                     if (config.combat.use_whirlwind)
                     {
-                        ms_ww = std::max(time_keeper_.whirlwind_cd, 0.1) > config.combat.bt_whirlwind_cooldown_thresh;
+                        ms_ww = std::max(time_keeper_.whirlwind_cd(), 0.1) > config.combat.bt_whirlwind_cooldown_thresh;
                     }
-                    if (time_keeper_.mortal_strike_cd < 0.0 && time_keeper_.global_cd < 0 && rage > 30 && ms_ww)
+                    if (time_keeper_.mortal_strike_ready() && time_keeper_.global_ready() && rage > 30 && ms_ww)
                     {
                         mortal_strike(weapons[0], special_stats, rage, damage_sources, flurry_charges, rampage_stacks);
                     }
@@ -1559,18 +1558,18 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
                     bool use_ww = true;
                     if (use_rampage_)
                     {
-                        use_ww = time_keeper_.rampage_cd > 3.0;
+                        use_ww = time_keeper_.rampage_cd() > 3.0;
                     }
                     if (use_bloodthirst_)
                     {
-                        use_ww = std::max(time_keeper_.blood_thirst_cd, 0.1) > config.combat.whirlwind_bt_cooldown_thresh;
+                        use_ww = std::max(time_keeper_.blood_thirst_cd(), 0.1) > config.combat.whirlwind_bt_cooldown_thresh;
                     }
                     if (use_mortal_strike_)
                     {
-                        use_ww = std::max(time_keeper_.mortal_strike_cd, 0.1) > config.combat.whirlwind_bt_cooldown_thresh;
+                        use_ww = std::max(time_keeper_.mortal_strike_cd(), 0.1) > config.combat.whirlwind_bt_cooldown_thresh;
                     }
-                    if (time_keeper_.whirlwind_cd < 0.0 && rage > config.combat.whirlwind_rage_thresh && rage > 25 - (5 * config.set_bonus_effect.warbringer_2_set) &&
-                        time_keeper_.global_cd < 0 && use_ww)
+                    if (time_keeper_.whirlwind_ready() && rage > config.combat.whirlwind_rage_thresh && rage > 25 - (5 * config.set_bonus_effect.warbringer_2_set) &&
+                        time_keeper_.global_ready() && use_ww)
                     {
                         if (is_dual_wield)
                         {
@@ -1589,22 +1588,22 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
                     bool use_op = true;
                     if (use_rampage_)
                     {
-                        use_op &= time_keeper_.rampage_cd > 3.0;
+                        use_op &= time_keeper_.rampage_cd() > 3.0;
                     }
                     if (use_bloodthirst_)
                     {
-                        use_op &= time_keeper_.blood_thirst_cd > config.combat.overpower_bt_cooldown_thresh;
+                        use_op &= time_keeper_.blood_thirst_cd() > config.combat.overpower_bt_cooldown_thresh;
                     }
                     if (use_mortal_strike_)
                     {
-                        use_op &= time_keeper_.mortal_strike_cd > config.combat.overpower_bt_cooldown_thresh;
+                        use_op &= time_keeper_.mortal_strike_cd() > config.combat.overpower_bt_cooldown_thresh;
                     }
                     if (config.combat.use_whirlwind)
                     {
-                        use_op &= time_keeper_.whirlwind_cd > config.combat.overpower_ww_cooldown_thresh;
+                        use_op &= time_keeper_.whirlwind_cd() > config.combat.overpower_ww_cooldown_thresh;
                     }
-                    if (time_keeper_.overpower_cd < 0.0 && rage < config.combat.overpower_rage_thresh && rage > 5 &&
-                        time_keeper_.global_cd < 0 && buff_manager_.can_do_overpower() && use_op)
+                    if (time_keeper_.overpower_ready() && rage < config.combat.overpower_rage_thresh && rage > 5 &&
+                        time_keeper_.global_ready() && time_keeper_.can_do_overpower() && use_op)
                     {
                         overpower(weapons[0], special_stats, rage, damage_sources, flurry_charges, rampage_stacks);
                     }
@@ -1619,21 +1618,21 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
                     }
                     if (use_rampage_)
                     {
-                        use_ham &= time_keeper_.rampage_cd > 3.0;
+                        use_ham &= time_keeper_.rampage_cd() > 3.0;
                     }
                     if (use_bloodthirst_)
                     {
-                        use_ham &= time_keeper_.blood_thirst_cd > config.combat.hamstring_cd_thresh;
+                        use_ham &= time_keeper_.blood_thirst_cd() > config.combat.hamstring_cd_thresh;
                     }
                     if (use_mortal_strike_)
                     {
-                        use_ham &= time_keeper_.mortal_strike_cd > config.combat.hamstring_cd_thresh;
+                        use_ham &= time_keeper_.mortal_strike_cd() > config.combat.hamstring_cd_thresh;
                     }
                     if (config.combat.use_whirlwind)
                     {
-                        use_ham &= time_keeper_.whirlwind_cd > config.combat.hamstring_cd_thresh;
+                        use_ham &= time_keeper_.whirlwind_cd() > config.combat.hamstring_cd_thresh;
                     }
-                    if (rage > config.combat.hamstring_thresh_dd && time_keeper_.global_cd < 0 && use_ham)
+                    if (rage > config.combat.hamstring_thresh_dd && time_keeper_.global_ready() && use_ham)
                     {
                         hamstring(weapons[0], special_stats, rage, damage_sources, flurry_charges, rampage_stacks);
                     }
@@ -1668,14 +1667,8 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
         }
         // end of batch
 
-        if (deep_wounds_)
-        {
-            double dw_average_damage = buff_manager_.deep_wounds_damage / buff_manager_.deep_wounds_timestamps.size();
-            for (double deep_wounds_timestamp : buff_manager_.deep_wounds_timestamps)
-            {
-                damage_sources.add_damage(Damage_source::deep_wounds, dw_average_damage, deep_wounds_timestamp);
-            }
-        }
+        buff_manager_.update_aura_uptimes(sim_time);
+
         double new_sample = damage_sources.sum_damage_sources() / sim_time;
         dps_distribution_.add_sample(new_sample);
         damage_distribution_ = damage_distribution_ + damage_sources;
