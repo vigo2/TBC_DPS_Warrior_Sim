@@ -621,7 +621,6 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
 
     std::string dpr_info = "<br>(Hint: Ability damage per rage computations can be turned on under 'Simulation "
                            "settings')";
-    config.performance_mode = true;
     if (String_helpers::find_string(input.options, "compute_dpr"))
     {
         config.n_batches = 10000;
@@ -1111,7 +1110,6 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
     if (String_helpers::find_string(input.options, "debug_on"))
     {
         config.display_combat_debug = true;
-        config.performance_mode = false;
 
         simulator.set_config(config);
         double dps{};

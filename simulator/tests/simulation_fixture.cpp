@@ -84,7 +84,6 @@ Combat_simulator_config get_config_with_everything_deactivated()
     config.talents.mortal_strike = 0;
     config.talents.sweeping_strikes = 0;
 
-    config.performance_mode = true;
     config.n_batches = 10;
 
     config.seed = 110000;

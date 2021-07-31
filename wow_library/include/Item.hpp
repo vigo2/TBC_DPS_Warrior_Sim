@@ -130,6 +130,9 @@ struct Over_time_effect
     int duration;
 };
 
+struct Combat_buff;
+
+
 class Hit_effect
 {
 public:
@@ -163,9 +166,11 @@ public:
         , armor_reduction(armor_reduction)
         , ppm(ppm)
         , affects_both_weapons(affects_both_weapons)
-        , max_stacks(max_stacks){};
+        , max_stacks(max_stacks)
+        , time_counter(0)
+        , stacks_counter(0) {};
 
-    inline Special_stats get_special_stat_equivalent(const Special_stats& special_stats, double ap_multiplier = 0) const
+    [[nodiscard]] Special_stats get_special_stat_equivalent(const Special_stats& special_stats, double ap_multiplier = 0) const
     {
         return attribute_boost.convert_to_special_stats(special_stats, ap_multiplier) + special_stats_boost;
     }

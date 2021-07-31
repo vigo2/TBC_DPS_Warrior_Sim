@@ -38,8 +38,13 @@ struct Over_time_buff
 
 struct Combat_buff
 {
-    Combat_buff(const Hit_effect& hit_effect, double current_time) : name(hit_effect.name), special_stats_boost(hit_effect.special_stats_boost),
-        next_fade(current_time + hit_effect.duration), stacks(1), uptime(0), last_gain(current_time) {}
+    Combat_buff(const Hit_effect& hit_effect, const Special_stats& multipliers, double current_time) :
+        name(hit_effect.name),
+        special_stats_boost(hit_effect.special_stats_boost + hit_effect.attribute_boost.convert_to_special_stats(multipliers)),
+        next_fade(current_time + hit_effect.duration),
+        stacks(1),
+        uptime(0),
+        last_gain(current_time) {}
 
     const std::string name;
     const Special_stats special_stats_boost;
@@ -63,17 +68,16 @@ class Buff_manager
 {
 public:
     // CHECKME this is called _per sim run_, and resets a lot more than actually necessary
-    void initialize(Special_stats& special_stats, Damage_sources& damage_sources, const std::vector<std::pair<double, Use_effect>>& use_effects_order,
+    void initialize(Special_stats& special_stats, Damage_sources& damage_sources,
+                    const std::vector<std::pair<double, Use_effect>>& use_effects_order,
                     std::vector<Hit_effect>& hit_effects_mh_input, std::vector<Hit_effect>& hit_effects_oh_input,
-                    double tactical_mastery_rage, bool performance_mode_in)
+                    double tactical_mastery_rage)
     {
         simulation_special_stats = &special_stats;
         simulation_damage_sources = &damage_sources;
 
-        performance_mode = performance_mode_in;
         combat_buffs.clear();
         hit_gains.clear();
-        hit_stacks.clear();
         over_time_buffs.clear();
         hit_effects_mh = &hit_effects_mh_input;
         hit_effects_oh = &hit_effects_oh_input;
@@ -257,10 +261,11 @@ public:
         for (auto it = hit_gains.begin(); it != hit_gains.end();)
         {
             auto& buff = *it;
-            if (!performance_mode && current_time > 0.0)
-            {
-                aura_uptime[buff.id] += dt;
-            }
+            if (current_time > dt) dt = dt + 0 * current_time;
+            //if (!performance_mode && current_time > 0.0)
+            //{
+            //    aura_uptime[buff.id] += dt;
+            //}
             buff.duration_left -= dt;
             if (buff.duration_left < 0.0)
             {
@@ -278,7 +283,7 @@ public:
                     jt->name == buff.id ? jt = hit_effects_oh->erase(jt) : ++jt;
                 }
 
-                reset_armor_reduction = true;
+                //reset_armor_reduction = true;
                 it = hit_gains.erase(it);
             }
             else
@@ -494,8 +499,19 @@ public:
         }
     }
 
+    // Hit_effect's name is used as a Combat_buff name here, so a "stat boost" hit effect
+    //  has one, and only one corresponding buff.
+    // This allows to setup a hit_effect -> buff connection initially, which allows to cut
+    //  short buff iteration.
+    // however, min_combat_buff might not be updated correctly, so increment_combat_buff()
+    //  does more work
+    // if stacks work correctly (i.e. stacks == 0 || stacks < max_stacks determine whether
+    //  it's a gain or a refresh), next_fade could be set to MAX_DOUBLE on buff fade
+
     void add_combat_buff(const Hit_effect& hit_effect, double current_time)
     {
+        assert(hit_effect.max_stacks >= 1);
+
         // getting here, min_combat_buff is set correctly: if no buff is active, it's at "max()", otherwise it's >= current_time.
         //  the gained or refreshed buff is also >= current_time, so it competes for the new min_combat_buff;
         //  all other buffs must be ignored
@@ -509,7 +525,7 @@ public:
                 {
                     if (buff.next_fade < current_time) assert(buff.stacks == 0);
                     if (buff.stacks == 0) buff.last_gain = current_time;
-                    gain_stats(hit_effect.special_stats_boost);
+                    gain_stats(buff.special_stats_boost);
                     buff.stacks += 1;
                 }
                 buff.next_fade = current_time + hit_effect.duration; // or keep unchanged for "temporary hit effects"
@@ -519,8 +535,8 @@ public:
         }
         if (!refresh)
         {
-            auto& buff = combat_buffs.emplace_back(Combat_buff(hit_effect, current_time));
-            gain_stats(hit_effect.special_stats_boost);
+            auto& buff = combat_buffs.emplace_back(Combat_buff(hit_effect, *simulation_special_stats, current_time));
+            gain_stats(buff.special_stats_boost);
             min_combat_buff = std::min(min_combat_buff, buff.next_fade);
         }
     }
@@ -567,24 +583,22 @@ public:
     }
 
     bool need_to_recompute_hit_tables{false};
-    bool reset_armor_reduction{false};
     bool need_to_recompute_mitigation{false};
-    bool performance_mode{false};
     Special_stats* simulation_special_stats;
     Damage_sources* simulation_damage_sources;
 
     std::vector<Combat_buff> combat_buffs;
     double min_combat_buff = std::numeric_limits<double>::max();
+
     std::vector<Over_time_buff> over_time_buffs;
     double min_over_time_buff = std::numeric_limits<double>::max();
+
     std::vector<Hit_buff> hit_gains;
-    std::vector<Hit_buff> hit_stacks;
     std::vector<Hit_effect>* hit_effects_mh;
     std::vector<Hit_effect>* hit_effects_oh;
     std::vector<std::pair<double, Use_effect>> use_effect_order;
     std::unordered_map<std::string, double> aura_uptime;
     double tactical_mastery_rage_{};
-    int arpen_stacks_counter{0};
 };
 
 #endif // WOW_SIMULATOR_BUFF_MANAGER_HPP

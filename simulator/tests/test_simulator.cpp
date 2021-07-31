@@ -418,7 +418,6 @@ TEST_F(Sim_fixture, test_hit_effects_stat_boost_short_duration)
 {
     config.sim_time = 1000.0;
     config.n_batches = 100.0;
-    config.performance_mode = false;
 
     double mh_proc_prob = 1.0;
     double mh_proc_duration = 1;
@@ -464,7 +463,6 @@ TEST_F(Sim_fixture, test_hit_effects_stat_boost_long_duration)
 {
     config.sim_time = 10000.0;
     config.n_batches = 100.0;
-    config.performance_mode = false;
 
     // Small chance on hit to decrease second order terms, i.e., procing stat buff while a stat buff is already active
     double mh_proc_prob = .01;
@@ -522,7 +520,6 @@ TEST_F(Sim_fixture, test_hit_effects_stat_boost_long_duration_overlap)
 {
     config.sim_time = 1000.0;
     config.n_batches = 100.0;
-    config.performance_mode = false;
 
     // Small chance on hit to decrease second order terms, i.e., procing stat buff while a stat buff is already active
     double mh_proc_prob = .95;
@@ -620,34 +617,6 @@ TEST_F(Sim_fixture, test_flurry_uptime)
 /*
 results on master:
 
-took 8112 ms
-
-white (mh)    = 283.418
-mortal strike = 86.3654
-whirlwind     = 44.3856
-slam          = 296.372
-heroic strike = 1.04357
-deep wounds   = 50.1407
-----------------------
-total         = 784.141 / 786.763
-rage lost 12509.3
-
-after yellow hit table changes:
-
-took 8486 ms
-
-white (mh)    = 282.8
-mortal strike = 83.5754
-whirlwind     = 43.1117
-slam          = 286.858
-heroic strike = 1.00548
-deep wounds   = 48.7256
-----------------------
-total         = 768.48 / 771.05
-rage lost 12686.2
-
-different rand() sequence after mace spec fix:
-
 took 6994 ms
 
 white (mh)    = 282.709
@@ -660,7 +629,7 @@ deep wounds   = 48.7078
 total         = 768.312 / 770.882
 rage lost 12012.1
 
-dito, after heroic strike fix & rampage/overpower changes:
+after heroic strike fix & rampage/overpower changes:
 
 took 6163 ms
 
@@ -674,7 +643,7 @@ deep wounds   = 48.7231
 total         = 768.415 / 770.985
 rage lost 12138.6
 
-after deep wounds changes:
+after over_time_buff / deep wound changes:
 
 took 5492 ms
 
@@ -759,51 +728,6 @@ TEST_F(Sim_fixture, test_arms)
 /*
 results on master:
 
-took 14402 ms
-
-white (mh)    = 211.653
-white (oh)    = 173.392
-heroic strike = 102.595
-bloodthirst   = 167.043
-whirlwind     = 101.591
-execute       = 83.6768
-deep wounds   = 38.3068
-----------------------
-total         = 878.257 / 881.195
-rage lost 8530.75
-
-after yellow hit table changes, including whirlwind bug fixes:
-
-took 15413 ms
-
-white (mh)    = 211.509
-white (oh)    = 173.097
-heroic strike = 99.7399
-bloodthirst   = 166.799
-whirlwind     = 100.103
-execute       = 83.5759
-deep wounds   = 38.1976
-----------------------
-total         = 873.022 / 875.943
-rage lost 8540.98
-
-after too-much-rage-on-oh-dodge fix:
-
-took 9738 ms
-
-white (mh)    = 212.632
-white (oh)    = 173.029
-heroic strike = 98.5237
-bloodthirst   = 166.584
-whirlwind     = 100.028
-execute       = 83.4919
-deep wounds   = 38.1934
-----------------------
-total         = 872.482 / 875.399
-rage lost 8721.51
-
-different rand() sequence after mace spec fix:
-
 took 9671 ms
 
 white (mh)    = 212.512
@@ -817,7 +741,7 @@ deep wounds   = 38.2024
 total         = 872.337 / 875.255
 rage lost 8648.78
 
-/w heroic strike bonus damage fix (208 -> 176)
+after heroic strike fix & rampage/overpower changes:
 
 took 9223 ms
 
@@ -832,7 +756,7 @@ deep wounds   = 38.1973
 total         = 869.249 / 872.157
 rage lost 8478.46
 
-after deep wounds fix
+after over_time_buffs / deep wound changes:
 
 took 8160 ms
 
@@ -850,7 +774,7 @@ rage lost 8702.61
 TEST_F(Sim_fixture, test_fury)
 {
     config.sim_time = 5 * 60;
-    config.n_batches = 250000;
+    config.n_batches = 25000;
     config.main_target_initial_armor_ = 6200.0;
 
     auto mh = Weapon{"test_mh", {}, {}, 2.7, 270, 270, Weapon_socket::one_hand, Weapon_type::axe};
@@ -953,17 +877,20 @@ TEST_F(Sim_fixture, test_procs)
     auto executioner = Hit_effect{"executioner", Hit_effect::Type::stat_boost, {}, {}, 0, 15, 0, 0, 0, 0, 0, 1, 1};
     executioner.special_stats_boost.gear_armor_pen = 840;
 
-
     Armory armory;
 
+    //auto mh = armory.maces_t[0];
+    //mh.hit_effects.emplace_back(executioner);
     auto mh = Weapon{"test_mh", {}, {}, 2.7, 270, 270, Weapon_socket::one_hand, Weapon_type::axe};
     mh.hit_effects.emplace_back(Hit_effect{"dragonmaw", Hit_effect::Type::stat_boost, {}, {0, 0, 0, 0, .134}, 0, 10, 0, 2.7 / 60});
     mh.hit_effects.emplace_back(Hit_effect{"mongoose_mh", Hit_effect::Type::stat_boost, {0,120}, {0, 0, 0, 0, 0.02}, 0, 15, 0, 2.7/60});
     mh.hit_effects.emplace_back(Hit_effect{dmc_crusade});
     mh.hit_effects.emplace_back(Hit_effect{"windfury_totem", Hit_effect::Type::windfury_hit, {}, {}, 0, 0, 0, 0.2, 445});
+    //auto oh = armory.maces_t[0]; //
+    //oh.hit_effects.emplace_back(executioner);
     auto oh = Weapon{"test_oh", {}, {}, 2.6, 260, 260, Weapon_socket::one_hand, Weapon_type::sword};
     oh.hit_effects.emplace_back(Hit_effect{"mongoose_oh", Hit_effect::Type::stat_boost, {0,120}, {0, 0, 0, 0, 0.02}, 0, 15, 0, 2.6/60});
-    mh.hit_effects.emplace_back(Hit_effect{dmc_crusade});
+    oh.hit_effects.emplace_back(Hit_effect{dmc_crusade});
     oh.hit_effects.emplace_back(Hit_effect{"sword_specialization", Hit_effect::Type::sword_spec, {}, {}, 0, 0, 0.5, 0.05});
     character.equip_weapon(mh, oh);
 
@@ -1001,6 +928,7 @@ TEST_F(Sim_fixture, test_procs)
     config.extra_target_level = config.main_target_level;
     */
     config.combat.use_bt_in_exec_phase = true;
+    config.combat.use_ww_in_exec_phase = false;
     config.combat.use_bloodthirst = true;
     config.combat.use_whirlwind = true;
     config.execute_phase_percentage_ = 20;

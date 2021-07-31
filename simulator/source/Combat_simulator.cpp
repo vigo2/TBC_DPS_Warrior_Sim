@@ -733,7 +733,7 @@ void Combat_simulator::hit_effects(Weapon_sim& weapon, Weapon_sim& main_hand_wea
     {
         double r = get_uniform_random(1);
         double probability;
-        double ap_multiplier = config.talents.improved_berserker_stance * 0.02 + config.enable_unleashed_rage * 0.1;
+        //double ap_multiplier = config.talents.improved_berserker_stance * 0.02 + config.enable_unleashed_rage * 0.1;
         if (hit_effect.ppm != 0)
         {
             probability = hit_effect.ppm / (60.0 / weapon.swing_speed);
@@ -785,10 +785,10 @@ void Combat_simulator::hit_effects(Weapon_sim& weapon, Weapon_sim& main_hand_wea
             }
             case Hit_effect::Type::stat_boost: {
                 simulator_cout("PROC: ", hit_effect.name, " stats increased for ", hit_effect.duration, "s");
-                Hit_effect clone(hit_effect);
+                //Hit_effect clone(hit_effect);
                 //clone.name = weapon.socket_name + "_" + hit_effect.name;
-                clone.special_stats_boost = hit_effect.get_special_stat_equivalent(special_stats, ap_multiplier);
-                buff_manager_.add_combat_buff(clone, time_keeper_.time);
+                //clone.special_stats_boost = hit_effect.get_special_stat_equivalent(special_stats, ap_multiplier);
+                buff_manager_.add_combat_buff(hit_effect, time_keeper_.time);
                 break;
             }
             case Hit_effect::Type::damage_magic: {
@@ -813,39 +813,6 @@ void Combat_simulator::hit_effects(Weapon_sim& weapon, Weapon_sim& main_hand_wea
                 {
                     hit_effects(main_hand_weapon, main_hand_weapon, special_stats, rage, damage_sources, flurry_charges, rampage_stacks,
                             is_extra_attack);
-                }
-                break;
-            }
-            case Hit_effect::Type::reduce_armor: {
-                if (hit_effect.name == "badge_of_the_swarmguard")
-                {
-                    if (current_armor_red_stacks_ < hit_effect.max_stacks)
-                    {
-                        recompute_mitigation_ = true;
-                        current_armor_red_stacks_++;
-                        armor_penetration_badge_ = current_armor_red_stacks_ * hit_effect.armor_reduction;
-                        simulator_cout("PROC: ", hit_effect.name, ", current stacks: ", current_armor_red_stacks_);
-                    }
-                    else
-                    {
-                        simulator_cout("PROC: ", hit_effect.name,
-                                    ". At max stacks. Current stacks: ", current_armor_red_stacks_);
-                    }
-                }
-                else
-                {
-                    if (buff_manager_.arpen_stacks_counter < hit_effect.max_stacks)
-                    {
-                        buff_manager_.arpen_stacks_counter++;
-                        // FIXME buff_manager_.modify_arpen_stacks(hit_effect, weapon.socket);
-                        simulator_cout("PROC: ", hit_effect.name, ", current stacks: ", buff_manager_.arpen_stacks_counter);
-                    }
-                    else
-                    {
-                        // FIXME buff_manager_.modify_arpen_stacks(hit_effect, weapon.socket, true);
-                        simulator_cout("PROC: ", hit_effect.name,
-                                    ". At max stacks. Current stacks: ", buff_manager_.arpen_stacks_counter);
-                    }
                 }
                 break;
             }
@@ -1053,8 +1020,28 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
     std::vector<Weapon_sim> weapons;
     for (const auto& wep : character.weapons)
     {
-        auto weapon = weapons.emplace_back(wep, starting_special_stats);
+        auto& weapon = weapons.emplace_back(wep, starting_special_stats);
         compute_hit_tables(starting_special_stats, weapon);
+
+        // sanitize hit_effects
+        for (auto& e : weapon.hit_effects)
+        {
+            if (e.probability == 0)
+            {
+                e.probability = e.ppm * weapon.swing_speed / 60;
+            }
+
+            if (e.type == Hit_effect::Type::reduce_armor)
+            {
+                e.type = Hit_effect::Type::stat_boost;
+                e.special_stats_boost.gear_armor_pen = e.armor_reduction;
+            }
+
+            if (e.max_stacks == 0)
+            {
+                e.max_stacks = 1;
+            }
+        }
     }
 
     // TODO can move this to armory::compute_total_stats method
@@ -1137,19 +1124,16 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
         if (is_dual_wield)
         {
             weapons[1].hit_effects = hit_effects_oh_copy;
-            buff_manager_.initialize(special_stats, damage_sources, use_effect_order, weapons[0].hit_effects, weapons[1].hit_effects,
-                                     tactical_mastery_rage_, config.performance_mode);
+            buff_manager_.initialize(special_stats, damage_sources, use_effect_order, weapons[0].hit_effects,
+                                     weapons[1].hit_effects, tactical_mastery_rage_);
         }
         else
         {
-            buff_manager_.initialize(special_stats, damage_sources, use_effect_order, weapons[0].hit_effects, hit_effects_oh_copy,
-                                     tactical_mastery_rage_, config.performance_mode);
+            buff_manager_.initialize(special_stats, damage_sources, use_effect_order, weapons[0].hit_effects,
+                                     hit_effects_oh_copy, tactical_mastery_rage_);
         }
 
         recompute_mitigation_ = true;
-        buff_manager_.arpen_stacks_counter = 0;
-        current_armor_red_stacks_ = 0;
-        armor_penetration_badge_ = 0;
         rage_spent_on_execute_ = 0;
 
         int flurry_charges = 0; 
@@ -1263,14 +1247,6 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
                 buff_manager_.need_to_recompute_mitigation = false;
             }
 
-            if (buff_manager_.reset_armor_reduction)
-            {
-                recompute_mitigation_ = true;
-                current_armor_red_stacks_ = 0;
-                armor_penetration_badge_ = 0;
-                buff_manager_.reset_armor_reduction = false;
-            }
-
             if (!apply_delayed_armor_reduction && time_keeper_.time > 6.0 && config.exposed_armor)
             {
                 apply_delayed_armor_reduction = true;
@@ -1281,7 +1257,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
             if (recompute_mitigation_)
             {
                 int target_armor =
-                    config.main_target_initial_armor_ - armor_reduction_from_spells_ - armor_penetration_badge_ - special_stats.gear_armor_pen;
+                    config.main_target_initial_armor_ - armor_reduction_from_spells_ - special_stats.gear_armor_pen;
                 if (apply_delayed_armor_reduction)
                 {
                     target_armor -= armor_reduction_delayed_;
@@ -1292,7 +1268,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
                                "%.");
                 if (config.multi_target_mode_)
                 {
-                    int extra_target_armor = config.extra_target_initial_armor_ - armor_penetration_badge_ - special_stats.gear_armor_pen;
+                    int extra_target_armor = config.extra_target_initial_armor_ - special_stats.gear_armor_pen;
                     extra_target_armor = std::max(extra_target_armor, 0);
                     armor_reduction_factor_add = 1 - armor_mitigation(extra_target_armor, 70);
 

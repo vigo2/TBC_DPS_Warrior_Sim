@@ -47,7 +47,6 @@ struct Combat_simulator_config
     {
         get_combat_simulator_config(input);
         seed = clock();
-        performance_mode = true;
     };
 
     template <typename T>
@@ -90,7 +89,6 @@ struct Combat_simulator_config
     bool enable_unleashed_rage{false};
 
     bool display_combat_debug{false};
-    bool performance_mode{false};
     int seed{};
 
     struct combat_t
@@ -501,8 +499,6 @@ private:
     Distribution dps_distribution_{};
     double armor_reduction_factor_{};
     double armor_reduction_factor_add{};
-    int current_armor_red_stacks_{};
-    int armor_penetration_badge_{};
     int armor_reduction_from_spells_{};
     int armor_reduction_delayed_{};
     bool recompute_mitigation_{false};
