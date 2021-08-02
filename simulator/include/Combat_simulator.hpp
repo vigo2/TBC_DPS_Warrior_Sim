@@ -401,9 +401,9 @@ public:
 
     [[nodiscard]] std::vector<std::string> get_aura_uptimes() const;
 
-    [[nodiscard]] std::unordered_map<std::string, double> get_aura_uptimes_map() const { return buff_manager_.aura_uptime; };
+    [[nodiscard]] std::unordered_map<std::string, double> get_aura_uptimes_map() const { return buff_manager_.get_aura_uptimes_map(); }
 
-    [[nodiscard]] std::unordered_map<std::string, int> get_proc_data() const { return proc_data_; };
+    [[nodiscard]] std::unordered_map<std::string, int> get_proc_data() const { return proc_data_; }
 
     [[nodiscard]] std::vector<std::string> get_proc_statistics() const;
 
@@ -525,6 +525,8 @@ private:
     bool use_mortal_strike_{false};
     bool use_sweeping_strikes_{false};
     int sweeping_strikes_charges_ = 0;
+
+    Over_time_effect deep_wound_effect_{"Deep_wounds", {}, 0, 0, 3, 12};
 
     std::vector<std::vector<double>> damage_time_lapse{};
     std::unordered_map<std::string, int> proc_data_{};

@@ -120,7 +120,8 @@ struct Over_time_effect
         , rage_gain(rage_gain)
         , damage(damage)
         , interval(interval)
-        , duration(duration){};
+        , duration(duration)
+        , over_time_buff_idx(-1) {};
 
     std::string name;
     Special_stats special_stats;
@@ -128,6 +129,8 @@ struct Over_time_effect
     double damage;
     int interval;
     int duration;
+
+    int over_time_buff_idx;
 };
 
 struct Combat_buff;
@@ -168,7 +171,8 @@ public:
         , affects_both_weapons(affects_both_weapons)
         , max_stacks(max_stacks)
         , time_counter(0)
-        , stacks_counter(0) {};
+        , procs(0)
+        , combat_buff_idx(-1) {};
 
     [[nodiscard]] Special_stats get_special_stat_equivalent(const Special_stats& special_stats, double ap_multiplier = 0) const
     {
@@ -182,15 +186,19 @@ public:
     double damage;
     double duration;
     double cooldown;
-    double probability;
-    double attack_power_boost;
+    double probability; // derived for some
+    double attack_power_boost; // should be const, once windfury is fixed (only usage?)
     int n_targets;
     int armor_reduction;
     double ppm;
     bool affects_both_weapons;
-    int max_stacks;
-    double time_counter;
-    int stacks_counter;
+    int max_stacks; // should be const, once "fixed" to one
+
+    double time_counter; // "next_ready", aka cooldown end
+
+    int procs; // statistics
+
+    int combat_buff_idx; // organizational ;)
 };
 
 class Use_effect

@@ -288,14 +288,8 @@ Combat_simulator::Hit_outcome Combat_simulator::generate_hit(const Weapon_sim& m
     {
         if (hit_outcome.hit_result == Combat_simulator::Hit_result::crit)
         {
-            buff_manager_.add_over_time_buff({"Deep_wounds",
-                                              {},
-                                              0,
-                                              (1 + special_stats.damage_mod_physical) * config.talents.deep_wounds *
-                                                  0.2 * main_hand_weapon.swing(special_stats.attack_power) / 4,
-                                              3,
-                                              12},
-                                             time_keeper_.time);
+            deep_wound_effect_.damage = 0.25 * (1 + special_stats.damage_mod_physical) * config.talents.deep_wounds * 0.2 * main_hand_weapon.swing(special_stats.attack_power);
+            buff_manager_.add_over_time_buff(deep_wound_effect_, time_keeper_.time);
         }
     }
 
@@ -746,7 +740,7 @@ void Combat_simulator::hit_effects(Weapon_sim& weapon, Weapon_sim& main_hand_wea
         {
             //simulator_cout("Proc PPM: ", hit_effect.ppm, " Proc chance: ", probability, "Proc ICD: ");
             buff_manager_.reset_icd(hit_effect, time_keeper_.time);
-            proc_data_[hit_effect.name]++;
+            hit_effect.procs++;
             switch (hit_effect.type)
             {
             case Hit_effect::Type::windfury_hit: {
@@ -759,7 +753,7 @@ void Combat_simulator::hit_effects(Weapon_sim& weapon, Weapon_sim& main_hand_wea
                 else
                 {
                     // Decrement the proc statistics for extra hit if it got triggered by an extra hit
-                    proc_data_[hit_effect.name]--;
+                    hit_effect.procs--;
                 }
                 break;
             }
@@ -779,7 +773,7 @@ void Combat_simulator::hit_effects(Weapon_sim& weapon, Weapon_sim& main_hand_wea
                 else
                 {
                     // Decrement the proc statistics for extra hit if it got triggered by an extra hit
-                    proc_data_[hit_effect.name]--;
+                    hit_effect.procs--;
                 }
                 break;
             }
@@ -1005,7 +999,6 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
         reset_time_lapse();
         init_histogram();
     }
-    buff_manager_.aura_uptime.clear();
     damage_distribution_ = Damage_sources{};
     if (reset_dps)
     {
@@ -1073,15 +1066,13 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
     config.set_bonus_effect.warbringer_4_set = character.set_bonus_effect.warbringer_4_set;
 
     const bool is_dual_wield = character.is_dual_wield();
-    const auto hit_effects_mh_copy = weapons[0].hit_effects;
-    auto hit_effects_oh_copy = is_dual_wield ? weapons[1].hit_effects : std::vector<Hit_effect>{};
 
     double sim_time = config.sim_time;
     const double averaging_interval = 2.0; // Duration of the uniform interval that is evaluated
     sim_time -= averaging_interval;
 
     // Configure use effects
-    std::vector<Use_effect> use_effects_all = use_effects_all_;
+    auto use_effects_all = use_effects_all_;
     for (const auto& use_effect : character.use_effects)
     {
         use_effects_all.push_back(use_effect);
@@ -1110,30 +1101,41 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
                                                                   sim_time + averaging_interval / 2, ap_equiv, 0, 0,
                                                                   config.combat.initial_rage);
 
+    auto empty_hit_effects = std::vector<Hit_effect>();
+    if (is_dual_wield)
+    {
+        buff_manager_.initialize(weapons[0].hit_effects,weapons[1].hit_effects, tactical_mastery_rage_);
+    }
+    else
+    {
+        buff_manager_.initialize(weapons[0].hit_effects,empty_hit_effects, tactical_mastery_rage_);
+    }
+
     for (int iter = init_iteration; iter < n_damage_batches + init_iteration; iter++)
     {
-        time_keeper_.reset(); // Class variable that keeps track of the time spent, cooldowns, iteration number
+        time_keeper_.reset();
         ability_queue_manager.reset();
         slam_manager.reset();
-        auto special_stats = starting_special_stats;
-        Damage_sources damage_sources{};
         double rage = config.combat.initial_rage;
+        auto special_stats = starting_special_stats;
+        Damage_sources damage_sources;
 
         // Reset hit effects
-        weapons[0].hit_effects = hit_effects_mh_copy;
-        if (is_dual_wield)
+        for (auto& he : weapons[0].hit_effects)
         {
-            weapons[1].hit_effects = hit_effects_oh_copy;
-            buff_manager_.initialize(special_stats, damage_sources, use_effect_order, weapons[0].hit_effects,
-                                     weapons[1].hit_effects, tactical_mastery_rage_);
-        }
-        else
-        {
-            buff_manager_.initialize(special_stats, damage_sources, use_effect_order, weapons[0].hit_effects,
-                                     hit_effects_oh_copy, tactical_mastery_rage_);
+            he.time_counter = 0;
         }
 
-        recompute_mitigation_ = true;
+        if (is_dual_wield)
+        {
+            for (auto& he : weapons[1].hit_effects)
+            {
+                he.time_counter = 0;
+            }
+        }
+
+        buff_manager_.reset(special_stats, damage_sources, use_effect_order);
+
         rage_spent_on_execute_ = 0;
 
         int flurry_charges = 0; 
@@ -1195,7 +1197,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
             }
         }
 
-        for (const auto& over_time_effect : over_time_effects_)
+        for (auto& over_time_effect : over_time_effects_)
         {
             buff_manager_.add_over_time_buff(over_time_effect, 0);
         }
@@ -1649,7 +1651,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
         dps_distribution_.add_sample(new_sample);
         damage_distribution_ = damage_distribution_ + damage_sources;
         rampage_uptime_ = Statistics::update_mean(rampage_uptime_, iter + 1, double(mh_hits_w_rampage) / mh_hits);
-        if (weapons.size() > 1)
+        if (is_dual_wield)
         {
             heroic_strike_uptime_ =
                 Statistics::update_mean(heroic_strike_uptime_, iter + 1, double(oh_hits_w_heroic) / oh_hits);
@@ -1663,6 +1665,19 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
             hist_y[new_sample / 20]++;
         }
     }
+
+    for (const auto& he : weapons[0].hit_effects)
+    {
+        proc_data_[he.name] += he.procs;
+    }
+    if (is_dual_wield)
+    {
+        for (const auto& he : weapons[1].hit_effects)
+        {
+            proc_data_[he.name] += he.procs;
+        }
+    }
+
     if (log_data)
     {
         normalize_timelapse();
@@ -1751,7 +1766,7 @@ std::vector<std::string> Combat_simulator::get_aura_uptimes() const
 {
     std::vector<std::string> aura_uptimes;
     double total_sim_time = config.n_batches * (config.sim_time - 1);
-    for (const auto& aura : buff_manager_.aura_uptime)
+    for (const auto& aura : buff_manager_.get_aura_uptimes_map())
     {
         double uptime = aura.second / total_sim_time;
         aura_uptimes.emplace_back(aura.first + " " + std::to_string(100 * uptime));

@@ -866,6 +866,22 @@ deep wounds   = 18.6281 (8.6935x)
 ----------------------
 total         = 1054.62 / 1058.14
 rage lost 576971
+
+after lazy add and other perf work
+
+took 8139 ms
+
+white (mh)    = 277.931 (25.263x)
+white (oh)    = 201.414 (29.951x)
+bloodthirst   = 189.787 (8.56638x)
+whirlwind     = 106.299 (5.17456x)
+heroic strike = 164.903 (9.85761x)
+execute       = 98.0892 (4.67223x)
+deep wounds   = 18.5604 (8.66152x)
+----------------------
+total         = 1056.98 / 1060.52
+rage lost 584443
+
 */
 TEST_F(Sim_fixture, test_procs)
 {
@@ -879,18 +895,17 @@ TEST_F(Sim_fixture, test_procs)
 
     Armory armory;
 
-    //auto mh = armory.maces_t[0];
-    //mh.hit_effects.emplace_back(executioner);
     auto mh = Weapon{"test_mh", {}, {}, 2.7, 270, 270, Weapon_socket::one_hand, Weapon_type::axe};
+    //mh.hit_effects.emplace_back(executioner);
     mh.hit_effects.emplace_back(Hit_effect{"dragonmaw", Hit_effect::Type::stat_boost, {}, {0, 0, 0, 0, .134}, 0, 10, 0, 2.7 / 60});
     mh.hit_effects.emplace_back(Hit_effect{"mongoose_mh", Hit_effect::Type::stat_boost, {0,120}, {0, 0, 0, 0, 0.02}, 0, 15, 0, 2.7/60});
-    mh.hit_effects.emplace_back(Hit_effect{dmc_crusade});
+    //mh.hit_effects.emplace_back(Hit_effect{dmc_crusade});
     mh.hit_effects.emplace_back(Hit_effect{"windfury_totem", Hit_effect::Type::windfury_hit, {}, {}, 0, 0, 0, 0.2, 445});
-    //auto oh = armory.maces_t[0]; //
-    //oh.hit_effects.emplace_back(executioner);
+
     auto oh = Weapon{"test_oh", {}, {}, 2.6, 260, 260, Weapon_socket::one_hand, Weapon_type::sword};
+    //oh.hit_effects.emplace_back(executioner);
     oh.hit_effects.emplace_back(Hit_effect{"mongoose_oh", Hit_effect::Type::stat_boost, {0,120}, {0, 0, 0, 0, 0.02}, 0, 15, 0, 2.6/60});
-    oh.hit_effects.emplace_back(Hit_effect{dmc_crusade});
+    //oh.hit_effects.emplace_back(Hit_effect{dmc_crusade});
     oh.hit_effects.emplace_back(Hit_effect{"sword_specialization", Hit_effect::Type::sword_spec, {}, {}, 0, 0, 0.5, 0.05});
     character.equip_weapon(mh, oh);
 
@@ -965,6 +980,10 @@ TEST_F(Sim_fixture, test_procs)
     auto precision = std::cout.precision(3);
     for (const auto& e : sim.get_aura_uptimes_map()) {
         std::cout << e.first << " " << 100 * f * e.second << "%" << std::endl;
+    }
+    std::cout << std::endl;
+    for (const auto& e : sim.get_proc_data()) {
+        std::cout << e.first << " " << g * e.second << " procs/min" << std::endl;
     }
     std::cout.precision(precision);
 
