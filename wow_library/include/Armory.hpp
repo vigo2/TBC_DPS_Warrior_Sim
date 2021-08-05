@@ -16,7 +16,7 @@ struct Buffs
     Buff ferocious_inspiration{"ferocious_inspiration", {}, {}};
 
     // Player_buffs
-    Buff battle_shout{"battle_shout", {}, {}, 0, {}, {{"battle_shout", Use_effect::Effect_socket::unique, {}, {0, 0, 306}, 0, 120, 120, true}}};
+    Buff battle_shout{"battle_shout", {}, {}, 0, {}, {{"battle_shout", Use_effect::Effect_socket::unique, {}, {0, 0, 306}, -10, 120, 120, true}}};
     Buff blessing_of_kings{"blessing_of_kings", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0, 0, 0.1}};
     Buff blessing_of_might{"blessing_of_might", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 264}};
     Buff gift_of_the_wild{"gift_of_the_wild", Attributes{18.9, 18.9}, Special_stats{0.0, 0.0, 0.0}};
@@ -450,7 +450,7 @@ struct Armory
                 {"bladefists_breadth", Attributes{26.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.0}, Socket::trinket, Set::none, {}, {{"bladefists_breadth", Use_effect::Effect_socket::shared, {0,  0}, {0, 0, 200}, 0, 15, 90, true}}}, 
                 {"core_of_arkelos", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 52.0, 0, 0.0}, Socket::trinket, Set::none, {}, {{"core_of_arkelos", Use_effect::Effect_socket::shared, {0,  0}, {0, 0, 200}, 0, 20, 120, true}}}, 
                 {"drake_fang_talisman", Attributes{0.0, 0.0}, Special_stats{0.0, 1.2682308180088777, 56.0, 0, 0.0}, Socket::trinket}, 
-                {"icon_of_unyeilding_courage", Attributes{0.0, 0.0}, Special_stats{0.0, 1.9023462270133165, 0.0, 0, 0.0}, Socket::trinket, Set::none, {}, {{"icon_of_unyeilding_courage", Use_effect::Effect_socket::shared, {0,  0}, 
+                {"icon_of_unyielding_courage", Attributes{0.0, 0.0}, Special_stats{0.0, 1.9023462270133165, 0.0, 0, 0.0}, Socket::trinket, Set::none, {}, {{"icon_of_unyielding_courage", Use_effect::Effect_socket::shared, {0,  0},
                                                                                                                                                             {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 600}, 0, 20, 120, true}}}, 
                 {"ancient_draenei_war_talisman", Attributes{0.0, 0.0}, Special_stats{0.9510869565217392, 0.0, 0.0, 0, 0.0}, Socket::trinket, Set::none, {}, {{"ancient_draenei_war_talisman", Use_effect::Effect_socket::shared, {0,  0}, {0, 0, 200}, 0, 15, 90, true}}}, 
                 {"figurine_nightseye_panther", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 54.0, 0, 0.0}, Socket::trinket, Set::none, {}, {{"figurine_nightseye_panther", Use_effect::Effect_socket::shared, {0,  0}, {0, 0, 320}, 0, 12, 180, true}}},  

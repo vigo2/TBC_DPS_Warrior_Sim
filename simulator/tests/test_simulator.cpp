@@ -722,6 +722,17 @@ TEST_F(Sim_fixture, test_arms)
     std::cout << "total         = " << f * dd.sum_damage_sources() << " / " << sim.get_dps_mean() << std::endl;
 
     std::cout << "rage lost " << sim.get_rage_lost_capped() << std::endl;
+
+    auto precision = std::cout.precision(3);
+    for (const auto& e : sim.get_aura_uptimes_map()) {
+        std::cout << e.first << " " << 100 * f * e.second << "%" << std::endl;
+    }
+    std::cout << std::endl;
+    for (const auto& e : sim.get_proc_data()) {
+        std::cout << e.first << " " << g * e.second << " procs/min" << std::endl;
+    }
+    std::cout.precision(precision);
+
     EXPECT_EQ(0, 0);
 }
 
@@ -848,6 +859,16 @@ TEST_F(Sim_fixture, test_fury)
 
     std::cout << "rage lost " << sim.get_rage_lost_capped() << std::endl;
 
+    auto precision = std::cout.precision(3);
+    for (const auto& e : sim.get_aura_uptimes_map()) {
+        std::cout << e.first << " " << 100 * f * e.second << "%" << std::endl;
+    }
+    std::cout << std::endl;
+    for (const auto& e : sim.get_proc_data()) {
+        std::cout << e.first << " " << g * e.second << " procs/min" << std::endl;
+    }
+    std::cout.precision(precision);
+
     EXPECT_EQ(0, 0);
 }
 
@@ -893,20 +914,30 @@ TEST_F(Sim_fixture, test_procs)
     auto executioner = Hit_effect{"executioner", Hit_effect::Type::stat_boost, {}, {}, 0, 15, 0, 0, 0, 0, 0, 1, 1};
     executioner.special_stats_boost.gear_armor_pen = 840;
 
+    auto doomplate_4pc = Hit_effect{"doomplate_4pc", Hit_effect::Type::stat_boost, {}, {0, 0, 160}, 0, 15, 0, 0.02, 0, 0, 1, 0};
+
     Armory armory;
+
+    character.equip_armor(armory.find_armor(Socket::trinket, "badge_of_the_swarmguard"));
+    character.buffs.emplace_back(armory.buffs.battle_shout);
+
+    armory.compute_total_stats(character);
 
     auto mh = Weapon{"test_mh", {}, {}, 2.7, 270, 270, Weapon_socket::one_hand, Weapon_type::axe};
     //mh.hit_effects.emplace_back(executioner);
     mh.hit_effects.emplace_back(Hit_effect{"dragonmaw", Hit_effect::Type::stat_boost, {}, {0, 0, 0, 0, .134}, 0, 10, 0, 2.7 / 60});
     mh.hit_effects.emplace_back(Hit_effect{"mongoose_mh", Hit_effect::Type::stat_boost, {0,120}, {0, 0, 0, 0, 0.02}, 0, 15, 0, 2.7/60});
-    //mh.hit_effects.emplace_back(Hit_effect{dmc_crusade});
+    mh.hit_effects.emplace_back(Hit_effect{dmc_crusade});
     mh.hit_effects.emplace_back(Hit_effect{"windfury_totem", Hit_effect::Type::windfury_hit, {}, {}, 0, 0, 0, 0.2, 445});
+    //mh.hit_effects.emplace_back(doomplate_4pc);
 
     auto oh = Weapon{"test_oh", {}, {}, 2.6, 260, 260, Weapon_socket::one_hand, Weapon_type::sword};
     //oh.hit_effects.emplace_back(executioner);
     oh.hit_effects.emplace_back(Hit_effect{"mongoose_oh", Hit_effect::Type::stat_boost, {0,120}, {0, 0, 0, 0, 0.02}, 0, 15, 0, 2.6/60});
-    //oh.hit_effects.emplace_back(Hit_effect{dmc_crusade});
+    oh.hit_effects.emplace_back(Hit_effect{dmc_crusade});
     oh.hit_effects.emplace_back(Hit_effect{"sword_specialization", Hit_effect::Type::sword_spec, {}, {}, 0, 0, 0.5, 0.05});
+    //oh.hit_effects.emplace_back(doomplate_4pc);
+
     character.equip_weapon(mh, oh);
 
     character.total_special_stats.attack_power = 2800;
@@ -916,6 +947,12 @@ TEST_F(Sim_fixture, test_procs)
     character.total_special_stats.crit_multiplier = 0.03;
     character.total_special_stats.expertise = 5;
     character.total_special_stats.axe_expertise = 5;
+
+    // hello, use effects ;)
+    config.talents.death_wish = true;
+    config.combat.use_death_wish = true;
+    config.enable_bloodrage = true;
+    //config.enable_blood_fury = true;
 
     config.talents.flurry = 5;
     config.talents.rampage = true;

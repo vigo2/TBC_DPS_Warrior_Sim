@@ -254,7 +254,7 @@ Combat_simulator::Hit_outcome Combat_simulator::generate_hit(const Weapon_sim& m
 
     if (sweeping_strikes_charges_ > 0)
     {
-        // TODO can_sweep is actually either "clone damage" (can't crit; fully dependent on hit_outcome)
+        // TODO(vigo) can_sweep is actually either "clone damage" (can't crit; fully dependent on hit_outcome)
         //  or "normalized swing" (can't miss, can't crit; regular swing, independent of hit_outcome, happens for execute or ww)
         if (hit_outcome.damage > 0.0 && can_sweep)
         {
@@ -565,14 +565,14 @@ void Combat_simulator::overpower(Weapon_sim& main_hand_weapon, Special_stats& sp
             rage = tactical_mastery_rage_;
         }
         rage -= 5;
-        // FIXME!!! buff_manager_.add("battle_stance", {-3.0, 0, 0}, 1.5);
+        // FIXME(vigo) buff_manager_.add("battle_stance", {-3.0, 0, 0}, 1.5);
         time_keeper_.overpower_cast(5.0);
         time_keeper_.global_cast(1.5);
         return;
     }
     simulator_cout("Changed stance: Battle Stance.");
     simulator_cout("Overpower!");
-    // FIXME!!! buff_manager_.add("battle_stance", {-3.0, 0, 0}, 1.5);
+    // FIXME(vigo) buff_manager_.add("battle_stance", {-3.0, 0, 0}, 1.5);
     double damage = main_hand_weapon.normalized_swing(special_stats.attack_power) + 35;
     auto hit_outcome = generate_hit(main_hand_weapon, damage, main_hand_weapon, hit_table_overpower_, special_stats,
                                     damage_sources);
@@ -725,95 +725,93 @@ void Combat_simulator::hit_effects(Weapon_sim& weapon, Weapon_sim& main_hand_wea
 
     for (auto& hit_effect : weapon.hit_effects)
     {
-        double r = get_uniform_random(1);
-        double probability;
-        //double ap_multiplier = config.talents.improved_berserker_stance * 0.02 + config.enable_unleashed_rage * 0.1;
-        if (hit_effect.ppm != 0)
+        if (hit_effect.time_counter >= time_keeper_.time)
         {
-            probability = hit_effect.ppm / (60.0 / weapon.swing_speed);
+            // on cooldown
+            continue;
         }
-        else
+
+        auto probability = hit_effect.ppm > 0 ? hit_effect.ppm * weapon.swing_speed / 60 : hit_effect.probability;
+        if (probability < 1 && get_uniform_random(1) >= probability)
         {
-            probability = hit_effect.probability;
+            continue;
         }
-        if (r < probability && hit_effect.time_counter <= time_keeper_.time)
+
+        //simulator_cout("Proc PPM: ", hit_effect.ppm, " Proc chance: ", probability, "Proc ICD: ");
+        buff_manager_.start_cooldown(hit_effect, time_keeper_.time);
+        hit_effect.procs++;
+        switch (hit_effect.type)
         {
-            //simulator_cout("Proc PPM: ", hit_effect.ppm, " Proc chance: ", probability, "Proc ICD: ");
-            buff_manager_.reset_icd(hit_effect, time_keeper_.time);
-            hit_effect.procs++;
-            switch (hit_effect.type)
+        case Hit_effect::Type::windfury_hit: {
+            if (!is_extra_attack && !is_instant)
             {
-            case Hit_effect::Type::windfury_hit: {
-                if (!is_extra_attack && !is_instant)
-                {
-                    simulator_cout("PROC: extra hit from: ", hit_effect.name);
-                    swing_weapon(main_hand_weapon, main_hand_weapon, special_stats, rage, damage_sources,
-                                 flurry_charges, rampage_stacks, hit_effect.attack_power_boost, true);
-                }
-                else
-                {
-                    // Decrement the proc statistics for extra hit if it got triggered by an extra hit
-                    hit_effect.procs--;
-                }
-                break;
-            }
-            case Hit_effect::Type::sword_spec: {
                 simulator_cout("PROC: extra hit from: ", hit_effect.name);
                 swing_weapon(main_hand_weapon, main_hand_weapon, special_stats, rage, damage_sources,
-                             flurry_charges, rampage_stacks, hit_effect.attack_power_boost, false);
-                break;
+                             flurry_charges, rampage_stacks, hit_effect.attack_power_boost, true);
             }
-            case Hit_effect::Type::extra_hit: {
-                if (!is_extra_attack)
-                {
-                    simulator_cout("PROC: extra hit from: ", hit_effect.name);
-                    swing_weapon(main_hand_weapon, main_hand_weapon, special_stats, rage, damage_sources,
-                                 flurry_charges, rampage_stacks, hit_effect.attack_power_boost, true);
-                }
-                else
-                {
-                    // Decrement the proc statistics for extra hit if it got triggered by an extra hit
-                    hit_effect.procs--;
-                }
-                break;
+            else
+            {
+                // Decrement the proc statistics for extra hit if it got triggered by an extra hit
+                hit_effect.procs--;
             }
-            case Hit_effect::Type::stat_boost: {
-                simulator_cout("PROC: ", hit_effect.name, " stats increased for ", hit_effect.duration, "s");
-                //Hit_effect clone(hit_effect);
-                //clone.name = weapon.socket_name + "_" + hit_effect.name;
-                //clone.special_stats_boost = hit_effect.get_special_stat_equivalent(special_stats, ap_multiplier);
-                buff_manager_.add_combat_buff(hit_effect, time_keeper_.time);
-                break;
+            break;
+        }
+        case Hit_effect::Type::sword_spec: {
+            simulator_cout("PROC: extra hit from: ", hit_effect.name);
+            swing_weapon(main_hand_weapon, main_hand_weapon, special_stats, rage, damage_sources,
+                         flurry_charges, rampage_stacks, hit_effect.attack_power_boost, false);
+            break;
+        }
+        case Hit_effect::Type::extra_hit: {
+            if (!is_extra_attack)
+            {
+                simulator_cout("PROC: extra hit from: ", hit_effect.name);
+                swing_weapon(main_hand_weapon, main_hand_weapon, special_stats, rage, damage_sources,
+                             flurry_charges, rampage_stacks, hit_effect.attack_power_boost, true);
             }
-            case Hit_effect::Type::damage_magic: {
-                // * 0.83 Assumes a static 17% chance to resist.
-                // (100 + special_stats.spell_crit / 2) / 100 is the average damage gained from a x1.5 spell crit
-                double effect_damage = hit_effect.damage * 0.83 * (100 + special_stats.spell_crit / 2) / 100 *
-                                       (1 + special_stats.damage_mod_spell);
-                damage_sources.add_damage(Damage_source::item_hit_effects, effect_damage, time_keeper_.time);
-                simulator_cout("PROC: ", hit_effect.name, " does ", effect_damage, " magic damage.");
-                break;
+            else
+            {
+                // Decrement the proc statistics for extra hit if it got triggered by an extra hit
+                hit_effect.procs--;
             }
-            case Hit_effect::Type::damage_physical: {
-                auto hit = generate_hit(main_hand_weapon, hit_effect.damage, main_hand_weapon, hit_table_yellow_mh_,
-                                        special_stats, damage_sources);
-                damage_sources.add_damage(Damage_source::item_hit_effects, hit.damage, time_keeper_.time);
-                if (config.display_combat_debug)
-                {
-                    simulator_cout("PROC: ", hit_effect.name, hit_result_to_string(hit.hit_result), " does ",
-                                   int(hit.damage), " physical damage");
-                }
-                if (hit.hit_result != Hit_result::miss && hit.hit_result != Hit_result::dodge)
-                {
-                    hit_effects(main_hand_weapon, main_hand_weapon, special_stats, rage, damage_sources, flurry_charges, rampage_stacks,
-                            is_extra_attack);
-                }
-                break;
+            break;
+        }
+        case Hit_effect::Type::stat_boost: {
+            simulator_cout("PROC: ", hit_effect.name, " stats increased for ", hit_effect.duration, "s");
+            //Hit_effect clone(hit_effect);
+            //clone.name = weapon.socket_name + "_" + hit_effect.name;
+            //clone.special_stats_boost = hit_effect.get_special_stat_equivalent(special_stats, ap_multiplier);
+            buff_manager_.add_combat_buff(hit_effect, time_keeper_.time);
+            break;
+        }
+        case Hit_effect::Type::damage_magic: {
+            // * 0.83 Assumes a static 17% chance to resist.
+            // (100 + special_stats.spell_crit / 2) / 100 is the average damage gained from a x1.5 spell crit
+            double effect_damage = hit_effect.damage * 0.83 * (100 + special_stats.spell_crit / 2) / 100 *
+                                   (1 + special_stats.damage_mod_spell);
+            damage_sources.add_damage(Damage_source::item_hit_effects, effect_damage, time_keeper_.time);
+            simulator_cout("PROC: ", hit_effect.name, " does ", effect_damage, " magic damage.");
+            break;
+        }
+        case Hit_effect::Type::damage_physical: {
+            auto hit = generate_hit(main_hand_weapon, hit_effect.damage, main_hand_weapon, hit_table_yellow_mh_,
+                                    special_stats, damage_sources);
+            damage_sources.add_damage(Damage_source::item_hit_effects, hit.damage, time_keeper_.time);
+            if (config.display_combat_debug)
+            {
+                simulator_cout("PROC: ", hit_effect.name, hit_result_to_string(hit.hit_result), " does ",
+                               int(hit.damage), " physical damage");
             }
-            default:
-                std::cout << ":::::::::::FAULTY HIT EFFECT IN SIMULATION!!!:::::::::";
-                break;
+            if (hit.hit_result != Hit_result::miss && hit.hit_result != Hit_result::dodge)
+            {
+                hit_effects(main_hand_weapon, main_hand_weapon, special_stats, rage, damage_sources, flurry_charges, rampage_stacks,
+                        is_extra_attack);
             }
+            break;
+        }
+        default:
+            std::cout << ":::::::::::FAULTY HIT EFFECT IN SIMULATION!!!:::::::::";
+            break;
         }
     }
 }
@@ -1024,16 +1022,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
                 e.probability = e.ppm * weapon.swing_speed / 60;
             }
 
-            if (e.type == Hit_effect::Type::reduce_armor)
-            {
-                e.type = Hit_effect::Type::stat_boost;
-                e.special_stats_boost.gear_armor_pen = e.armor_reduction;
-            }
-
-            if (e.max_stacks == 0)
-            {
-                e.max_stacks = 1;
-            }
+            e.sanitize();
         }
     }
 
@@ -1098,22 +1087,20 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
     }
 
     auto use_effect_order = Use_effects::compute_use_effect_order(use_effects_all, starting_special_stats,
-                                                                  sim_time + averaging_interval / 2, ap_equiv, 0, 0,
-                                                                  config.combat.initial_rage);
+                                                                  sim_time + averaging_interval / 2, ap_equiv, 0, 0);
 
     auto empty_hit_effects = std::vector<Hit_effect>();
     if (is_dual_wield)
     {
-        buff_manager_.initialize(weapons[0].hit_effects,weapons[1].hit_effects, tactical_mastery_rage_);
+        buff_manager_.initialize(weapons[0].hit_effects,weapons[1].hit_effects, use_effect_order, tactical_mastery_rage_);
     }
     else
     {
-        buff_manager_.initialize(weapons[0].hit_effects,empty_hit_effects, tactical_mastery_rage_);
+        buff_manager_.initialize(weapons[0].hit_effects,empty_hit_effects, use_effect_order, tactical_mastery_rage_);
     }
 
     for (int iter = init_iteration; iter < n_damage_batches + init_iteration; iter++)
     {
-        time_keeper_.reset();
         ability_queue_manager.reset();
         slam_manager.reset();
         double rage = config.combat.initial_rage;
@@ -1134,7 +1121,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
             }
         }
 
-        buff_manager_.reset(special_stats, damage_sources, use_effect_order);
+        buff_manager_.reset(special_stats, damage_sources);
 
         rage_spent_on_execute_ = 0;
 
@@ -1168,34 +1155,26 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
         }
 
         // Check if the simulator should use any use effects before the fight
-        if (!use_effect_order.empty() && use_effect_order.back().first < 0.0)
+        for (const auto& ue : use_effect_order)
         {
-            time_keeper_.time = use_effect_order.back().first;
-            while (time_keeper_.time < 0.0)
+            if (ue.first >= 0) break;
+
+            // set everything up so it works ;)
+            time_keeper_.prepare(ue.first);
+            double rage_discard = rage - ue.second.rage_boost;
+            double rage_lost_stance_discard = 0;
+            std::vector<std::string> debug_msg{};
+            double ap_multiplier = config.talents.improved_berserker_stance * 0.02 + config.enable_unleashed_rage * 0.1;
+
+            buff_manager_.increment(time_keeper_, rage_discard, rage_lost_stance_discard, config.display_combat_debug, debug_msg, ap_multiplier);
+
+            for (const auto& msg : debug_msg)
             {
-                double buff_dt = buff_manager_.get_dt(time_keeper_.time);
-                double use_effect_dt = buff_manager_.use_effect_order.back().first - time_keeper_.time;
-                if (use_effect_dt <= 0.0)
-                {
-                    use_effect_dt = 1e-5;
-                    if (buff_manager_.use_effect_order.back().second.triggers_gcd)
-                    {
-                        use_effect_dt = time_keeper_.global_ready() ? use_effect_dt : time_keeper_.global_cd();
-                    }
-                }
-                double dt =
-                    time_keeper_.get_dynamic_time_step(100.0, 100.0, buff_dt, 0.0 - time_keeper_.time, use_effect_dt);
-                time_keeper_.increment(dt);
-                std::vector<std::string> debug_msg{};
-                double ap_multiplier = config.talents.improved_berserker_stance * 0.02 + config.enable_unleashed_rage * 0.1;
-                buff_manager_.increment(dt, time_keeper_.time, rage, rage_lost_stance_swap_, time_keeper_,
-                                        config.display_combat_debug, debug_msg, ap_multiplier);
-                for (const auto& msg : debug_msg)
-                {
-                    simulator_cout(msg);
-                }
+                simulator_cout(msg);
             }
         }
+
+        time_keeper_.reset();
 
         for (auto& over_time_effect : over_time_effects_)
         {
@@ -1222,7 +1201,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
             time_keeper_.increment(dt);
             std::vector<std::string> debug_msg{};
             double ap_multiplier = config.talents.improved_berserker_stance * 0.02 + config.enable_unleashed_rage * 0.1;
-            buff_manager_.increment(dt, time_keeper_.time, rage, rage_lost_stance_swap_, time_keeper_,
+            buff_manager_.increment(time_keeper_, rage, rage_lost_stance_swap_,
                                     config.display_combat_debug, debug_msg, ap_multiplier);
             for (const auto& msg : debug_msg)
             {
@@ -1705,8 +1684,7 @@ std::vector<std::pair<double, Use_effect>> Combat_simulator::get_use_effect_orde
         ap_equiv =
             get_character_ap_equivalent(character.total_special_stats, character.weapons[0], config.sim_time, {});
     }
-    return Use_effects::compute_use_effect_order(use_effects_all, character.total_special_stats, config.sim_time,
-                                                 ap_equiv, 0, 0, config.combat.initial_rage);
+    return Use_effects::compute_use_effect_order(use_effects_all, character.total_special_stats, config.sim_time, ap_equiv, 0, 0);
 }
 
 void Combat_simulator::init_histogram()

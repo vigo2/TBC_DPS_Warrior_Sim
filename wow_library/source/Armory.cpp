@@ -4,6 +4,8 @@
 #include "find_values.hpp"
 #include "string_helpers.hpp"
 
+#include <unordered_map>
+
 Attributes Armory::get_enchant_attributes(Socket socket, Enchant::Type type) const
 {
     switch (socket)
@@ -260,8 +262,8 @@ void Armory::compute_total_stats(Character& character) const
 
     total_attributes += character.base_attributes;
     total_special_stats += character.base_special_stats;
-    std::vector<Set> set_names{};
     std::vector<Use_effect> use_effects{};
+    std::unordered_map<Set, int> set_counts{};
     for (const Armor& armor : character.armor)
     {
         total_attributes += armor.attributes;
@@ -270,7 +272,7 @@ void Armory::compute_total_stats(Character& character) const
         total_attributes += get_enchant_attributes(armor.socket, armor.enchant.type);
         total_special_stats += get_enchant_special_stats(armor.socket, armor.enchant.type);
 
-        set_names.emplace_back(armor.set_name);
+        set_counts[armor.set_name] += 1;
         for (const auto& use_effect : armor.use_effects)
         {
             use_effects.emplace_back(use_effect);
@@ -302,57 +304,26 @@ void Armory::compute_total_stats(Character& character) const
             weapon.hit_effects.emplace_back(hit_effect);
         }
 
-        set_names.emplace_back(weapon.set_name);
+        set_counts[weapon.set_name] += 1;
     }
 
-    std::vector<Set> unique_set_names{};
-    for (const Set& set_name : set_names)
+    for (const Set_bonus& set_bonus : set_bonuses)
     {
-        if (set_name != Set::none)
+        if (set_counts[set_bonus.set] >= set_bonus.pieces)
         {
-            bool unique = true;
-            for (const Set& set_name_unique : unique_set_names)
+            total_attributes += set_bonus.attributes;
+            total_special_stats += set_bonus.special_stats;
+            character.set_bonuses.emplace_back(set_bonus);
+            if (set_bonus.name == "warbringer")
             {
-                if (set_name == set_name_unique)
+                if (set_bonus.pieces == 4)
                 {
-                    unique = false;
+                    character.set_bonus_effect.warbringer_4_set = true;
+                    character.set_bonus_effect.warbringer_2_set = 1;
                 }
-            }
-            if (unique)
-            {
-                unique_set_names.emplace_back(set_name);
-            }
-        }
-    }
-
-    for (const Set& unique_set_name : unique_set_names)
-    {
-        int count = 0;
-        for (const Set& set_name : set_names)
-        {
-            if (set_name == unique_set_name)
-            {
-                count++;
-            }
-        }
-        for (const Set_bonus& set_bonus : set_bonuses)
-        {
-            if (set_bonus.set == unique_set_name && count >= set_bonus.pieces)
-            {
-                total_attributes += set_bonus.attributes;
-                total_special_stats += set_bonus.special_stats;
-                character.set_bonuses.emplace_back(set_bonus);
-                if (set_bonus.name == "warbringer")
+                else
                 {
-                    if (set_bonus.pieces == 4)
-                    {
-                        character.set_bonus_effect.warbringer_4_set = true;
-                        character.set_bonus_effect.warbringer_2_set = 1;
-                    }
-                    else
-                    {
-                        character.set_bonus_effect.warbringer_2_set = 1;
-                    }
+                    character.set_bonus_effect.warbringer_2_set = 1;
                 }
             }
         }
@@ -421,7 +392,7 @@ void Armory::compute_total_stats(Character& character) const
 
     if (character.talents.one_handed_weapon_specialization > 0 && character.is_dual_wield())
     {
-        double multiplier = double(character.talents.one_handed_weapon_specialization) / 50.0;
+        double multiplier = 0.02 * character.talents.one_handed_weapon_specialization;
         character.talent_special_stats += {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, multiplier};
     }
 

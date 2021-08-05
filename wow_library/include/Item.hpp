@@ -120,8 +120,7 @@ struct Over_time_effect
         , rage_gain(rage_gain)
         , damage(damage)
         , interval(interval)
-        , duration(duration)
-        , over_time_buff_idx(-1) {};
+        , duration(duration) {};
 
     std::string name;
     Special_stats special_stats;
@@ -130,11 +129,8 @@ struct Over_time_effect
     int interval;
     int duration;
 
-    int over_time_buff_idx;
+    int over_time_buff_idx{-1};
 };
-
-struct Combat_buff;
-
 
 class Hit_effect
 {
@@ -155,7 +151,7 @@ public:
 
     Hit_effect(std::string name, Type type, Attributes attribute_boost, Special_stats special_stats_boost,
                double damage, double duration, double cooldown, double probability, double attack_power_boost = 0, int n_targets = 1,
-               int armor_reduction = 0, int max_stacks = 0, double ppm = 0.0, bool affects_both_weapons = false)
+               int armor_reduction = 0, int max_stacks = 1, double ppm = 0.0, bool affects_both_weapons = false)
         : name(std::move(name))
         , type(type)
         , attribute_boost(attribute_boost)
@@ -173,6 +169,25 @@ public:
         , time_counter(0)
         , procs(0)
         , combat_buff_idx(-1) {};
+
+    void sanitize()
+    {
+        //if (probability == 0)
+        //{
+        //    probability = e.ppm * weapon.swing_speed / 60;
+        //}
+
+        if (type == Hit_effect::Type::reduce_armor)
+        {
+            type = Hit_effect::Type::stat_boost;
+            special_stats_boost.gear_armor_pen = armor_reduction;
+        }
+
+        if (max_stacks == 0)
+        {
+            max_stacks = 1;
+        }
+    }
 
     [[nodiscard]] Special_stats get_special_stat_equivalent(const Special_stats& special_stats, double ap_multiplier = 0) const
     {
@@ -192,13 +207,13 @@ public:
     int armor_reduction;
     double ppm;
     bool affects_both_weapons;
-    int max_stacks; // should be const, once "fixed" to one
+    int max_stacks{1}; // should be const, once "fixed" to one
 
     double time_counter; // "next_ready", aka cooldown end
 
     int procs; // statistics
 
-    int combat_buff_idx; // organizational ;)
+    int combat_buff_idx{-1}; // organizational ;)
 };
 
 class Use_effect

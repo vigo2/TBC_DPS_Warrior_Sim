@@ -27,6 +27,12 @@ public:
         rampage_aura_ = -1;
     }
 
+    void prepare(double prepare_time)
+    {
+        global_cd_ = prepare_time;
+        time = prepare_time + 1e-5;
+    }
+
     [[nodiscard]] double get_dynamic_time_step(double mh_dt, double oh_dt, double buff_dt, double sim_dt, double slam_dt) const
     {
         double dt = std::numeric_limits<double>::max();
