@@ -985,6 +985,9 @@ TEST_F(Sim_fixture, test_procs)
     config.combat.use_whirlwind = true;
     config.execute_phase_percentage_ = 20;
 
+    config.combat.use_overpower = false;
+    config.combat.overpower_rage_thresh = 25;
+
     sim.set_config(config);
 
     auto start = std::chrono::steady_clock::now();
@@ -1009,6 +1012,7 @@ TEST_F(Sim_fixture, test_procs)
     if (dd.execute_count > 0) std::cout << "execute       = " << f * dd.execute_damage << " (" << g * dd.execute_count << "x)" << std::endl;
     if (dd.deep_wounds_count > 0) std::cout << "deep wounds   = " << f * dd.deep_wounds_damage << " (" << g * dd.deep_wounds_count << "x)" << std::endl;
     if (dd.item_hit_effects_count > 0) std::cout << "hit effects   = " << f * dd.item_hit_effects_damage << " (" << g * dd.item_hit_effects_count << "x)" << std::endl;
+    if (dd.overpower_count > 0) std::cout << "overpower     = " << f * dd.overpower_damage << " (" << g * dd.overpower_count << "x)" << std::endl;
     std::cout << "----------------------" << std::endl;
     std::cout << "total         = " << f * dd.sum_damage_sources() << " / " << sim.get_dps_mean() << std::endl;
 

@@ -527,6 +527,7 @@ private:
     int sweeping_strikes_charges_ = 0;
 
     Over_time_effect deep_wound_effect_{"Deep_wounds", {}, 0, 0, 3, 12};
+    Hit_effect battle_stance_{"battle_stance", Hit_effect::Type::stat_boost, {}, {-3.0, 0, 0}, 0, 1.5, 0, 0};
 
     std::vector<std::vector<double>> damage_time_lapse{};
     std::unordered_map<std::string, int> proc_data_{};

@@ -565,20 +565,20 @@ void Combat_simulator::overpower(Weapon_sim& main_hand_weapon, Special_stats& sp
             rage = tactical_mastery_rage_;
         }
         rage -= 5;
-        // FIXME(vigo) buff_manager_.add("battle_stance", {-3.0, 0, 0}, 1.5);
+        buff_manager_.add_combat_buff(battle_stance_, time_keeper_.time);
         time_keeper_.overpower_cast(5.0);
         time_keeper_.global_cast(1.5);
         return;
     }
     simulator_cout("Changed stance: Battle Stance.");
     simulator_cout("Overpower!");
-    // FIXME(vigo) buff_manager_.add("battle_stance", {-3.0, 0, 0}, 1.5);
+    buff_manager_.add_combat_buff(battle_stance_, time_keeper_.time);
     double damage = main_hand_weapon.normalized_swing(special_stats.attack_power) + 35;
     auto hit_outcome = generate_hit(main_hand_weapon, damage, main_hand_weapon, hit_table_overpower_, special_stats,
                                     damage_sources);
     if (rage > tactical_mastery_rage_)
     {
-        rage_lost_stance_swap_ += rage - (tactical_mastery_rage_);
+        rage_lost_stance_swap_ += rage - tactical_mastery_rage_;
         rage = tactical_mastery_rage_;
     }
     rage -= 5;
