@@ -359,8 +359,8 @@ void Combat_simulator::compute_hit_tables(const Special_stats& special_stats, co
     auto crit = std::max(special_stats.critical_strike - crit_suppression, 0.0);
 
     // just using the EJ-approved crit formula here ;)
-    //auto yellow_crit_dm = 1 + (2 * (1 + special_stats.crit_multiplier) - 1) * (1 + 0.1 * config.talents.impale);
-    auto yellow_crit_dm = (2 + 0.1 * config.talents.impale) * (1 + special_stats.crit_multiplier);
+    auto yellow_crit_dm = 1 + (2 * (1 + special_stats.crit_multiplier) - 1) * (1 + 0.1 * config.talents.impale);
+    // auto yellow_crit_dm = (2 + 0.1 * config.talents.impale) * (1 + special_stats.crit_multiplier);
 
     if (weapon.socket == Socket::main_hand)
     {
