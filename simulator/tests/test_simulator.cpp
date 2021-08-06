@@ -657,6 +657,25 @@ heroic strike = 0.964171 (0.04656x)
 ----------------------
 total         = 761.583 / 764.131
 rage lost 11748
+
+after sim_time changes (new format)
+
+took 3884 ms
+
+white (mh)    = 283.65 (15.79x)
+slam          = 287.80 (14.11x)
+mortal strike = 83.80 (4.20x)
+whirlwind     = 43.22 (2.56x)
+deep wounds   = 42.16 (13.38x)
+execute       = 22.49 (1.23x)
+heroic strike = 0.97 (0.05x)
+----------------------
+total         = 764.08
+
+rage lost 0.10 per minute
+
+Deep_wounds 88.15%
+Anger Management 100.00%
 */
 TEST_F(Sim_fixture, test_arms)
 {
@@ -709,6 +728,7 @@ TEST_F(Sim_fixture, test_arms)
     auto f = 1 / (config.sim_time * config.n_batches);
     auto g = 60 * f;
 
+    std::cout << std::fixed << std::setprecision(2);
     std::cout << "white (mh)    = " << f * dd.white_mh_damage << " (" << g * dd.white_mh_count << "x)" << std::endl;
     if (dd.white_oh_count > 0) std::cout << "white (oh)    = " << f * dd.white_oh_damage << " (" << g * dd.white_oh_count << "x)" << std::endl;
     if (dd.slam_count > 0) std::cout << "slam          = " << f * dd.slam_damage << " (" << g * dd.slam_count << "x)" << std::endl;
@@ -719,11 +739,10 @@ TEST_F(Sim_fixture, test_arms)
     if (dd.heroic_strike_count > 0) std::cout << "heroic strike = " << f * dd.heroic_strike_damage << " (" << g * dd.heroic_strike_count << "x)" << std::endl;
     if (dd.item_hit_effects_count > 0) std::cout << "hit effects   = " << f * dd.item_hit_effects_damage << " (" << g * dd.item_hit_effects_count << "x)" << std::endl;
     std::cout << "----------------------" << std::endl;
-    std::cout << "total         = " << f * dd.sum_damage_sources() << " / " << sim.get_dps_mean() << std::endl;
-
-    std::cout << "rage lost " << sim.get_rage_lost_capped() << std::endl;
-
-    auto precision = std::cout.precision(3);
+    std::cout << "total         = " << f * dd.sum_damage_sources() << std::endl;
+    std::cout << std::endl;
+    std::cout << "rage lost " << g * sim.get_rage_lost_capped() << " per minute " << std::endl;
+    std::cout << std::endl;
     for (const auto& e : sim.get_aura_uptimes_map()) {
         std::cout << e.first << " " << 100 * f * e.second << "%" << std::endl;
     }
@@ -731,7 +750,6 @@ TEST_F(Sim_fixture, test_arms)
     for (const auto& e : sim.get_proc_data()) {
         std::cout << e.first << " " << g * e.second << " procs/min" << std::endl;
     }
-    std::cout.precision(precision);
 
     EXPECT_EQ(0, 0);
 }
@@ -781,6 +799,25 @@ deep wounds   = 19.9497 (9.8517x)
 ----------------------
 total         = 850.766 / 853.611
 rage lost 8702.61
+
+after sim_time changes (new format)
+
+took 5846 ms
+
+white (mh)    = 213.40 (21.40x)
+white (oh)    = 173.72 (28.48x)
+bloodthirst   = 167.18 (8.39x)
+whirlwind     = 100.28 (5.26x)
+heroic strike = 95.51 (6.13x)
+execute       = 84.09 (4.35x)
+deep wounds   = 20.01 (9.88x)
+----------------------
+total         = 854.19
+
+rage lost 0.07 per minute
+
+Deep_wounds 98.31%
+Anger Management 100.00%
 */
 TEST_F(Sim_fixture, test_fury)
 {
@@ -843,6 +880,7 @@ TEST_F(Sim_fixture, test_fury)
     auto f = 1.0 / (config.sim_time * config.n_batches);
     auto g = 60 * f;
 
+    std::cout << std::fixed << std::setprecision(2);
     std::cout << "white (mh)    = " << f * dd.white_mh_damage << " (" << g * dd.white_mh_count << "x)" << std::endl;
     if (dd.white_oh_count > 0) std::cout << "white (oh)    = " << f * dd.white_oh_damage << " (" << g * dd.white_oh_count << "x)" << std::endl;
     if (dd.mortal_strike_count > 0) std::cout << "mortal strike = " << f * dd.mortal_strike_damage << " (" << g * dd.mortal_strike_count << "x)" << std::endl;
@@ -855,11 +893,10 @@ TEST_F(Sim_fixture, test_fury)
     if (dd.deep_wounds_count > 0) std::cout << "deep wounds   = " << f * dd.deep_wounds_damage << " (" << g * dd.deep_wounds_count << "x)" << std::endl;
     if (dd.item_hit_effects_count > 0) std::cout << "hit effects   = " << f * dd.item_hit_effects_damage << " (" << g * dd.item_hit_effects_count << "x)" << std::endl;
     std::cout << "----------------------" << std::endl;
-    std::cout << "total         = " << f * dd.sum_damage_sources() << " / " << sim.get_dps_mean() << std::endl;
-
-    std::cout << "rage lost " << sim.get_rage_lost_capped() << std::endl;
-
-    auto precision = std::cout.precision(3);
+    std::cout << "total         = " << f * dd.sum_damage_sources() << std::endl;
+    std::cout << std::endl;
+    std::cout << "rage lost " << g * sim.get_rage_lost_capped() << " per minute " << std::endl;
+    std::cout << std::endl;
     for (const auto& e : sim.get_aura_uptimes_map()) {
         std::cout << e.first << " " << 100 * f * e.second << "%" << std::endl;
     }
@@ -867,7 +904,6 @@ TEST_F(Sim_fixture, test_fury)
     for (const auto& e : sim.get_proc_data()) {
         std::cout << e.first << " " << g * e.second << " procs/min" << std::endl;
     }
-    std::cout.precision(precision);
 
     EXPECT_EQ(0, 0);
 }
@@ -903,6 +939,33 @@ deep wounds   = 18.5604 (8.66152x)
 total         = 1056.98 / 1060.52
 rage lost 584443
 
+more perf work, sim_time update, new layout
+
+took 7802 ms
+
+white (mh)    = 278.81 (25.35x)
+white (oh)    = 202.05 (30.05x)
+bloodthirst   = 190.20 (8.59x)
+whirlwind     = 106.61 (5.19x)
+heroic strike = 165.30 (9.88x)
+execute       = 98.79 (4.70x)
+deep wounds   = 18.61 (8.69x)
+----------------------
+total         = 1060.36
+
+rage lost 4.64 per minute
+
+Deep_wounds 98.85%
+Anger Management 100.00%
+mongoose_oh 25.62%
+mongoose_mh 38.86%
+dragonmaw 28.01%
+
+dragonmaw 2.02 procs/min
+mongoose_mh 2.03 procs/min
+windfury_totem 4.82 procs/min
+mongoose_oh 1.20 procs/min
+sword_specialization 1.38 procs/min
 */
 TEST_F(Sim_fixture, test_procs)
 {
@@ -921,20 +984,20 @@ TEST_F(Sim_fixture, test_procs)
     character.equip_armor(armory.find_armor(Socket::trinket, "badge_of_the_swarmguard"));
     character.buffs.emplace_back(armory.buffs.battle_shout);
 
-    armory.compute_total_stats(character);
+    //armory.compute_total_stats(character);
 
     auto mh = Weapon{"test_mh", {}, {}, 2.7, 270, 270, Weapon_socket::one_hand, Weapon_type::axe};
     //mh.hit_effects.emplace_back(executioner);
     mh.hit_effects.emplace_back(Hit_effect{"dragonmaw", Hit_effect::Type::stat_boost, {}, {0, 0, 0, 0, .134}, 0, 10, 0, 2.7 / 60});
     mh.hit_effects.emplace_back(Hit_effect{"mongoose_mh", Hit_effect::Type::stat_boost, {0,120}, {0, 0, 0, 0, 0.02}, 0, 15, 0, 2.7/60});
-    mh.hit_effects.emplace_back(Hit_effect{dmc_crusade});
+    //mh.hit_effects.emplace_back(Hit_effect{dmc_crusade});
     mh.hit_effects.emplace_back(Hit_effect{"windfury_totem", Hit_effect::Type::windfury_hit, {}, {}, 0, 0, 0, 0.2, 445});
     //mh.hit_effects.emplace_back(doomplate_4pc);
 
     auto oh = Weapon{"test_oh", {}, {}, 2.6, 260, 260, Weapon_socket::one_hand, Weapon_type::sword};
     //oh.hit_effects.emplace_back(executioner);
     oh.hit_effects.emplace_back(Hit_effect{"mongoose_oh", Hit_effect::Type::stat_boost, {0,120}, {0, 0, 0, 0, 0.02}, 0, 15, 0, 2.6/60});
-    oh.hit_effects.emplace_back(Hit_effect{dmc_crusade});
+    //oh.hit_effects.emplace_back(Hit_effect{dmc_crusade});
     oh.hit_effects.emplace_back(Hit_effect{"sword_specialization", Hit_effect::Type::sword_spec, {}, {}, 0, 0, 0.5, 0.05});
     //oh.hit_effects.emplace_back(doomplate_4pc);
 
@@ -949,9 +1012,9 @@ TEST_F(Sim_fixture, test_procs)
     character.total_special_stats.axe_expertise = 5;
 
     // hello, use effects ;)
-    config.talents.death_wish = true;
-    config.combat.use_death_wish = true;
-    config.enable_bloodrage = true;
+    //config.talents.death_wish = true;
+    //config.combat.use_death_wish = true;
+    //config.enable_bloodrage = true;
     //config.enable_blood_fury = true;
 
     config.talents.flurry = 5;
@@ -1001,6 +1064,7 @@ TEST_F(Sim_fixture, test_procs)
     auto f = 1.0 / (config.sim_time * config.n_batches);
     auto g = 60 * f;
 
+    std::cout << std::fixed << std::setprecision(2);
     std::cout << "white (mh)    = " << f * dd.white_mh_damage << " (" << g * dd.white_mh_count << "x)" << std::endl;
     if (dd.white_oh_count > 0) std::cout << "white (oh)    = " << f * dd.white_oh_damage << " (" << g * dd.white_oh_count << "x)" << std::endl;
     if (dd.mortal_strike_count > 0) std::cout << "mortal strike = " << f * dd.mortal_strike_damage << " (" << g * dd.mortal_strike_count << "x)" << std::endl;
@@ -1014,11 +1078,10 @@ TEST_F(Sim_fixture, test_procs)
     if (dd.item_hit_effects_count > 0) std::cout << "hit effects   = " << f * dd.item_hit_effects_damage << " (" << g * dd.item_hit_effects_count << "x)" << std::endl;
     if (dd.overpower_count > 0) std::cout << "overpower     = " << f * dd.overpower_damage << " (" << g * dd.overpower_count << "x)" << std::endl;
     std::cout << "----------------------" << std::endl;
-    std::cout << "total         = " << f * dd.sum_damage_sources() << " / " << sim.get_dps_mean() << std::endl;
-
-    std::cout << "rage lost " << sim.get_rage_lost_capped() << std::endl;
-
-    auto precision = std::cout.precision(3);
+    std::cout << "total         = " << f * dd.sum_damage_sources() << std::endl;
+    std::cout << std::endl;
+    std::cout << "rage lost " << g * sim.get_rage_lost_capped() << " per minute " << std::endl;
+    std::cout << std::endl;
     for (const auto& e : sim.get_aura_uptimes_map()) {
         std::cout << e.first << " " << 100 * f * e.second << "%" << std::endl;
     }
@@ -1026,7 +1089,6 @@ TEST_F(Sim_fixture, test_procs)
     for (const auto& e : sim.get_proc_data()) {
         std::cout << e.first << " " << g * e.second << " procs/min" << std::endl;
     }
-    std::cout.precision(precision);
 
     EXPECT_EQ(0, 0);
 }

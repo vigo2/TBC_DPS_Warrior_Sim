@@ -30,4 +30,6 @@ public:
     int n_samples_;
 };
 
+std::ostream& operator<<(std::ostream& os, const Distribution& d);
+
 #endif // WOW_SIMULATOR_DISTRIBUTION_HPP

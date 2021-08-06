@@ -92,8 +92,15 @@ public:
         simulation_special_stats = &special_stats;
         simulation_damage_sources = &damage_sources;
 
-        use_effect_index = 0;
-        min_use_effect = use_effects.empty() ? std::numeric_limits<double>::max() : use_effects[0].first - 1;
+        for (auto& he : *hit_effects_mh)
+        {
+            he.time_counter = 0;
+        }
+
+        for (auto& he : *hit_effects_oh)
+        {
+            he.time_counter = 0;
+        }
 
         for (auto& buff : combat_buffs)
         {
@@ -116,6 +123,9 @@ public:
             hit_aura.hit_effect_oh->time_counter = std::numeric_limits<double>::max();
         }
         min_hit_aura = std::numeric_limits<double>::max();
+
+        use_effect_index = 0;
+        min_use_effect = use_effects.empty() ? std::numeric_limits<double>::max() : use_effects[0].first - 1;
 
         need_to_recompute_mitigation = true;
         need_to_recompute_hit_tables = true;

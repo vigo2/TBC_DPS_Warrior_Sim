@@ -2,6 +2,8 @@
 
 #include "Statistics.hpp"
 
+#include <ostream>
+
 namespace
 {
 double expected_samples_to_observe(double z_value)
@@ -74,3 +76,9 @@ bool Distribution::is_normal_distributed() const
 
     return n_samples_ > std::max(n_samples_nominal_min, n_samples_nominal_max);
 }
+
+std::ostream& operator<<(std::ostream& os, const Distribution& d) {
+    os << d.mean_ << " +/- " << d.variance_ << ", [" << d.min_ << ", " << d.max_ << "], " << d.n_samples_ << " samples";
+    return os;
+}
+

@@ -189,6 +189,7 @@ public:
         }
     }
 
+    // FIXME(vigo) ap_multiplier is used for attributes, but not for special_stats...
     [[nodiscard]] Special_stats get_special_stat_equivalent(const Special_stats& special_stats, double ap_multiplier = 0) const
     {
         return attribute_boost.convert_to_special_stats(special_stats, ap_multiplier) + special_stats_boost;
@@ -244,7 +245,7 @@ public:
         , hit_effects(std::move(hit_effects))
         , over_time_effects(std::move(over_time_effects)){};
 
-    // FIXME ap_multiplier is used for attributes, but not for special_stats...
+    // FIXME(vigo) ap_multiplier is used for attributes, but not for special_stats...
     inline Special_stats get_special_stat_equivalent(const Special_stats& special_stats, double ap_multiplier = 0) const
     {
         return attribute_boost.convert_to_special_stats(special_stats, ap_multiplier) + special_stats_boost;

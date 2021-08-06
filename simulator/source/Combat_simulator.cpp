@@ -1002,6 +1002,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
     {
         dps_distribution_.reset();
     }
+
     flurry_uptime_ = 0;
     rage_lost_stance_swap_ = 0;
     rage_lost_capped_ = 0;
@@ -1039,7 +1040,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
                     auto new_hit_effect = hit_effect;
                     if (hit_effect.ppm != 0)
                     {
-                        new_hit_effect.probability = hit_effect.ppm / (60.0 / weapons[j].swing_speed);
+                        new_hit_effect.probability = hit_effect.ppm * weapons[j].swing_speed / 60;
                     }
                     else
                     {
@@ -1056,9 +1057,8 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
 
     const bool is_dual_wield = character.is_dual_wield();
 
-    double sim_time = config.sim_time;
-    const double averaging_interval = 2.0; // Duration of the uniform interval that is evaluated
-    sim_time -= averaging_interval;
+    const double sim_time = config.sim_time;
+    const double time_execute_phase = sim_time * (100.0 - config.execute_phase_percentage_) / 100.0;
 
     // Configure use effects
     auto use_effects_all = use_effects_all_;
@@ -1087,7 +1087,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
     }
 
     auto use_effect_order = Use_effects::compute_use_effect_order(use_effects_all, starting_special_stats,
-                                                                  sim_time + averaging_interval / 2, ap_equiv, 0, 0);
+                                                                  sim_time, ap_equiv, 0, 0);
 
     auto empty_hit_effects = std::vector<Hit_effect>();
     if (is_dual_wield)
@@ -1107,20 +1107,6 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
         auto special_stats = starting_special_stats;
         Damage_sources damage_sources;
 
-        // Reset hit effects
-        for (auto& he : weapons[0].hit_effects)
-        {
-            he.time_counter = 0;
-        }
-
-        if (is_dual_wield)
-        {
-            for (auto& he : weapons[1].hit_effects)
-            {
-                he.time_counter = 0;
-            }
-        }
-
         buff_manager_.reset(special_stats, damage_sources);
 
         rage_spent_on_execute_ = 0;
@@ -1139,10 +1125,6 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
 
         weapons[0].internal_swing_timer = 0;
         if (is_dual_wield) weapons[1].internal_swing_timer = 0.5 * (weapons[1].swing_speed / (1 + special_stats.haste)); // de-sync mh/oh swing timers
-
-        // To avoid local max/min results from running a specific run time
-        sim_time += averaging_interval / n_damage_batches;
-        double time_execute_phase = sim_time * (100.0 - config.execute_phase_percentage_) / 100.0;
 
         // Combat configuration
         if (!config.multi_target_mode_)
@@ -1199,6 +1181,12 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
             double dt = time_keeper_.get_dynamic_time_step(mh_dt, oh_dt, buff_dt, sim_time - time_keeper_.time, slam_dt);
             if (flurry_charges > 0) flurry_uptime += dt;
             time_keeper_.increment(dt);
+
+            if (sim_time - time_keeper_.time < 0)
+            {
+                break;
+            }
+
             std::vector<std::string> debug_msg{};
             double ap_multiplier = config.talents.improved_berserker_stance * 0.02 + config.enable_unleashed_rage * 0.1;
             buff_manager_.increment(time_keeper_, rage, rage_lost_stance_swap_,
@@ -1206,11 +1194,6 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
             for (const auto& msg : debug_msg)
             {
                 simulator_cout(msg);
-            }
-
-            if (sim_time - time_keeper_.time < 0.0)
-            {
-                break;
             }
 
             if (buff_manager_.need_to_recompute_hit_tables)
@@ -1689,7 +1672,7 @@ std::vector<std::pair<double, Use_effect>> Combat_simulator::get_use_effect_orde
 
 void Combat_simulator::init_histogram()
 {
-    double res = 20;
+    const int res = 20;
     for (int i = 0; i < 1000; i++)
     {
         hist_x.push_back(i * res);
