@@ -8,12 +8,6 @@ class Weapon_sim
 public:
     Weapon_sim(const Weapon& weapon, const Special_stats& special_stats);
 
-    constexpr bool time_for_swing(double dt)
-    {
-        internal_swing_timer -= dt;
-        return internal_swing_timer < 0;
-    }
-
     [[nodiscard]] double swing(double attack_power) const
     {
         return average_damage + attack_power * swing_speed / 14;
@@ -26,7 +20,7 @@ public:
 
     const double swing_speed;
     double normalized_swing_speed;
-    double internal_swing_timer;
+    double next_swing;
     double min_damage;
     double max_damage;
     double average_damage;

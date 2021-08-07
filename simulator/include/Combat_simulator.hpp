@@ -11,6 +11,7 @@
 #include "string_helpers.hpp"
 #include "time_keeper.hpp"
 #include "weapon_sim.hpp"
+#include "logger.hpp"
 
 #include <array>
 #include <cassert>
@@ -228,34 +229,34 @@ public:
 
     struct Slam_manager
     {
-        Slam_manager() = default;
+        explicit Slam_manager(double slam_cast_time) : slam_cast_time_(slam_cast_time) { }
 
-        void reset()
-        {
-            slam_casting_ = false;
-            slam_cast_time_stamp_ = 0.0;
-        };
+        [[nodiscard]] bool is_slam_casting() const { return is_casting_; }
 
-        [[nodiscard]] bool is_slam_casting() const { return slam_casting_; }
+        [[nodiscard]] double next_finish() const { return next_finish_; }
 
         void cast_slam(double time_stamp)
         {
-            slam_casting_ = true;
-            slam_cast_time_stamp_ = time_stamp + slam_cast_time_;
+            is_casting_ = true;
+            next_finish_ = time_stamp + slam_cast_time_;
         }
 
-        void finish_slam() { slam_casting_ = false; }
-
-        [[nodiscard]] double time_left(double current_time) const
+        void finish_slam()
         {
-            return slam_casting_ ? slam_cast_time_stamp_ - current_time : 100.0;
+            is_casting_ = false;
+            next_finish_ = std::numeric_limits<double>::max();
         }
 
-        double slam_cast_time_ = 0.0;
+        [[nodiscard]] bool ready(double current_time) const
+        {
+            return next_finish_ < current_time;
+        }
+
 
     private:
-        bool slam_casting_{false};
-        double slam_cast_time_stamp_ = 0.0;
+        double slam_cast_time_;
+        bool is_casting_{false};
+        double next_finish_{std::numeric_limits<double>::max()};
     };
 
     struct Hit_outcome
@@ -349,7 +350,7 @@ public:
     void overpower(Weapon_sim& main_hand_weapon, Special_stats& special_stats, double& rage,
                    Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks);
 
-    bool start_cast_slam(bool mh_swing, double rage, double& swing_time_left);
+    bool start_cast_slam(bool mh_swing, double rage, const Weapon_sim& weapon);
 
     void slam(Weapon_sim& main_hand_weapon, Special_stats& special_stats, double& rage, Damage_sources& damage_sources,
               int& flurry_charges, int& rampage_stacks);
@@ -445,25 +446,7 @@ public:
 
     void normalize_timelapse();
 
-    static std::string hit_result_to_string(Combat_simulator::Hit_result hit_result);
-
-    void print_statement(const std::string& t) { debug_topic_ += t; }
-
-    void print_statement(int t) { debug_topic_ += std::to_string(t); }
-
-    void print_statement(double t) { debug_topic_ += std::to_string(t); }
-
-    template <typename... Args>
-    void simulator_cout(Args&&... args)
-    {
-        if (config.display_combat_debug)
-        {
-            //            s. Loop idx:" + std::to_string(                    time_keeper_.step_index) +=
-            debug_topic_ += "Time: " + std::to_string(time_keeper_.time) + "s. Event: ";
-            __attribute__((unused)) int dummy[] = {0, ((void)print_statement(std::forward<Args>(args)), 0)...};
-            debug_topic_ += "<br>";
-        }
-    }
+    static std::string hit_result_to_string(const Hit_result& hit_result);
 
     Combat_simulator_config config;
 
@@ -487,14 +470,15 @@ private:
     Hit_table hit_table_yellow_oh_;
     Hit_table hit_table_overpower_;
     Hit_table hit_table_white_oh_queued_;
-    Damage_sources damage_distribution_{};
+    Damage_sources damage_distribution_{false};
     Time_keeper time_keeper_{};
     Buff_manager buff_manager_{};
     Ability_queue_manager ability_queue_manager{};
-    Slam_manager slam_manager{};
+    Slam_manager slam_manager{1.5};
     std::vector<int> hist_x{};
     std::vector<int> hist_y{};
-    std::string debug_topic_{};
+
+    Logger logger_{};
 
     Distribution dps_distribution_{};
     double armor_reduction_factor_{};
@@ -509,7 +493,8 @@ private:
     double rampage_uptime_{};
 
     int execute_rage_cost_{};
-    int heroic_strike_rage_cost{};
+    int heroic_strike_rage_cost_{};
+    int whirlwind_rage_cost_{};
 
     double cleave_bonus_damage_{};
     double rage_spent_on_execute_{};

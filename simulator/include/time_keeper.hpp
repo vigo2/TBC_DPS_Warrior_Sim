@@ -6,9 +6,9 @@ class Time_keeper
 public:
     Time_keeper() = default;
 
-    void increment(double dt)
+    void increment(double next_event)
     {
-        time += dt;
+        time = next_event + 1e-5;
     }
 
     void reset()
@@ -33,67 +33,23 @@ public:
         time = prepare_time + 1e-5;
     }
 
-    [[nodiscard]] double get_dynamic_time_step(double mh_dt, double oh_dt, double buff_dt, double sim_dt, double slam_dt) const
+    [[nodiscard]] double get_next_event(double next_mh_swing, double next_oh_swing,                                              
+                                        double next_buff_event, double next_slam_finish, double sim_time) const
     {
-        double dt = std::numeric_limits<double>::max();
-        if (overpower_cd_ >= time && overpower_cd_ < dt) dt = overpower_cd_;
-        if (sweeping_strikes_cd_ >= time && sweeping_strikes_cd_ < dt) dt = sweeping_strikes_cd_;
-        if (mortal_strike_cd_ >= time && mortal_strike_cd_ < dt) dt = mortal_strike_cd_;
-        if (blood_thirst_cd_ >= time && blood_thirst_cd_ < dt) dt = blood_thirst_cd_;
-        if (rampage_cd_ >= time && rampage_cd_ < dt) dt = rampage_cd_;
-        if (whirlwind_cd_ >= time && whirlwind_cd_ < dt) dt = whirlwind_cd_;
-        if (global_cd_ >= time && global_cd_ < dt) dt = global_cd_;
-        dt -= time;
-        if (slam_dt >= 0.0 && slam_dt < dt) dt = slam_dt;
-        if (mh_dt < dt) dt = mh_dt;
-        if (oh_dt < dt) dt = oh_dt;
-        if (buff_dt < dt) dt = buff_dt;
-        if (sim_dt < dt) dt = sim_dt;
-        dt += 1e-5;
-        return dt;
-    }
-
-    [[nodiscard]] double get_dynamic_time_step_old(double mh_dt, double oh_dt, double buff_dt, double sim_dt, double slam_dt) const
-    {
-        double dt = 100.0;
-        if (overpower_cd_ >= time)
-        {
-            dt = std::min(overpower_cd_ - time, dt);
-        }
-        if (sweeping_strikes_cd_ >= time)
-        {
-            dt = std::min(sweeping_strikes_cd_ - time, dt);
-        }
-        if (mortal_strike_cd_ >= time)
-        {
-            dt = std::min(mortal_strike_cd_ - time, dt);
-        }
-        if (blood_thirst_cd_ >= time)
-        {
-            dt = std::min(blood_thirst_cd_ - time, dt);
-        }
-        if (rampage_cd_ >= time)
-        {
-            dt = std::min(rampage_cd_ - time, dt);
-        }
-        if (whirlwind_cd_ >= time)
-        {
-            dt = std::min(whirlwind_cd_ - time, dt);
-        }
-        if (global_cd_ >= time)
-        {
-            dt = std::min(global_cd_ - time, dt);
-        }
-        if (slam_dt >= 0.0)
-        {
-            dt = std::min(slam_dt, dt);
-        }
-        dt = std::min(mh_dt, dt);
-        dt = std::min(oh_dt, dt);
-        dt = std::min(buff_dt, dt);
-        dt = std::min(sim_dt, dt);
-        dt += 1e-5;
-        return dt;
+        double next_event = std::numeric_limits<double>::max();
+        if (overpower_cd_ >= time && overpower_cd_ < next_event) next_event = overpower_cd_;
+        if (sweeping_strikes_cd_ >= time && sweeping_strikes_cd_ < next_event) next_event = sweeping_strikes_cd_;
+        if (mortal_strike_cd_ >= time && mortal_strike_cd_ < next_event) next_event = mortal_strike_cd_;
+        if (blood_thirst_cd_ >= time && blood_thirst_cd_ < next_event) next_event = blood_thirst_cd_;
+        if (rampage_cd_ >= time && rampage_cd_ < next_event) next_event = rampage_cd_;
+        if (whirlwind_cd_ >= time && whirlwind_cd_ < next_event) next_event = whirlwind_cd_;
+        if (global_cd_ >= time && global_cd_ < next_event) next_event = global_cd_;
+        if (next_mh_swing >= time && next_mh_swing < next_event) next_event = next_mh_swing;
+        if (next_oh_swing >= time && next_oh_swing < next_event) next_event = next_oh_swing;
+        if (next_slam_finish >= time && next_slam_finish < next_event) next_event = next_slam_finish;
+        if (next_buff_event < next_event) next_event = next_buff_event;
+        if (sim_time < next_event) next_event = sim_time;
+        return next_event;
     }
 
     void overpower_cast(double cd) { overpower_cd_ = time + cd; }

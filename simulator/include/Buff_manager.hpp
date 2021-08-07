@@ -6,6 +6,7 @@
 
 #include "time_keeper.hpp"
 #include "damage_sources.hpp"
+#include "logger.hpp"
 
 #include <unordered_map>
 
@@ -142,28 +143,27 @@ public:
         }
     }
 
-    [[nodiscard]] double get_dt(double current_time) const
+    [[nodiscard]] double next_event(double current_time) const
     {
-        auto dt = std::numeric_limits<double>::max();
-        if (min_combat_buff >= current_time && min_combat_buff < dt) dt = min_combat_buff;
-        if (min_over_time_buff >= current_time && min_over_time_buff < dt) dt = min_over_time_buff;
-        if (min_hit_aura >= current_time && min_hit_aura < dt) dt = min_hit_aura;
-        if (min_use_effect >= current_time && min_use_effect < dt) dt = min_use_effect;
-        return dt - current_time;
+        auto next_event = std::numeric_limits<double>::max();
+        if (min_combat_buff >= current_time && min_combat_buff < next_event) next_event = min_combat_buff;
+        if (min_over_time_buff >= current_time && min_over_time_buff < next_event) next_event = min_over_time_buff;
+        if (min_hit_aura >= current_time && min_hit_aura < next_event) next_event = min_hit_aura;
+        if (min_use_effect >= current_time && min_use_effect < next_event) next_event = min_use_effect;
+        return next_event;
     }
 
     void increment(Time_keeper& time_keeper, double& rage, double& rage_lost_stance,
-                   bool debug, std::vector<std::string>& debug_msg, double ap_multiplier)
+                   Logger& logger, double ap_multiplier)
     {
         auto current_time = time_keeper.time;
-        increment_combat_buffs(current_time, rage, rage_lost_stance, debug, debug_msg);
-        increment_over_time_buffs(current_time, rage, debug, debug_msg);
-        increment_hit_auras(current_time, rage, rage_lost_stance, debug, debug_msg);
-        increment_use_effects(current_time, rage, time_keeper, debug, debug_msg, ap_multiplier);
+        increment_combat_buffs(current_time, rage, rage_lost_stance, logger);
+        increment_over_time_buffs(current_time, rage, logger);
+        increment_hit_auras(current_time, rage, rage_lost_stance, logger);
+        increment_use_effects(current_time, rage, time_keeper, logger, ap_multiplier);
     }
 
-    void increment_combat_buffs(double current_time, double& rage, double& rage_lost_stance,
-                                bool debug, std::vector<std::string>& debug_msg)
+    void increment_combat_buffs(double current_time, double& rage, double& rage_lost_stance, Logger& logger)
     {
         if (min_combat_buff >= current_time)
         {
@@ -186,12 +186,11 @@ public:
 
             assert(current_time - buff.next_fade < 1.01e-5);
 
-            do_fade_buff(buff, rage, rage_lost_stance, debug, debug_msg);
+            do_fade_buff(buff, rage, rage_lost_stance, logger);
         }
     }
 
-    void do_fade_buff(Combat_buff& buff, double& rage, double& rage_lost_stance,
-                      bool debug, std::vector<std::string>& debug_msg)
+    void do_fade_buff(Combat_buff& buff, double& rage, double& rage_lost_stance, Logger& logger)
     {
         const auto& ssb = buff.special_stats_boost;
         for (int i = 0; i < buff.stacks; i++)
@@ -214,13 +213,10 @@ public:
 
         buff.uptime += buff.next_fade - (buff.last_gain > 0 ? buff.last_gain : 0);
 
-        if (debug)
-        {
-            debug_msg.emplace_back(buff.name + " fades.");
-        }
+        logger.print(buff.name, " fades.");
     }
 
-    void increment_over_time_buffs(double current_time, double& rage, bool debug, std::vector<std::string>& debug_msg)
+    void increment_over_time_buffs(double current_time, double& rage, Logger& logger)
     {
         if (min_over_time_buff >= current_time)
         {
@@ -244,18 +240,12 @@ public:
             {
                 rage += buff.rage_gain;
                 rage = std::min(100.0, rage);
-                if (debug)
-                {
-                    debug_msg.emplace_back("Over time effect: " + buff.name + " tick. Current rage: " + std::to_string(int(rage)));
-                }
+                logger.print("Over time effect: ", buff.name, " tick. Current rage: ", int(rage));
             }
             else if (buff.damage > 0)
             {
                 simulation_damage_sources->add_damage(Damage_source::deep_wounds, buff.damage, current_time);
-                if (debug)
-                {
-                    debug_msg.emplace_back("Over time effect: " + buff.name + " tick. Damage: " + std::to_string(int(buff.damage)));
-                }
+                logger.print("Over time effect: ", buff.name, " tick. Damage: ", int(buff.damage));
             }
             else
             {
@@ -268,10 +258,7 @@ public:
 
                 buff.uptime += buff.next_fade - (buff.last_gain > 0 ? buff.last_gain : 0);
 
-                if (debug)
-                {
-                    debug_msg.emplace_back("Over time effect: " + buff.name + " fades.");
-                }
+                logger.print("Over time effect: ", buff.name, " fades.");
             }
             else
             {
@@ -282,8 +269,7 @@ public:
         }
     }
 
-    void increment_hit_auras(double current_time, double& rage, double& rage_lost_stance,
-                             bool debug, std::vector<std::string>& debug_msg)
+    void increment_hit_auras(double current_time, double& rage, double& rage_lost_stance, Logger& logger)
     {
         if (min_hit_aura >= current_time)
         {
@@ -313,14 +299,13 @@ public:
 
             auto& buff = combat_buffs[hit_aura.hit_effect_mh->combat_buff_idx];
             buff.next_fade = hit_aura.next_fade; // for correct uptime bookkeeping
-            do_fade_buff(buff, rage, rage_lost_stance, debug, debug_msg);
+            do_fade_buff(buff, rage, rage_lost_stance, logger);
 
             hit_aura.next_fade = std::numeric_limits<double>::max();
         }
     }
 
-    void increment_use_effects(double current_time, double& rage, Time_keeper& time_keeper, bool debug,
-                               std::vector<std::string>& debug_msg, double ap_multiplier)
+    void increment_use_effects(double current_time, double& rage, Time_keeper& time_keeper, Logger& logger, double ap_multiplier)
     {
         if (min_use_effect >= current_time)
         {
@@ -374,10 +359,7 @@ public:
         {
             rage += use_effect.rage_boost;
             rage = std::min(100.0, rage);
-            if (debug)
-            {
-                debug_msg.emplace_back("Current rage: " + std::to_string(int(rage)));
-            }
+            logger.print("Current rage: ", int(rage));
         }
 
         if (use_effect.triggers_gcd)

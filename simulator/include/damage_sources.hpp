@@ -33,7 +33,7 @@ struct Damage_instance
 
 struct Damage_sources
 {
-    Damage_sources();
+    explicit Damage_sources(bool keep_history);
 
     ~Damage_sources() = default;
 
@@ -53,7 +53,7 @@ struct Damage_sources
                execute_count + deep_wounds_count + item_hit_effects_count + sweeping_strikes_count;
     }
 
-    void add_damage(Damage_source source, double damage, double time_stamp, bool increment_counter = true);
+    void add_damage(Damage_source source, double damage, double time_stamp);
 
     double white_mh_damage{};
     double white_oh_damage{};
@@ -85,7 +85,8 @@ struct Damage_sources
     int deep_wounds_count{};
     int item_hit_effects_count{};
 
-    std::vector<Damage_instance> damage_instances;
+    bool keep_history{};
+    std::vector<Damage_instance> damage_instances{};
 };
 
 #endif // WOW_SIMULATOR_DAMAGE_SOURCES_HPP

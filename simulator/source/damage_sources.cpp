@@ -1,8 +1,8 @@
 #include "../include/damage_sources.hpp"
 
-Damage_sources::Damage_sources()
+Damage_sources::Damage_sources(bool keep_history) : keep_history(keep_history)
 {
-    damage_instances.reserve(500);
+    if (keep_history) damage_instances.reserve(500);
 }
 
 Damage_sources& Damage_sources::operator+(const Damage_sources& rhs)
@@ -39,12 +39,13 @@ Damage_sources& Damage_sources::operator+(const Damage_sources& rhs)
     return *(this);
 }
 
-void Damage_sources::add_damage(Damage_source source, double damage, double time_stamp, bool increment_counter)
+void Damage_sources::add_damage(Damage_source source, double damage, double time_stamp)
 {
-    if (increment_counter)
+    if (keep_history)
     {
         damage_instances.emplace_back(source, damage, time_stamp);
     }
+
     switch (source)
     {
     case Damage_source::white_mh:
@@ -101,10 +102,7 @@ void Damage_sources::add_damage(Damage_source source, double damage, double time
         break;
     case Damage_source::item_hit_effects:
         item_hit_effects_damage += damage;
-        if (increment_counter)
-        {
-            item_hit_effects_count++;
-        }
+        item_hit_effects_count++;
         break;
     }
 }
