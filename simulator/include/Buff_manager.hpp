@@ -44,15 +44,18 @@ struct Combat_buff
     Combat_buff(const Hit_effect& hit_effect, const Special_stats& multipliers, double current_time) :
         name(hit_effect.name),
         special_stats_boost(hit_effect.special_stats_boost + hit_effect.attribute_boost.convert_to_special_stats(multipliers)),
-        next_fade(current_time + hit_effect.duration),
         stacks(1),
+        next_fade(current_time + hit_effect.duration),
+        charges(hit_effect.max_charges),
         uptime(0),
         last_gain(current_time) {}
 
     const std::string name;
     const Special_stats special_stats_boost;
-    double next_fade;
     int stacks;
+
+    double next_fade;
+    int charges; // alternative way of removing buffs
 
     // statistics
     double uptime;
@@ -190,6 +193,35 @@ public:
         }
     }
 
+    void remove_charge(const Hit_effect& hit_effect, double current_time, Logger& logger)
+    {
+        double rage, rage_lost_stance; // dummy fields, unused
+
+        if (hit_effect.combat_buff_idx == -1)
+        {
+            for (auto& buff : combat_buffs)
+            {
+                if (buff.name == hit_effect.name)
+                {
+                    if (buff.stacks == 0) return;
+                    buff.charges -= 1;
+                    if (buff.charges > 0) return;
+                    buff.next_fade = current_time; // for correct uptime bookkeeping
+                    return do_fade_buff(buff, rage, rage_lost_stance, logger);
+                }
+            }
+
+            return; // not up
+        }
+
+        auto& buff = combat_buffs[hit_effect.combat_buff_idx];
+        if (buff.stacks == 0) return;
+        buff.charges -= 1;
+        if (buff.charges > 0) return;
+        buff.next_fade = current_time; // for correct uptime bookkeeping
+        do_fade_buff(buff, rage, rage_lost_stance, logger);
+    }
+
     void do_fade_buff(Combat_buff& buff, double& rage, double& rage_lost_stance, Logger& logger)
     {
         const auto& ssb = buff.special_stats_boost;
@@ -198,6 +230,7 @@ public:
             (*simulation_special_stats) -= ssb;
         }
         buff.stacks = 0;
+        buff.charges = 0;
         need_to_recompute_hit_tables |= (ssb.critical_strike > 0 || ssb.hit > 0 || ssb.expertise > 0);
         need_to_recompute_mitigation |= (ssb.gear_armor_pen > 0);
 
@@ -425,15 +458,16 @@ public:
     void add_combat_buff(Hit_effect& hit_effect, double current_time)
     {
         assert(hit_effect.max_stacks >= 1);
+        assert(hit_effect.max_charges >= 1);
 
         // "registration", essentially - once per hit_effect, connects each hit_effect w/ a combat buff
         if (hit_effect.combat_buff_idx == -1)
         {
             for (size_t i = 0; i < combat_buffs.size(); ++i)
             {
-                // same-name hit effects are a thing ;)
                 if (combat_buffs[i].name == hit_effect.name)
                 {
+                    duplicate_registrations[hit_effect.name] += 1;
                     hit_effect.combat_buff_idx = static_cast<int>(i);
                     return do_add_combat_buff(hit_effect, current_time);
                 }
@@ -454,12 +488,13 @@ public:
         auto& buff = combat_buffs[hit_effect.combat_buff_idx];
         if (buff.next_fade < current_time || buff.stacks < hit_effect.max_stacks)
         {
-            if (buff.next_fade < current_time) assert(buff.stacks == 0);
+            if (buff.next_fade < current_time) assert(buff.stacks == 0 && buff.charges == 0);
             if (buff.stacks == 0) buff.last_gain = current_time;
             gain_stats(buff.special_stats_boost);
             buff.stacks += 1;
         }
         buff.next_fade = current_time + hit_effect.duration; // or keep unchanged for "temporary hit effects"
+        buff.charges = hit_effect.max_charges;
         if (buff.next_fade < min_combat_buff) min_combat_buff = buff.next_fade;
     }
 
@@ -478,7 +513,7 @@ public:
         }
 
         auto& hit_aura = hit_auras.emplace_back(Hit_aura(name, current_time, duration_left));
-        hit_effect.sanitize(); // TODO we need weapons here, and for that, we need a "dummy" weapon
+        hit_effect.sanitize(); // TODO(vigo) we need weapons here to convert from ppm to probability, and for that, we need a "dummy" weapon
         hit_aura.hit_effect_mh = &hit_effects_mh->emplace_back(hit_effect);
         hit_aura.hit_effect_oh = &hit_effects_oh->emplace_back(hit_effect);
         if (hit_aura.next_fade < min_hit_aura) min_hit_aura = hit_aura.next_fade;
@@ -492,6 +527,7 @@ public:
             {
                 if (over_time_buffs[i].name == over_time_effect.name)
                 {
+                    duplicate_registrations[over_time_effect.name] += 1;
                     over_time_effect.over_time_buff_idx = static_cast<int>(i);
                     return do_add_over_time_buff(over_time_effect, current_time);
                 }
@@ -560,6 +596,8 @@ public:
     std::vector<Hit_effect>* hit_effects_oh;
     std::vector<std::pair<double, Use_effect>> use_effects;
     double tactical_mastery_rage_{};
+
+    std::unordered_map<std::string, int> duplicate_registrations{}; // TBR(vigo) - debug only
 };
 
 #endif // WOW_SIMULATOR_BUFF_MANAGER_HPP

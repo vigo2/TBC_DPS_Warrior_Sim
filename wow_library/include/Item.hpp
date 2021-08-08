@@ -132,6 +132,7 @@ struct Over_time_effect
     int over_time_buff_idx{-1};
 };
 
+// TODO(vigo) check usages, and remove rare or unused stuff
 class Hit_effect
 {
 public:
@@ -150,37 +151,34 @@ public:
     Hit_effect() = default;
 
     Hit_effect(std::string name, Type type, Attributes attribute_boost, Special_stats special_stats_boost,
-               double damage, double duration, double cooldown, double probability, double attack_power_boost = 0, int n_targets = 1,
-               int armor_reduction = 0, int max_stacks = 1, double ppm = 0.0, bool affects_both_weapons = false)
-        : name(std::move(name))
-        , type(type)
-        , attribute_boost(attribute_boost)
-        , special_stats_boost(special_stats_boost)
-        , damage(damage)
-        , duration(duration)
-        , cooldown(cooldown)
-        , probability(probability)
-        , attack_power_boost(attack_power_boost)
-        , n_targets(n_targets)
-        , armor_reduction(armor_reduction)
-        , ppm(ppm)
-        , affects_both_weapons(affects_both_weapons)
-        , max_stacks(max_stacks)
-        , time_counter(0)
-        , procs(0)
-        , combat_buff_idx(-1) {};
+               double damage, double duration, double cooldown, double probability, double attack_power_boost = 0, int max_charges = 1,
+               int armor_reduction = 0, int max_stacks = 1, double ppm = 0.0, bool affects_both_weapons = false) :
+        name(std::move(name)),
+        type(type),
+        attribute_boost(attribute_boost),
+        special_stats_boost(special_stats_boost),
+        damage(damage),
+        duration(duration),
+        cooldown(cooldown),
+        probability(probability),
+        attack_power_boost(attack_power_boost),
+        max_charges(max_charges),
+        armor_reduction(armor_reduction),
+        ppm(ppm),
+        affects_both_weapons(affects_both_weapons),
+        max_stacks(max_stacks) {}
 
     void sanitize()
     {
-        //if (probability == 0)
-        //{
-        //    probability = e.ppm * weapon.swing_speed / 60;
-        //}
-
-        if (type == Hit_effect::Type::reduce_armor)
+        if (type == Type::reduce_armor)
         {
-            type = Hit_effect::Type::stat_boost;
+            type = Type::stat_boost;
             special_stats_boost.gear_armor_pen = armor_reduction;
+        }
+
+        if (max_charges == 0)
+        {
+            max_charges = 1;
         }
 
         if (max_stacks == 0)
@@ -195,27 +193,31 @@ public:
         return attribute_boost.convert_to_special_stats(special_stats, ap_multiplier) + special_stats_boost;
     }
 
-    std::string name;
-    Type type;
-    Attributes attribute_boost;
-    Special_stats special_stats_boost;
-    double damage;
-    double duration;
-    double cooldown;
-    double probability; // derived for some
-    double attack_power_boost; // should be const, once windfury is fixed (only usage?)
-    int n_targets;
-    int armor_reduction;
-    double ppm;
-    bool affects_both_weapons;
-    int max_stacks{1}; // should be const, once "fixed" to one
+    std::string name{};
+    Type type{};
+    Attributes attribute_boost{};
+    Special_stats special_stats_boost{};
+    double damage{};
+    double duration{};
+    double cooldown{};
+    double probability{};
+    double attack_power_boost{}; // unused; was in use for windfury_totem only
+    int max_charges{1}; // used to be "n_targets", and unused; now used for charges (for windfury attack or flurry)
+    int armor_reduction{}; // deprecated, use special_stats_boost.gear_armor_pen instead (3 usages)
+    double ppm{};
+    bool affects_both_weapons{}; // unused
+    int max_stacks{1};
 
-    double time_counter; // "next_ready", aka cooldown end
+    double time_counter{}; // "next_ready", aka cooldown end
 
-    int procs; // statistics
+    int procs{}; // statistics
 
-    int combat_buff_idx{-1}; // organizational ;)
+    int combat_buff_idx{-1}; // "link" to combat buff
 };
+
+std::ostream& operator<<(std::ostream& os, const Hit_effect::Type& t);
+
+std::ostream& operator<<(std::ostream& os, const Hit_effect& he);
 
 class Use_effect
 {

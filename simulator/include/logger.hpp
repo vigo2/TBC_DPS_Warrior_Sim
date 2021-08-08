@@ -6,7 +6,10 @@ class Logger
 public:
     Logger() = default;
 
-    Logger(const Time_keeper& time_keeper) : display_combat_debug_(true), time_keeper_(&time_keeper) {}
+    explicit Logger(const Time_keeper& time_keeper) : display_combat_debug_(true), time_keeper_(&time_keeper)
+    {
+        if (display_combat_debug_) debug_topic_.reserve(128 * 1024); // just a hunch ;)
+    }
 
     void print_statement(const std::string& t) { debug_topic_ += t; }
 

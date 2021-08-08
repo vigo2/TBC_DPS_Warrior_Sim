@@ -15,9 +15,9 @@ constexpr double rage_from_damage_taken(double damage)
     return damage * 5.0 / 2.0 / 274.7;
 }
 
-constexpr double armor_mitigation(int target_armor, int target_level)
+constexpr double armor_reduction_factor(int target_armor)
 {
-    return static_cast<double>(target_armor) / static_cast<double>(target_armor + (467.5 * target_level - 22167.5));
+    return 10557.5 / (10557.5 + target_armor);
 }
 } // namespace
 
@@ -703,8 +703,8 @@ void Combat_simulator::hamstring(Weapon_sim& main_hand_weapon, Special_stats& sp
 }
 
 void Combat_simulator::hit_effects(Weapon_sim& weapon, Weapon_sim& main_hand_weapon, Special_stats& special_stats,
-                                   double& rage, Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks,
-                                   bool is_extra_attack, bool is_instant)
+                                   double& rage, Damage_sources& damage_sources, int& flurry_charges,
+                                   int& rampage_stacks, Hit_type hit_type, Extra_attack_type extra_attack_type)
 {
     maybe_add_rampage_stack(Hit_result::hit, rampage_stacks, special_stats);
 
@@ -738,45 +738,34 @@ void Combat_simulator::hit_effects(Weapon_sim& weapon, Weapon_sim& main_hand_wea
         hit_effect.procs++;
         switch (hit_effect.type)
         {
-        case Hit_effect::Type::windfury_hit: {
-            if (!is_extra_attack && !is_instant)
-            {
-                logger_.print("PROC: extra hit from: ", hit_effect.name);
-                swing_weapon(main_hand_weapon, main_hand_weapon, special_stats, rage, damage_sources,
-                             flurry_charges, rampage_stacks, hit_effect.attack_power_boost, true);
-            }
-            else
-            {
-                // Decrement the proc statistics for extra hit if it got triggered by an extra hit
-                hit_effect.procs--;
-            }
-            break;
-        }
-        case Hit_effect::Type::sword_spec: {
+        case Hit_effect::Type::windfury_hit: { // only triggered by melee or next_melee; can _not_ proc itself or (presumably) other extra attacks
+            if (hit_type == Hit_type::spell || extra_attack_type != Extra_attack_type::all) break;
+
             logger_.print("PROC: extra hit from: ", hit_effect.name);
-            swing_weapon(main_hand_weapon, main_hand_weapon, special_stats, rage, damage_sources,
-                         flurry_charges, rampage_stacks, hit_effect.attack_power_boost, false);
+            windfury_attack_.duration = hit_type == Hit_type::next_melee ? 1.5 : 0.01;
+            buff_manager_.add_combat_buff(windfury_attack_, time_keeper_.time);
+            swing_weapon(main_hand_weapon, main_hand_weapon, special_stats, rage, damage_sources, flurry_charges,
+                         rampage_stacks, Extra_attack_type::none);
             break;
         }
-        case Hit_effect::Type::extra_hit: {
-            if (!is_extra_attack)
-            {
-                logger_.print("PROC: extra hit from: ", hit_effect.name);
-                swing_weapon(main_hand_weapon, main_hand_weapon, special_stats, rage, damage_sources,
-                             flurry_charges, rampage_stacks, hit_effect.attack_power_boost, true);
-            }
-            else
-            {
-                // Decrement the proc statistics for extra hit if it got triggered by an extra hit
-                hit_effect.procs--;
-            }
+        case Hit_effect::Type::sword_spec: { // can _not_ proc itself or other extra attacks
+            if (extra_attack_type != Extra_attack_type::all) break;
+
+            logger_.print("PROC: extra hit from: ", hit_effect.name);
+            swing_weapon(main_hand_weapon, main_hand_weapon, special_stats, rage, damage_sources, flurry_charges,
+                         rampage_stacks, Extra_attack_type::none);
+            break;
+        }
+        case Hit_effect::Type::extra_hit: { // _can_ proc itself and other extra attacks on instant attacks
+            if (extra_attack_type == Extra_attack_type::none) break;
+
+            logger_.print("PROC: extra hit from: ", hit_effect.name);
+            swing_weapon(main_hand_weapon, main_hand_weapon, special_stats, rage, damage_sources, flurry_charges,
+                         rampage_stacks, hit_type == Hit_type::spell ? Extra_attack_type::all : Extra_attack_type::self);
             break;
         }
         case Hit_effect::Type::stat_boost: {
             logger_.print("PROC: ", hit_effect.name, " stats increased for ", hit_effect.duration, "s");
-            //Hit_effect clone(hit_effect);
-            //clone.name = weapon.socket_name + "_" + hit_effect.name;
-            //clone.special_stats_boost = hit_effect.get_special_stat_equivalent(special_stats, ap_multiplier);
             buff_manager_.add_combat_buff(hit_effect, time_keeper_.time);
             break;
         }
@@ -800,8 +789,8 @@ void Combat_simulator::hit_effects(Weapon_sim& weapon, Weapon_sim& main_hand_wea
             }
             if (hit.hit_result != Hit_result::miss && hit.hit_result != Hit_result::dodge)
             {
-                hit_effects(main_hand_weapon, main_hand_weapon, special_stats, rage, damage_sources, flurry_charges, rampage_stacks,
-                        is_extra_attack);
+                hit_effects(main_hand_weapon, main_hand_weapon, special_stats, rage, damage_sources, flurry_charges,
+                            rampage_stacks);
             }
             break;
         }
@@ -822,10 +811,10 @@ double Combat_simulator::rage_generation(const Hit_outcome& hit_outcome, const W
 }
 
 void Combat_simulator::swing_weapon(Weapon_sim& weapon, Weapon_sim& main_hand_weapon, Special_stats& special_stats,
-                                    double& rage, Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks,
-                                    double attack_power_bonus, bool is_extra_attack)
+                                    double& rage, Damage_sources& damage_sources, int& flurry_charges,
+                                    int& rampage_stacks, Extra_attack_type extra_attack_type)
 {
-    double swing_damage = weapon.swing(special_stats.attack_power + attack_power_bonus);
+    double swing_damage = weapon.swing(special_stats.attack_power);
 
     maybe_remove_flurry(flurry_charges, special_stats);
 
@@ -854,8 +843,8 @@ void Combat_simulator::swing_weapon(Weapon_sim& weapon, Weapon_sim& main_hand_we
                 rage -= heroic_strike_rage_cost_;
                 maybe_gain_flurry(hit_outcome.hit_result, flurry_charges, special_stats);
                 unbridled_wrath(weapon, rage);
-                hit_effects(weapon, main_hand_weapon, special_stats, rage, damage_sources, flurry_charges, rampage_stacks, is_extra_attack,
-                            false);
+                hit_effects(weapon, main_hand_weapon, special_stats, rage, damage_sources, flurry_charges,
+                            rampage_stacks, Hit_type::next_melee, extra_attack_type);
             }
             damage_sources.add_damage(Damage_source::heroic_strike, hit_outcome.damage, time_keeper_.time);
             white_replaced = true;
@@ -890,8 +879,8 @@ void Combat_simulator::swing_weapon(Weapon_sim& weapon, Weapon_sim& main_hand_we
                 {
                     maybe_gain_flurry(hit_outcome.hit_result, flurry_charges, special_stats);
                     unbridled_wrath(weapon, rage);
-                    hit_effects(weapon, main_hand_weapon, special_stats, rage, damage_sources, flurry_charges, rampage_stacks, is_extra_attack,
-                                false);
+                    hit_effects(weapon, main_hand_weapon, special_stats, rage, damage_sources, flurry_charges,
+                                rampage_stacks, Hit_type::next_melee, extra_attack_type);
                 }
             }
             rage -= 20;
@@ -912,13 +901,14 @@ void Combat_simulator::swing_weapon(Weapon_sim& weapon, Weapon_sim& main_hand_we
         auto hit_table = weapon.socket == Socket::main_hand ? hit_table_white_mh_ : is_queued ? hit_table_white_oh_queued_ : hit_table_white_oh_;
 
         const auto& hit_outcome = generate_hit(main_hand_weapon, swing_damage, weapon, hit_table, special_stats, damage_sources);
+        buff_manager_.remove_charge(windfury_attack_, time_keeper_.time, logger_);
         if (hit_outcome.hit_result != Hit_result::miss && hit_outcome.hit_result != Hit_result::dodge)
         {
             rage += rage_generation(hit_outcome, weapon);
             maybe_gain_flurry(hit_outcome.hit_result, flurry_charges, special_stats);
             unbridled_wrath(weapon, rage);
-            hit_effects(weapon, main_hand_weapon, special_stats, rage, damage_sources, flurry_charges, rampage_stacks, is_extra_attack,
-                        false);
+            hit_effects(weapon, main_hand_weapon, special_stats, rage, damage_sources, flurry_charges, rampage_stacks,
+                        Hit_type::melee, extra_attack_type);
         }
         else if (hit_outcome.hit_result == Hit_result::dodge)
         {
@@ -1219,13 +1209,13 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
                     target_armor -= armor_reduction_delayed_;
                 }
                 target_armor = std::max(target_armor, 0);
-                armor_reduction_factor_ = 1 - armor_mitigation(target_armor, 70);
+                armor_reduction_factor_ = armor_reduction_factor(target_armor);
                 logger_.print("Target armor: ", target_armor, ". Mitigation factor: ", 1 - armor_reduction_factor_, "%.");
                 if (config.multi_target_mode_)
                 {
                     int extra_target_armor = config.extra_target_initial_armor_ - special_stats.gear_armor_pen;
                     extra_target_armor = std::max(extra_target_armor, 0);
-                    armor_reduction_factor_add = 1 - armor_mitigation(extra_target_armor, 70);
+                    armor_reduction_factor_add = armor_reduction_factor(extra_target_armor);
 
                     logger_.print("Extra targets armor: ", extra_target_armor,
                                   ". Mitigation factor: ", 1 - armor_reduction_factor_add, "%.");
@@ -1606,7 +1596,16 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
         }
     }
 
-    std::cout << logger_.get_debug_topic() << std::endl;
+    // TBR(vigo) debug stuff
+    if (config.display_combat_debug)
+    {
+        std::cout << "debug spam size = " << logger_.get_debug_topic().size() << std::endl;
+        std::cout << logger_.get_debug_topic() << std::endl;
+    }
+    for (const auto& e : buff_manager_.duplicate_registrations)
+    {
+        std::cout << e.first << " has been re-registered " << e.second << "x" << std::endl;
+    }
 
     if (log_data)
     {

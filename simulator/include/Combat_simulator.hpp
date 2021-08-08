@@ -201,6 +201,20 @@ public:
         TBD
     };
 
+    enum class Hit_type
+    {
+        melee,
+        next_melee,
+        spell,
+    };
+
+    enum class Extra_attack_type
+    {
+        none, // may proc no extra attacks (Sword Spec, Windfury Totem)
+        self, // may proc itself (any Item on a melee/next melee hit)
+        all, // may proc anything (any Item on a spell hit)
+    };
+
     struct Ability_queue_manager
     {
         [[nodiscard]] bool is_ability_queued() const { return heroic_strike_queued || cleave_queued; }
@@ -340,12 +354,12 @@ public:
     void unbridled_wrath(const Weapon_sim& weapon, double &rage);
 
     void swing_weapon(Weapon_sim& weapon, Weapon_sim& main_hand_weapon, Special_stats& special_stats, double& rage,
-                      Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks, double attack_power_bonus = 0,
-                      bool is_extra_attack = false);
-   
+                      Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks,
+                      Extra_attack_type extra_attack_type = Extra_attack_type::all);
+
     void hit_effects(Weapon_sim& weapon, Weapon_sim& main_hand_weapon, Special_stats& special_stats, double& rage,
-                     Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks, bool is_extra_attack = false,
-                     bool is_instant = true);
+                     Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks,
+                     Hit_type hit_type = Hit_type::spell, Extra_attack_type extra_attack_type = Extra_attack_type::all);
 
     void overpower(Weapon_sim& main_hand_weapon, Special_stats& special_stats, double& rage,
                    Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks);
@@ -513,6 +527,7 @@ private:
 
     Over_time_effect deep_wound_effect_{"Deep_wounds", {}, 0, 0, 3, 12};
     Hit_effect battle_stance_{"battle_stance", Hit_effect::Type::stat_boost, {}, {-3.0, 0, 0}, 0, 1.5, 0, 0};
+    Hit_effect windfury_attack_{"windfury_attack", Hit_effect::Type::stat_boost, {}, {0, 0, 445}, 0, 1.5, 0, 0, 0, 2};
 
     std::vector<std::vector<double>> damage_time_lapse{};
     std::unordered_map<std::string, int> proc_data_{};
