@@ -208,14 +208,16 @@ Special_stats Armory::get_enchant_special_stats(Socket socket, Enchant::Type typ
     }
 }
 
-Hit_effect Armory::enchant_hit_effect(double weapon_speed, Enchant::Type type) const
+Hit_effect Armory::enchant_hit_effect(Weapon& weapon, Enchant::Type type) const
 {
     switch (type)
     {
     case Enchant::Type::crusader:
-        return {"crusader", Hit_effect::Type::stat_boost, {60, 0}, {0, 0, 0}, 0, 15, 0, weapon_speed / 60};
+        return {weapon.socket == Socket::off_hand ? "crusader_oh" : "crusader_mh", Hit_effect::Type::stat_boost, {60, 0}, {0, 0, 0}, 0, 15, 0, weapon.swing_speed / 60};
     case Enchant::Type::mongoose:
-        return {"mongoose", Hit_effect::Type::stat_boost, {0, 120}, {0, 0, 0, 0, 0.02}, 0, 15, 0, weapon_speed / 60};
+        return {weapon.socket == Socket::off_hand ? "mongoose_oh" : "mongoose_mh", Hit_effect::Type::stat_boost, {0, 120}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.02}, 0, 15, 0, weapon.swing_speed / 60};
+    case Enchant::Type::executioner:
+        return {"executioner", Hit_effect::Type::stat_boost, {}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 840}, 0, 15, 0, weapon.swing_speed / 60};
     default:
         return {"none", Hit_effect::Type::none, {}, {}, 0, 0, 0, 0};
     }
@@ -298,7 +300,7 @@ void Armory::compute_total_stats(Character& character) const
         {
             use_effects.emplace_back(use_effect);
         }
-        auto hit_effect = enchant_hit_effect(weapon.swing_speed, weapon.enchant.type);
+        auto hit_effect = enchant_hit_effect(weapon, weapon.enchant.type);
         if (hit_effect.type != Hit_effect::Type::none)
         {
             weapon.hit_effects.emplace_back(hit_effect);
@@ -392,20 +394,23 @@ void Armory::compute_total_stats(Character& character) const
 
     if (character.talents.one_handed_weapon_specialization > 0 && character.is_dual_wield())
     {
-        double multiplier = 0.02 * character.talents.one_handed_weapon_specialization;
-        character.talent_special_stats += {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, multiplier};
+        Special_stats ss;
+        ss.damage_mod_physical = 0.02 * character.talents.one_handed_weapon_specialization;
+        character.talent_special_stats += ss;
     }
 
     // Cruelty etc.
     total_special_stats += character.talent_special_stats;
-    total_special_stats.critical_strike += 3; // crit from berserker stance
+
+    total_special_stats += {3, 0, 0}; // crit from berserker stance
     if (character.talents.improved_berserker_stance > 0)
     {
-        double ap_multiplier = double(character.talents.improved_berserker_stance) * 0.02;
-        total_special_stats.attack_power += total_special_stats.attack_power * ap_multiplier;
+        Special_stats ss;
+        ss.ap_multiplier = 0.02 * character.talents.improved_berserker_stance;
+        total_special_stats += ss;
     }
 
-    total_special_stats += total_attributes.convert_to_special_stats(total_special_stats, character.talents.improved_berserker_stance * 0.02);
+    total_special_stats += total_attributes.convert_to_special_stats(total_special_stats);
     character.total_attributes = total_attributes.multiply(total_special_stats);
     character.total_special_stats = total_special_stats;
     character.use_effects = use_effects;
@@ -1212,7 +1217,7 @@ void Armory::add_buffs_to_character(Character& character, const std::vector<std:
         Buff totem = buffs.windfury_totem;
         if (String_helpers::find_string(buffs_vec, "improved_weapon_totems"))
         {
-            totem.hit_effects[0].attack_power_boost *= 1.3;
+            totem.hit_effects[0].special_stats_boost.attack_power *= 1.3;
         }
         character.add_buff(totem);
     }

@@ -38,7 +38,7 @@ void Combat_simulator::set_config(const Combat_simulator_config& new_config)
         armor_reduction_delayed_ = 3075 - 520 * config.n_sunder_armor_stacks;
     }
 
-    flurry_haste_factor_ = 0.05 * config.talents.flurry;
+    flurry_haste_factor_.attack_speed = 0.05 * config.talents.flurry;
 
     cleave_bonus_damage_ = 70 * (1.0 + 0.4 * config.talents.improved_cleave);
 
@@ -393,7 +393,7 @@ void Combat_simulator::maybe_gain_flurry(Hit_result hit_result, int& flurry_char
 {
     if (config.talents.flurry == 0 || flurry_charges == 3 || hit_result != Hit_result::crit) return;
 
-    if (flurry_charges == 0) special_stats += {0, 0, 0, 0, flurry_haste_factor_};
+    if (flurry_charges == 0) special_stats += flurry_haste_factor_;
     flurry_charges = 3;
 }
 
@@ -401,7 +401,7 @@ void Combat_simulator::maybe_remove_flurry(int& flurry_charges, Special_stats& s
 {
     if (config.talents.flurry == 0 || flurry_charges == 0) return;
 
-    if (flurry_charges == 1) special_stats -= {0, 0, 0, 0, flurry_haste_factor_};
+    if (flurry_charges == 1) special_stats -= flurry_haste_factor_;
     flurry_charges -= 1;
 }
 
@@ -409,10 +409,8 @@ void Combat_simulator::maybe_add_rampage_stack(Hit_result hit_result, int& rampa
 {
     if (!use_rampage_ || rampage_stacks == 5 || rampage_stacks == 0 || hit_result == Hit_result::miss || hit_result == Hit_result::dodge) return;
 
-    double rampage_ap = 50 * (1 + config.talents.improved_berserker_stance * 0.02 + config.enable_unleashed_rage * 0.1);
-
     rampage_stacks += 1;
-    special_stats += {0, 0, rampage_ap};
+    special_stats += {0, 0, 50};
     logger_.print(rampage_stacks, " rampage stacks");
 }
 
@@ -996,6 +994,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
     heroic_strike_uptime_ = 0;
     rampage_uptime_ = 0;
     const auto starting_special_stats = character.total_special_stats;
+
     std::vector<Weapon_sim> weapons;
     for (const auto& wep : character.weapons)
     {
@@ -1005,6 +1004,12 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
         // sanitize hit_effects
         for (auto& e : weapon.hit_effects)
         {
+            // TODO(vigo) this is... not very nice
+            if (e.name == "windfury_totem")
+            {
+                windfury_attack_.special_stats_boost.attack_power = e.special_stats_boost.attack_power;
+            }
+
             if (e.probability == 0)
             {
                 e.probability = e.ppm * weapon.swing_speed / 60;
@@ -1014,30 +1019,6 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
         }
     }
 
-    // TODO can move this to armory::compute_total_stats method
-    if (character.is_dual_wield())
-    {
-        for (size_t i = 0; i < 2; i++)
-        {
-            size_t j = (i == 0) ? 1 : 0;
-            for (const auto& hit_effect : character.weapons[i].hit_effects)
-            {
-                if (hit_effect.affects_both_weapons)
-                {
-                    auto new_hit_effect = hit_effect;
-                    if (hit_effect.ppm != 0)
-                    {
-                        new_hit_effect.probability = hit_effect.ppm * weapons[j].swing_speed / 60;
-                    }
-                    else
-                    {
-                        std::cout << "missing PPM for hit effect that affects both weapons!\n";
-                    }
-                    weapons[j].hit_effects.emplace_back(new_hit_effect);
-                }
-            }
-        }
-    }
     // Passing set bonuses that are not stats from character to config
     config.set_bonus_effect.warbringer_2_set = character.set_bonus_effect.warbringer_2_set;
     config.set_bonus_effect.warbringer_4_set = character.set_bonus_effect.warbringer_4_set;
@@ -1061,10 +1042,9 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
 
     if (config.enable_unleashed_rage > 0)
     {
-        double ap_boost = 
-            character.total_special_stats.attack_power * 0.1; 
-        use_effects_all.emplace_back(
-            Use_effect{"unleashed_rage", Use_effect::Effect_socket::unique, {}, {0, 0, ap_boost}, 0, sim_time - config.unleashed_rage_start_, sim_time + 5, false});
+        Special_stats ss;
+        ss.ap_multiplier = 0.1;
+        use_effects_all.emplace_back(Use_effect{"unleashed_rage", Use_effect::Effect_socket::unique, {}, ss, 0, sim_time - config.unleashed_rage_start_, sim_time + 5, false});
     }
 
     double ap_equiv{};
@@ -1137,9 +1117,8 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
             time_keeper_.prepare(ue.first);
             double rage_discard = rage - ue.second.rage_boost;
             double rage_lost_stance_discard = 0;
-            double ap_multiplier = config.talents.improved_berserker_stance * 0.02 + config.enable_unleashed_rage * 0.1;
 
-            buff_manager_.increment(time_keeper_, rage_discard, rage_lost_stance_discard, logger_, ap_multiplier);
+            buff_manager_.increment(time_keeper_, rage_discard, rage_lost_stance_discard, logger_);
         }
 
         time_keeper_.reset();
@@ -1175,8 +1154,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
 
             double oldHaste = special_stats.haste;
 
-            double ap_multiplier = config.talents.improved_berserker_stance * 0.02 + config.enable_unleashed_rage * 0.1;
-            buff_manager_.increment(time_keeper_, rage, rage_lost_stance_swap_, logger_, ap_multiplier);
+            buff_manager_.increment(time_keeper_, rage, rage_lost_stance_swap_, logger_);
 
             if (buff_manager_.need_to_recompute_hit_tables)
             {
@@ -1407,8 +1385,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
                         rage -= 20;
                         if (rampage_stacks == 0)
                         {
-                            double rampage_ap = 50 * (1 + config.talents.improved_berserker_stance * 0.02 + config.enable_unleashed_rage * 0.1);
-                            special_stats.attack_power += rampage_ap;
+                            special_stats += {0, 0, 50};
                             rampage_stacks = 1;
                         }
                         logger_.print("Rampage!");
@@ -1416,8 +1393,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
                     }
                     else if (time_keeper_.rampage_cd() < 0.0 && rampage_stacks > 0)
                     {
-                        double rampage_ap = 50 * (1 + config.talents.improved_berserker_stance * 0.02 + config.enable_unleashed_rage * 0.1) * rampage_stacks;
-                        special_stats -= {0, 0, rampage_ap};
+                        special_stats -= {0, 0, 50.0 * rampage_stacks};
                         rampage_stacks = 0;
                         logger_.print("Rampage fades.");
                     }

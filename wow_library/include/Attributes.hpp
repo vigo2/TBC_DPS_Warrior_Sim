@@ -16,7 +16,7 @@ struct Special_stats
                   double haste = 0.0, double damage_mod_physical = 0, double stat_multiplier = 0,
                   double bonus_damage = 0, double crit_multiplier = 0, double spell_crit = 0,
                   double damage_mod_spell = 0, double expertise = 0.0, double sword_expertise = 0.0, double mace_expertise = 0.0, double axe_expertise = 0.0,
-                  int gear_armor_pen = 0)
+                  int gear_armor_pen = 0, double ap_multiplier = 0, double attack_speed = 0)
         : critical_strike{critical_strike}
         , hit{hit}
         , attack_power{attack_power}
@@ -33,10 +33,13 @@ struct Special_stats
         , mace_expertise{mace_expertise}
         , axe_expertise{axe_expertise}
         , gear_armor_pen{gear_armor_pen}
+        , ap_multiplier{ap_multiplier}
+        , attack_speed{attack_speed}
     {
     }
 
-    bool operator<(Special_stats other)
+    // checkme(vigo) - this seems to have a single usage in Item_optimizer::remove_weaker_items(), which is _gear_ related
+    bool operator<(Special_stats other) const
     {
         return (this->hit < other.hit) &&
                (this->critical_strike < other.critical_strike) &&
@@ -55,9 +58,9 @@ struct Special_stats
         return {
             critical_strike + rhs.critical_strike,
             hit + rhs.hit,
-            attack_power + rhs.attack_power,
+            (attack_power + rhs.attack_power * (1 + ap_multiplier)) * (1 + rhs.ap_multiplier),
             chance_for_extra_hit + rhs.chance_for_extra_hit,
-            multiplicative_addition(haste, rhs.haste),
+            (1 + haste + rhs.haste * (1 + attack_speed)) * (1 + rhs.attack_speed) - 1,
             multiplicative_addition(damage_mod_physical, rhs.damage_mod_physical),
             multiplicative_addition(stat_multiplier, rhs.stat_multiplier),
             bonus_damage + rhs.bonus_damage,
@@ -68,7 +71,9 @@ struct Special_stats
             sword_expertise + rhs.sword_expertise,
             mace_expertise + rhs.mace_expertise,
             axe_expertise + rhs.axe_expertise,
-            gear_armor_pen + rhs.gear_armor_pen
+            gear_armor_pen + rhs.gear_armor_pen,
+            multiplicative_addition(ap_multiplier, rhs.ap_multiplier),
+            multiplicative_addition(attack_speed, rhs.attack_speed),
         };
     }
 
@@ -77,9 +82,9 @@ struct Special_stats
         return {
             critical_strike - rhs.critical_strike,
             hit - rhs.hit,
-            attack_power - rhs.attack_power,
+            (attack_power - rhs.attack_power * (1 + ap_multiplier)) / (1 + rhs.ap_multiplier),
             chance_for_extra_hit - rhs.chance_for_extra_hit,
-            multiplicative_subtraction(haste, rhs.haste),
+            (1 + haste - rhs.haste * (1 + attack_speed)) / (1 + rhs.attack_speed) - 1,
             multiplicative_subtraction(damage_mod_physical, rhs.damage_mod_physical),
             multiplicative_subtraction(stat_multiplier, rhs.stat_multiplier),
             bonus_damage - rhs.bonus_damage,
@@ -90,7 +95,9 @@ struct Special_stats
             sword_expertise - rhs.sword_expertise,
             mace_expertise - rhs.mace_expertise,
             axe_expertise - rhs.axe_expertise,
-            gear_armor_pen - rhs.gear_armor_pen
+            gear_armor_pen - rhs.gear_armor_pen,
+            multiplicative_subtraction(ap_multiplier, rhs.ap_multiplier),
+            multiplicative_subtraction(attack_speed, rhs.attack_speed),
         };
     }
 
@@ -122,6 +129,9 @@ struct Special_stats
     double mace_expertise{};
     double axe_expertise{};
     int gear_armor_pen{};
+
+    double ap_multiplier{};
+    double attack_speed{}; // nyw
 };
 
 class Attributes
@@ -137,17 +147,16 @@ public:
         agility = 0;
     }
 
-    Attributes multiply(const Special_stats& special_stats) const
+    [[nodiscard]] Attributes multiply(const Special_stats& special_stats) const
     {
-        double multiplier = special_stats.stat_multiplier + 1;
+        const double multiplier = special_stats.stat_multiplier + 1;
         return {strength * multiplier, agility * multiplier};
     }
 
-    Special_stats convert_to_special_stats(const Special_stats& special_stats, double ap_multiplier = 0) const
+    [[nodiscard]] Special_stats convert_to_special_stats(const Special_stats& special_stats) const
     {
-        double multiplier = special_stats.stat_multiplier + 1;
-        ap_multiplier += 1;
-        return {agility / 33 * multiplier, 0, strength * 2 * multiplier * ap_multiplier};
+        const double multiplier = special_stats.stat_multiplier + 1;
+        return {agility * multiplier / 33, 0, strength * multiplier * 2};
     }
 
     Attributes operator+(const Attributes& rhs) const { return {strength + rhs.strength, agility + rhs.agility}; }
@@ -158,7 +167,7 @@ public:
         return *this;
     }
 
-    Attributes operator*(double rhs) { return {this->strength * rhs, this->agility * rhs}; }
+    Attributes operator*(double rhs) const { return {this->strength * rhs, this->agility * rhs}; }
 
     Attributes& operator*=(double rhs)
     {

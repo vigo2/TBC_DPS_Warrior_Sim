@@ -187,10 +187,9 @@ public:
         }
     }
 
-    // FIXME(vigo) ap_multiplier is used for attributes, but not for special_stats...
-    [[nodiscard]] Special_stats get_special_stat_equivalent(const Special_stats& special_stats, double ap_multiplier = 0) const
+    [[nodiscard]] Special_stats get_special_stat_equivalent(const Special_stats& special_stats) const
     {
-        return attribute_boost.convert_to_special_stats(special_stats, ap_multiplier) + special_stats_boost;
+        return attribute_boost.convert_to_special_stats(special_stats) + special_stats_boost;
     }
 
     std::string name{};
@@ -247,10 +246,9 @@ public:
         , hit_effects(std::move(hit_effects))
         , over_time_effects(std::move(over_time_effects)){};
 
-    // FIXME(vigo) ap_multiplier is used for attributes, but not for special_stats...
-    inline Special_stats get_special_stat_equivalent(const Special_stats& special_stats, double ap_multiplier = 0) const
+    inline Special_stats get_special_stat_equivalent(const Special_stats& special_stats) const
     {
-        return attribute_boost.convert_to_special_stats(special_stats, ap_multiplier) + special_stats_boost;
+        return attribute_boost.convert_to_special_stats(special_stats) + special_stats_boost;
     }
 
     std::string name;
@@ -296,7 +294,8 @@ struct Enchant
         nethercobra,
         mongoose,
         hit,
-        cats_swiftness
+        cats_swiftness,
+        executioner,
     };
 
     Enchant() = default;

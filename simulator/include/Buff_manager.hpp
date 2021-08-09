@@ -156,14 +156,13 @@ public:
         return next_event;
     }
 
-    void increment(Time_keeper& time_keeper, double& rage, double& rage_lost_stance,
-                   Logger& logger, double ap_multiplier)
+    void increment(Time_keeper& time_keeper, double& rage, double& rage_lost_stance, Logger& logger)
     {
         auto current_time = time_keeper.time;
         increment_combat_buffs(current_time, rage, rage_lost_stance, logger);
         increment_over_time_buffs(current_time, rage, logger);
         increment_hit_auras(current_time, rage, rage_lost_stance, logger);
-        increment_use_effects(current_time, rage, time_keeper, logger, ap_multiplier);
+        increment_use_effects(current_time, rage, time_keeper, logger);
     }
 
     void increment_combat_buffs(double current_time, double& rage, double& rage_lost_stance, Logger& logger)
@@ -338,7 +337,7 @@ public:
         }
     }
 
-    void increment_use_effects(double current_time, double& rage, Time_keeper& time_keeper, Logger& logger, double ap_multiplier)
+    void increment_use_effects(double current_time, double& rage, Time_keeper& time_keeper, Logger& logger)
     {
         if (min_use_effect >= current_time)
         {
@@ -359,18 +358,6 @@ public:
             return;
         }
 
-        if (ap_multiplier > 0)
-        {
-            if (use_effect.name == "unleashed_rage")
-            {
-                use_effect.special_stats_boost.attack_power += use_effect.special_stats_boost.attack_power * (ap_multiplier - 0.1);
-            }
-            else
-            {
-                use_effect.special_stats_boost.attack_power += use_effect.special_stats_boost.attack_power * ap_multiplier;
-            }
-        }
-
         if (!use_effect.hit_effects.empty())
         {
             add_hit_aura(use_effect.name, use_effect.hit_effects[0], use_effect.hit_effects[0].duration, current_time);
@@ -383,7 +370,7 @@ public:
         {
             auto hit_effect = Hit_effect();
             hit_effect.name = use_effect.name;
-            hit_effect.special_stats_boost = use_effect.get_special_stat_equivalent(*simulation_special_stats, ap_multiplier);
+            hit_effect.special_stats_boost = use_effect.get_special_stat_equivalent(*simulation_special_stats);
             hit_effect.duration = use_effect.duration;
             add_combat_buff(hit_effect, current_time);
         }
@@ -404,7 +391,10 @@ public:
 
         if (use_effect_index < use_effects.size())
         {
-            min_use_effect = use_effects[use_effect_index].first - 1;
+            min_use_effect = use_effects[use_effect_index].first;
+
+            const auto& ue = use_effects[use_effect_index];
+            if (ue.second.triggers_gcd || ue.second.rage_boost != 0) min_use_effect -= 1;
         }
         else
         {

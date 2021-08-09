@@ -515,7 +515,7 @@ private:
     double avg_rage_spent_executing_{};
     double rage_lost_stance_swap_{};
     double rage_lost_capped_{};
-    double flurry_haste_factor_{};
+    Special_stats flurry_haste_factor_{};
 
     double tactical_mastery_rage_{0};
     bool deep_wounds_{false};
