@@ -138,11 +138,11 @@ public:
     void update_aura_uptimes(double current_time) {
         for (auto& buff : combat_buffs)
         {
-            if (buff.stacks > 0) buff.uptime += current_time - buff.last_gain;
+            if (buff.stacks > 0) buff.uptime += current_time - (buff.last_gain > 0 ? buff.last_gain : 0);
         }
         for (auto& buff : over_time_buffs)
         {
-            if (buff.next_fade > current_time) buff.uptime += current_time - buff.last_gain;
+            if (buff.next_fade > current_time) buff.uptime += current_time - (buff.last_gain > 0 ? buff.last_gain : 0);
         }
     }
 
@@ -457,7 +457,6 @@ public:
             {
                 if (combat_buffs[i].name == hit_effect.name)
                 {
-                    duplicate_registrations[hit_effect.name] += 1;
                     hit_effect.combat_buff_idx = static_cast<int>(i);
                     return do_add_combat_buff(hit_effect, current_time);
                 }
@@ -517,7 +516,6 @@ public:
             {
                 if (over_time_buffs[i].name == over_time_effect.name)
                 {
-                    duplicate_registrations[over_time_effect.name] += 1;
                     over_time_effect.over_time_buff_idx = static_cast<int>(i);
                     return do_add_over_time_buff(over_time_effect, current_time);
                 }
@@ -586,8 +584,6 @@ public:
     std::vector<Hit_effect>* hit_effects_oh;
     std::vector<std::pair<double, Use_effect>> use_effects;
     double tactical_mastery_rage_{};
-
-    std::unordered_map<std::string, int> duplicate_registrations{}; // TBR(vigo) - debug only
 };
 
 #endif // WOW_SIMULATOR_BUFF_MANAGER_HPP

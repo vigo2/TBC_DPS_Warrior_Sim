@@ -1572,17 +1572,6 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
         }
     }
 
-    // TBR(vigo) debug stuff
-    if (config.display_combat_debug)
-    {
-        std::cout << "debug spam size = " << logger_.get_debug_topic().size() << std::endl;
-        std::cout << logger_.get_debug_topic() << std::endl;
-    }
-    for (const auto& e : buff_manager_.duplicate_registrations)
-    {
-        std::cout << e.first << " has been re-registered " << e.second << "x" << std::endl;
-    }
-
     if (log_data)
     {
         normalize_timelapse();
@@ -1669,7 +1658,7 @@ void Combat_simulator::prune_histogram()
 std::vector<std::string> Combat_simulator::get_aura_uptimes() const
 {
     std::vector<std::string> aura_uptimes;
-    double total_sim_time = config.n_batches * (config.sim_time - 1);
+    double total_sim_time = config.n_batches * config.sim_time;
     for (const auto& aura : buff_manager_.get_aura_uptimes_map())
     {
         double uptime = aura.second / total_sim_time;
