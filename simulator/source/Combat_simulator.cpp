@@ -127,6 +127,8 @@ std::string Combat_simulator::hit_result_to_string(const Hit_result& hit_result)
 
 void Combat_simulator::cout_damage_parse(const Weapon_sim& weapon, const Hit_table& hit_table, const Combat_simulator::Hit_outcome& hit_outcome)
 {
+    if (!logger_.is_enabled()) return;
+
     if (weapon.socket == Socket::main_hand)
     {
         if (hit_table.glance() > 0)

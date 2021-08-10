@@ -12,6 +12,8 @@
 
 struct Over_time_buff
 {
+    static constexpr double inactive = -1;
+
     Over_time_buff(const Over_time_effect& effect, double current_time) :
         name(effect.name),
         rage_gain(effect.rage_gain),
@@ -64,6 +66,8 @@ struct Combat_buff
 
 struct Hit_aura
 {
+    static constexpr double inactive = -1;
+
     Hit_aura(std::string name, double current_time, double duration) :
         name(std::move(name)),
         next_fade(current_time + duration),
@@ -115,14 +119,14 @@ public:
 
         for (auto& buff : over_time_buffs)
         {
-            buff.next_tick = std::numeric_limits<double>::max();
+            buff.next_tick = Over_time_buff::inactive;
             buff.next_fade = -1; // this is used for determining whether a buff is active or not
         }
         min_over_time_buff = std::numeric_limits<double>::max();
 
         for (auto& hit_aura : hit_auras)
         {
-            hit_aura.next_fade = std::numeric_limits<double>::max();
+            hit_aura.next_fade = Hit_aura::inactive;
             hit_aura.hit_effect_mh->time_counter = std::numeric_limits<double>::max();
             hit_aura.hit_effect_oh->time_counter = std::numeric_limits<double>::max();
         }
@@ -258,6 +262,11 @@ public:
         min_over_time_buff = std::numeric_limits<double>::max();
         for (auto& buff : over_time_buffs)
         {
+            if (buff.next_tick == Over_time_buff::inactive) // inactive
+            {
+                continue;
+            }
+
             if (buff.next_tick >= current_time) // not ready
             {
                 if (buff.next_tick < min_over_time_buff) min_over_time_buff = buff.next_tick;
@@ -286,18 +295,15 @@ public:
 
             if (buff.next_fade < current_time)
             {
-                buff.next_tick = std::numeric_limits<double>::max();
-
+                buff.next_tick = Over_time_buff::inactive;
                 buff.uptime += buff.next_fade - (buff.last_gain > 0 ? buff.last_gain : 0);
-
                 logger.print("Over time effect: ", buff.name, " fades.");
             }
             else
             {
                 buff.next_tick += buff.interval;
+                if (buff.next_tick < min_over_time_buff) min_over_time_buff = buff.next_tick;
             }
-
-            if (buff.next_tick < min_over_time_buff) min_over_time_buff = buff.next_tick;
         }
     }
 
@@ -311,6 +317,11 @@ public:
         min_hit_aura = std::numeric_limits<double>::max();
         for (auto& hit_aura : hit_auras)
         {
+            if (hit_aura.next_fade == Hit_aura::inactive)
+            {
+                continue;
+            }
+
             if (hit_aura.next_fade >= current_time)
             {
                 if (hit_aura.next_fade < min_hit_aura) min_hit_aura = hit_aura.next_fade;
@@ -333,7 +344,7 @@ public:
             buff.next_fade = hit_aura.next_fade; // for correct uptime bookkeeping
             do_fade_buff(buff, rage, rage_lost_stance, logger);
 
-            hit_aura.next_fade = std::numeric_limits<double>::max();
+            hit_aura.next_fade = Hit_aura::inactive;
         }
     }
 

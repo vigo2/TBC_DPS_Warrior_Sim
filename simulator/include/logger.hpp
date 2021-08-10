@@ -11,11 +11,9 @@ public:
         if (display_combat_debug_) debug_topic_.reserve(128 * 1024); // just a hunch ;)
     }
 
-    void print_statement(const std::string& t) { debug_topic_ += t; }
+    [[nodiscard]] bool is_enabled() const { return display_combat_debug_; }
 
-    void print_statement(int t) { debug_topic_ += std::to_string(t); }
-
-    void print_statement(double t) { debug_topic_ += std::to_string(t); }
+    [[nodiscard]] std::string get_debug_topic() const { return debug_topic_; }
 
     template <typename... Args>
     void print(Args&&... args)
@@ -29,9 +27,13 @@ public:
         }
     }
 
-    [[nodiscard]] std::string get_debug_topic() const { return debug_topic_; }
-
 private:
+    void print_statement(const std::string& t) { debug_topic_ += t; }
+
+    void print_statement(int t) { debug_topic_ += std::to_string(t); }
+
+    void print_statement(double t) { debug_topic_ += std::to_string(t); }
+
     bool display_combat_debug_{};
     const Time_keeper* time_keeper_{nullptr};
 
