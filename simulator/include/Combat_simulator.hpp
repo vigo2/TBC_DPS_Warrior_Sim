@@ -2,6 +2,7 @@
 #define WOW_SIMULATOR_COMBAT_SIMULATOR_HPP
 
 #include "Buff_manager.hpp"
+#include "Rage_manager.hpp"
 #include "Character.hpp"
 #include "Distribution.hpp"
 #include "damage_sources.hpp"
@@ -182,7 +183,7 @@ struct Combat_simulator_config
     } set_bonus_effect;
 };
 
-class Combat_simulator
+class Combat_simulator : Rage_manager
 {
 public:
     void set_config(const Combat_simulator_config& new_config);
@@ -342,42 +343,77 @@ public:
         Damage_multipliers dm_;
     };
 
+    void gain_rage(double amount) final
+    {
+        rage_gained_ += amount;
+        rage += amount;
+        if (rage > 100)
+        {
+            rage_lost_capped_ += rage - 100;
+            rage = 100;
+        }
+    }
+
+    void spend_rage(double amount) final
+    {
+        assert(rage - amount >= 0);
+        rage_spent_ += amount;
+        rage -= amount;
+    }
+
+    void spend_all_rage() final
+    {
+        rage_spent_on_execute_ += rage;
+        rage = 0;
+    }
+
+    void swap_stance() final
+    {
+        if (rage > tactical_mastery_rage_)
+        {
+            rage_lost_stance_swap_ += rage - tactical_mastery_rage_;
+            rage = tactical_mastery_rage_;
+        }
+    }
+
+    [[nodiscard]] double get_rage() const final { return rage; }
+
     void maybe_gain_flurry(Hit_result hit_result, int& flurry_charges, Special_stats& special_stats) const;
     void maybe_remove_flurry(int& flurry_charges, Special_stats& special_stats) const;
 
     void maybe_add_rampage_stack(Hit_result hit_result, int& rampage_stacks, Special_stats& special_stats);
 
-    void unbridled_wrath(const Weapon_sim& weapon, double &rage);
+    void unbridled_wrath(const Weapon_sim& weapon);
 
-    void swing_weapon(Weapon_sim& weapon, Weapon_sim& main_hand_weapon, Special_stats& special_stats, double& rage,
+    void swing_weapon(Weapon_sim& weapon, Weapon_sim& main_hand_weapon, Special_stats& special_stats,
                       Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks,
                       Extra_attack_type extra_attack_type = Extra_attack_type::all);
 
-    void hit_effects(Weapon_sim& weapon, Weapon_sim& main_hand_weapon, Special_stats& special_stats, double& rage,
+    void hit_effects(Weapon_sim& weapon, Weapon_sim& main_hand_weapon, Special_stats& special_stats,
                      Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks,
                      Hit_type hit_type = Hit_type::spell, Extra_attack_type extra_attack_type = Extra_attack_type::all);
 
-    void overpower(Weapon_sim& main_hand_weapon, Special_stats& special_stats, double& rage,
+    void overpower(Weapon_sim& main_hand_weapon, Special_stats& special_stats,
                    Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks);
 
-    bool start_cast_slam(bool mh_swing, double rage, const Weapon_sim& weapon);
+    bool start_cast_slam(bool mh_swing, const Weapon_sim& weapon);
 
-    void slam(Weapon_sim& main_hand_weapon, Special_stats& special_stats, double& rage, Damage_sources& damage_sources,
+    void slam(Weapon_sim& main_hand_weapon, Special_stats& special_stats, Damage_sources& damage_sources,
               int& flurry_charges, int& rampage_stacks);
 
-    void mortal_strike(Weapon_sim& main_hand_weapon, Special_stats& special_stats, double& rage,
+    void mortal_strike(Weapon_sim& main_hand_weapon, Special_stats& special_stats,
                        Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks);
 
-    void bloodthirst(Weapon_sim& main_hand_weapon, Special_stats& special_stats, double& rage,
+    void bloodthirst(Weapon_sim& main_hand_weapon, Special_stats& special_stats,
                      Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks);
 
-    void whirlwind(Weapon_sim& main_hand_weapon, Weapon_sim& off_hand_weapon, Special_stats& special_stats, double& rage,
+    void whirlwind(Weapon_sim& main_hand_weapon, Weapon_sim& off_hand_weapon, Special_stats& special_stats,
                    Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks, bool is_dw = false);
 
-    void execute(Weapon_sim& main_hand_weapon, Special_stats& special_stats, double& rage,
+    void execute(Weapon_sim& main_hand_weapon, Special_stats& special_stats,
                  Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks);
 
-    void hamstring(Weapon_sim& main_hand_weapon, Special_stats& special_stats, double& rage,
+    void hamstring(Weapon_sim& main_hand_weapon, Special_stats& special_stats,
                    Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks);
 
     void simulate(const Character& character, int n_simulations, double init_mean, double init_variance,
@@ -485,6 +521,7 @@ private:
     Buff_manager buff_manager_{};
     Ability_queue_manager ability_queue_manager{};
     Slam_manager slam_manager{1.5};
+    double rage{};
 
     Logger logger_{};
 
@@ -526,10 +563,13 @@ private:
     double oh_queued_uptime_{};
     double rampage_uptime_{};
 
+    double rage_gained_{};
+    double rage_spent_{};
     double rage_spent_on_execute_{};
-    double avg_rage_spent_executing_{};
     double rage_lost_stance_swap_{};
     double rage_lost_capped_{};
+
+    double avg_rage_spent_executing_{};
 
     std::unordered_map<std::string, int> proc_data_{};
 

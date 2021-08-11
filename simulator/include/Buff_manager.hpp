@@ -2,6 +2,7 @@
 #define WOW_SIMULATOR_BUFF_MANAGER_HPP
 
 #include "Attributes.hpp"
+#include "Rage_manager.hpp"
 #include "Item.hpp"
 
 #include "time_keeper.hpp"
@@ -85,14 +86,14 @@ class Buff_manager
 {
 public:
     void initialize(std::vector<Hit_effect>& hit_effects_mh_input, std::vector<Hit_effect>& hit_effects_oh_input,
-                    std::vector<std::pair<double, Use_effect>>& use_effects_all, int tactical_mastery_rage)
+                    std::vector<std::pair<double, Use_effect>>& use_effects_input, Rage_manager* rage_manager_input)
     {
         hit_effects_mh = &hit_effects_mh_input;
         hit_effects_oh = &hit_effects_oh_input;
 
-        use_effects = use_effects_all;
+        use_effects = use_effects_input;
 
-        tactical_mastery_rage_ = tactical_mastery_rage;
+        rage_manager = rage_manager_input;
     }
 
     void reset(Special_stats& special_stats, Damage_sources& damage_sources)
@@ -183,16 +184,16 @@ public:
         return next_event;
     }
 
-    void increment(Time_keeper& time_keeper, double& rage, double& rage_lost_stance, Logger& logger)
+    void increment(Time_keeper& time_keeper, Logger& logger)
     {
         auto current_time = time_keeper.time;
-        increment_combat_buffs(current_time, rage, rage_lost_stance, logger);
-        increment_over_time_buffs(current_time, rage, logger);
-        increment_hit_auras(current_time, rage, rage_lost_stance, logger);
-        increment_use_effects(current_time, rage, time_keeper, logger);
+        increment_combat_buffs(current_time, logger);
+        increment_over_time_buffs(current_time, logger);
+        increment_hit_auras(current_time, logger);
+        increment_use_effects(current_time, time_keeper, logger);
     }
 
-    void increment_combat_buffs(double current_time, double& rage, double& rage_lost_stance, Logger& logger)
+    void increment_combat_buffs(double current_time, Logger& logger)
     {
         if (min_combat_buff >= current_time)
         {
@@ -215,14 +216,12 @@ public:
 
             assert(current_time - buff.next_fade < 1.01e-5);
 
-            do_fade_buff(buff, rage, rage_lost_stance, logger);
+            do_fade_buff(buff, logger);
         }
     }
 
     void remove_charge(const Hit_effect& hit_effect, double current_time, Logger& logger)
     {
-        double rage, rage_lost_stance; // dummy fields, unused
-
         if (hit_effect.combat_buff_idx == -1)
         {
             for (auto& buff : combat_buffs)
@@ -233,7 +232,7 @@ public:
                     buff.charges -= 1;
                     if (buff.charges > 0) return;
                     buff.next_fade = current_time; // for correct uptime bookkeeping
-                    return do_fade_buff(buff, rage, rage_lost_stance, logger);
+                    return do_fade_buff(buff, logger);
                 }
             }
 
@@ -245,10 +244,10 @@ public:
         buff.charges -= 1;
         if (buff.charges > 0) return;
         buff.next_fade = current_time; // for correct uptime bookkeeping
-        do_fade_buff(buff, rage, rage_lost_stance, logger);
+        do_fade_buff(buff, logger);
     }
 
-    void do_fade_buff(Combat_buff& buff, double& rage, double& rage_lost_stance, Logger& logger)
+    void do_fade_buff(Combat_buff& buff, Logger& logger)
     {
         const auto& ssb = buff.special_stats_boost;
         for (int i = 0; i < buff.stacks; i++)
@@ -263,11 +262,7 @@ public:
         // special case, should be removed
         if (buff.name == "battle_stance")
         {
-            if (rage > tactical_mastery_rage_)
-            {
-                rage_lost_stance += rage - tactical_mastery_rage_;
-                rage = tactical_mastery_rage_;
-            }
+            rage_manager->swap_stance();
         }
 
         buff.uptime += buff.next_fade - (buff.last_gain > 0 ? buff.last_gain : 0);
@@ -275,7 +270,7 @@ public:
         logger.print(buff.name, " fades.");
     }
 
-    void increment_over_time_buffs(double current_time, double& rage, Logger& logger)
+    void increment_over_time_buffs(double current_time, Logger& logger)
     {
         if (min_over_time_buff >= current_time)
         {
@@ -302,9 +297,8 @@ public:
             //  nothing does the latter, afaik
             if (buff.rage_gain > 0)
             {
-                rage += buff.rage_gain;
-                rage = std::min(100.0, rage);
-                logger.print("Over time effect: ", buff.name, " tick. Current rage: ", int(rage));
+                rage_manager->gain_rage(buff.rage_gain);
+                logger.print("Over time effect: ", buff.name, " tick. Current rage: ", int(rage_manager->get_rage()));
             }
             else if (buff.damage > 0)
             {
@@ -330,7 +324,7 @@ public:
         }
     }
 
-    void increment_hit_auras(double current_time, double& rage, double& rage_lost_stance, Logger& logger)
+    void increment_hit_auras(double current_time, Logger& logger)
     {
         if (min_hit_aura >= current_time)
         {
@@ -365,13 +359,13 @@ public:
 
             auto& buff = combat_buffs[hit_aura.hit_effect_mh->combat_buff_idx];
             buff.next_fade = hit_aura.next_fade; // for correct uptime bookkeeping
-            do_fade_buff(buff, rage, rage_lost_stance, logger);
+            do_fade_buff(buff, logger);
 
             hit_aura.next_fade = Hit_aura::inactive;
         }
     }
 
-    void increment_use_effects(double current_time, double& rage, Time_keeper& time_keeper, Logger& logger)
+    void increment_use_effects(double current_time, Time_keeper& time_keeper, Logger& logger)
     {
         if (min_use_effect >= current_time)
         {
@@ -386,7 +380,13 @@ public:
             return;
         }
 
-        if (rage + use_effect.rage_boost < 0 || rage + use_effect.rage_boost > 100)
+        if (use_effect.rage_boost > 0 && rage_manager->get_rage() + use_effect.rage_boost < 0)
+        {
+            min_use_effect = current_time + 0.5;
+            return;
+        }
+
+        if (use_effect.rage_boost < 0 && rage_manager->get_rage() + use_effect.rage_boost > 100)
         {
             min_use_effect = current_time + 0.5;
             return;
@@ -409,11 +409,16 @@ public:
             add_combat_buff(hit_effect, current_time);
         }
 
-        if (use_effect.rage_boost != 0.0)
+        if (use_effect.rage_boost > 0)
         {
-            rage += use_effect.rage_boost;
-            rage = std::min(100.0, rage);
-            logger.print("Current rage: ", int(rage));
+            rage_manager->gain_rage(use_effect.rage_boost);
+            logger.print("Current rage: ", int(rage_manager->get_rage()));
+        }
+
+        if (use_effect.rage_boost < 0)
+        {
+            rage_manager->spend_rage(-use_effect.rage_boost);
+            logger.print("Current rage: ", int(rage_manager->get_rage()));
         }
 
         if (use_effect.triggers_gcd)
@@ -597,27 +602,27 @@ public:
     }
 
 
-    bool need_to_recompute_hit_tables{false};
-    bool need_to_recompute_mitigation{false};
-    Special_stats* simulation_special_stats;
-    Damage_sources* simulation_damage_sources;
-    int tactical_mastery_rage_{};
+    bool need_to_recompute_hit_tables{};
+    bool need_to_recompute_mitigation{};
+    Special_stats* simulation_special_stats{};
+    Damage_sources* simulation_damage_sources{};
+    Rage_manager* rage_manager{};
 
-    size_t use_effect_index;
-    double min_use_effect = std::numeric_limits<double>::max();
+    size_t use_effect_index{};
+    double min_use_effect{std::numeric_limits<double>::max()};
 
-    std::vector<Combat_buff> combat_buffs;
-    double min_combat_buff = std::numeric_limits<double>::max();
+    std::vector<Combat_buff> combat_buffs{};
+    double min_combat_buff{std::numeric_limits<double>::max()};
 
-    std::vector<Over_time_buff> over_time_buffs;
-    double min_over_time_buff = std::numeric_limits<double>::max();
+    std::vector<Over_time_buff> over_time_buffs{};
+    double min_over_time_buff{std::numeric_limits<double>::max()};
 
-    std::vector<Hit_aura> hit_auras;
-    double min_hit_aura = std::numeric_limits<double>::max();
+    std::vector<Hit_aura> hit_auras{};
+    double min_hit_aura{std::numeric_limits<double>::max()};
 
-    std::vector<Hit_effect>* hit_effects_mh;
-    std::vector<Hit_effect>* hit_effects_oh;
-    std::vector<std::pair<double, Use_effect>> use_effects;
+    std::vector<Hit_effect>* hit_effects_mh{};
+    std::vector<Hit_effect>* hit_effects_oh{};
+    std::vector<std::pair<double, Use_effect>> use_effects{};
 };
 
 #endif // WOW_SIMULATOR_BUFF_MANAGER_HPP
