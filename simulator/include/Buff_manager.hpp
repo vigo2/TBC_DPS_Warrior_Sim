@@ -85,7 +85,7 @@ class Buff_manager
 {
 public:
     void initialize(std::vector<Hit_effect>& hit_effects_mh_input, std::vector<Hit_effect>& hit_effects_oh_input,
-                    std::vector<std::pair<double, Use_effect>>& use_effects_all, double tactical_mastery_rage)
+                    std::vector<std::pair<double, Use_effect>>& use_effects_all, int tactical_mastery_rage)
     {
         hit_effects_mh = &hit_effects_mh_input;
         hit_effects_oh = &hit_effects_oh_input;
@@ -137,6 +137,29 @@ public:
 
         need_to_recompute_mitigation = true;
         need_to_recompute_hit_tables = true;
+    }
+
+    void reset_statistics()
+    {
+        for (auto& he : *hit_effects_mh)
+        {
+            he.procs = 0;
+        }
+
+        for (auto& he : *hit_effects_oh)
+        {
+            he.procs = 0;
+        }
+
+        for (auto& buff : combat_buffs)
+        {
+            buff.uptime = 0;
+        }
+
+        for (auto& buff : over_time_buffs)
+        {
+            buff.uptime = 0;
+        }
     }
 
     void update_aura_uptimes(double current_time) {
@@ -578,6 +601,7 @@ public:
     bool need_to_recompute_mitigation{false};
     Special_stats* simulation_special_stats;
     Damage_sources* simulation_damage_sources;
+    int tactical_mastery_rage_{};
 
     size_t use_effect_index;
     double min_use_effect = std::numeric_limits<double>::max();
@@ -594,7 +618,6 @@ public:
     std::vector<Hit_effect>* hit_effects_mh;
     std::vector<Hit_effect>* hit_effects_oh;
     std::vector<std::pair<double, Use_effect>> use_effects;
-    double tactical_mastery_rage_{};
 };
 
 #endif // WOW_SIMULATOR_BUFF_MANAGER_HPP

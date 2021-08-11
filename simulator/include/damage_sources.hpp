@@ -6,12 +6,8 @@
 
 enum class Damage_source
 {
-    white_mh,
+    white_mh, // order is important, cp. damage_names
     white_oh,
-    slam,
-    mortal_strike,
-    sweeping_strikes,
-    overpower,
     bloodthirst,
     execute,
     heroic_strike,
@@ -20,6 +16,11 @@ enum class Damage_source
     hamstring,
     deep_wounds,
     item_hit_effects,
+    overpower,
+    slam,
+    mortal_strike,
+    sweeping_strikes,
+    size, // convenience ;)
 };
 
 struct Damage_instance

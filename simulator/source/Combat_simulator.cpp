@@ -38,11 +38,11 @@ void Combat_simulator::set_config(const Combat_simulator_config& new_config)
         armor_reduction_delayed_ = 3075 - 520 * config.n_sunder_armor_stacks;
     }
 
-    flurry_haste_factor_.attack_speed = 0.05 * config.talents.flurry;
+    flurry_.attack_speed = 0.05 * config.talents.flurry;
 
     cleave_bonus_damage_ = 70 * (1.0 + 0.4 * config.talents.improved_cleave);
 
-    tactical_mastery_rage_ = 5.0 * config.talents.tactical_mastery + 10;
+    tactical_mastery_rage_ = 5 * config.talents.tactical_mastery + 10;
     deep_wounds_ = config.talents.deep_wounds && config.combat.deep_wounds;
     use_rampage_ = config.talents.rampage && config.combat.use_rampage;
     use_bloodthirst_ = config.talents.bloodthirst && config.combat.use_bloodthirst;
@@ -55,7 +55,7 @@ void Combat_simulator::set_config(const Combat_simulator_config& new_config)
 
     if (config.talents.death_wish && config.combat.use_death_wish)
     {
-        use_effects_all_.emplace_back(deathwish);
+        use_effects_all_.emplace_back(death_wish);
     }
 
     if (config.enable_recklessness)
@@ -395,7 +395,7 @@ void Combat_simulator::maybe_gain_flurry(Hit_result hit_result, int& flurry_char
 {
     if (config.talents.flurry == 0 || flurry_charges == 3 || hit_result != Hit_result::crit) return;
 
-    if (flurry_charges == 0) special_stats += flurry_haste_factor_;
+    if (flurry_charges == 0) special_stats += flurry_;
     flurry_charges = 3;
 }
 
@@ -403,7 +403,7 @@ void Combat_simulator::maybe_remove_flurry(int& flurry_charges, Special_stats& s
 {
     if (config.talents.flurry == 0 || flurry_charges == 0) return;
 
-    if (flurry_charges == 1) special_stats -= flurry_haste_factor_;
+    if (flurry_charges == 1) special_stats -= flurry_;
     flurry_charges -= 1;
 }
 
@@ -973,27 +973,24 @@ void Combat_simulator::simulate(const Character& character, int n_simulations, d
 
 void Combat_simulator::simulate(const Character& character, int init_iteration, bool log_data, bool reset_dps)
 {
-    int n_damage_batches = config.n_batches;
-    if (config.display_combat_debug)
-    {
-        logger_ = Logger(time_keeper_);
-        n_damage_batches = 1;
-    }
     if (log_data)
     {
         reset_time_lapse();
         init_histogram();
     }
     damage_distribution_ = Damage_sources(false);
-    if (reset_dps)
+
+    int n_damage_batches = config.n_batches;
+    if (config.display_combat_debug)
     {
-        dps_distribution_.reset();
+        logger_ = Logger(time_keeper_);
+        n_damage_batches = 1;
     }
 
     flurry_uptime_ = 0;
     rage_lost_stance_swap_ = 0;
     rage_lost_capped_ = 0;
-    heroic_strike_uptime_ = 0;
+    oh_queued_uptime_ = 0;
     rampage_uptime_ = 0;
     const auto starting_special_stats = character.total_special_stats;
 
@@ -1073,6 +1070,13 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
         buff_manager_.initialize(weapons[0].hit_effects,empty_hit_effects, use_effect_order, tactical_mastery_rage_);
     }
 
+    if (reset_dps)
+    {
+        dps_distribution_.reset();
+        proc_data_.clear();
+        buff_manager_.reset_statistics();
+    }
+
     for (int iter = init_iteration; iter < n_damage_batches + init_iteration; iter++)
     {
         ability_queue_manager.reset();
@@ -1094,7 +1098,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
 
         int mh_hits = 0;
         int oh_hits = 0;
-        int oh_hits_w_heroic = 0;
+        int oh_hits_w_queued = 0;
         int mh_hits_w_rampage = 0;
 
         weapons[0].next_swing = 0;
@@ -1133,7 +1137,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
         // First global sunder
         bool first_global_sunder = config.first_global_sunder_;
 
-        if (config.combat.first_hit_heroic_strike && rage > heroic_strike_rage_cost_)
+        if (config.combat.first_hit_heroic_strike && rage >= heroic_strike_rage_cost_)
         {
             ability_queue_manager.queue_heroic_strike();
         }
@@ -1240,7 +1244,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
                 oh_hits++;
                 if (ability_queue_manager.is_ability_queued())
                 {
-                    oh_hits_w_heroic++;
+                    oh_hits_w_queued++;
                 }
                 swing_weapon(weapons[1], weapons[0], special_stats, rage, damage_sources, flurry_charges, rampage_stacks);
             }
@@ -1256,7 +1260,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
 
             if (use_sweeping_strikes_)
             {
-                if (rage > 30.0 && time_keeper_.global_ready() && time_keeper_.sweeping_strikes_ready())
+                if (time_keeper_.sweeping_strikes_ready() && time_keeper_.global_ready() && rage >= 30)
                 {
                     logger_.print("Sweeping strikes!");
                     time_keeper_.global_cast(1.5);
@@ -1268,7 +1272,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
 
             if (first_global_sunder)
             {
-                if (time_keeper_.global_ready() && rage > 15)
+                if (time_keeper_.global_ready() && rage >= 15)
                 {
                     logger_.print("Sunder Armor!");
                     time_keeper_.global_cast(1.5);
@@ -1295,7 +1299,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
                     {
                         ms_ww = std::max(time_keeper_.whirlwind_cd(), 0.1) > config.combat.bt_whirlwind_cooldown_thresh;
                     }
-                    if (time_keeper_.mortal_strike_ready() && time_keeper_.global_ready() && rage > 30 && ms_ww)
+                    if (time_keeper_.mortal_strike_ready() && time_keeper_.global_ready() && rage >= 30 && ms_ww)
                     {
                         mortal_strike(weapons[0], special_stats, rage, damage_sources, flurry_charges, rampage_stacks);
                     }
@@ -1307,7 +1311,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
                     {
                         bt_ww = std::max(time_keeper_.whirlwind_cd(), 0.1) > config.combat.bt_whirlwind_cooldown_thresh;
                     }
-                    if (time_keeper_.blood_thirst_ready() && time_keeper_.global_ready() && rage > 30 && bt_ww)
+                    if (time_keeper_.blood_thirst_ready() && time_keeper_.global_ready() && rage >= 30 && bt_ww)
                     {
                         bloodthirst(weapons[0], special_stats, rage, damage_sources, flurry_charges, rampage_stacks);
                     }
@@ -1327,7 +1331,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
                     {
                         use_ww = std::max(time_keeper_.mortal_strike_cd(), 0.1) > config.combat.whirlwind_bt_cooldown_thresh;
                     }
-                    if (time_keeper_.whirlwind_ready() && rage > config.combat.whirlwind_rage_thresh && rage > whirlwind_rage_cost_ &&
+                    if (time_keeper_.whirlwind_ready() && rage > config.combat.whirlwind_rage_thresh && rage >= whirlwind_rage_cost_ &&
                         time_keeper_.global_ready() && use_ww)
                     {
                         if (is_dual_wield)
@@ -1341,23 +1345,26 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
 
                     }
                 }
-                if (time_keeper_.global_ready() && rage > execute_rage_cost_)
+                if (time_keeper_.global_ready() && rage >= execute_rage_cost_)
                 {
                     execute(weapons[0], special_stats, rage, damage_sources, flurry_charges, rampage_stacks);
                 }
-                if (rage > heroic_strike_rage_cost_ && !ability_queue_manager.heroic_strike_queued &&
-                    config.combat.use_hs_in_exec_phase)
+
+                // Heroic strike or Cleave
+                if (config.combat.use_hs_in_exec_phase && config.combat.use_heroic_strike)
                 {
-                    if (config.combat.use_heroic_strike)
+                    if (number_of_extra_targets_ > 0 && config.combat.cleave_if_adds)
                     {
-                        if (config.dpr_settings.compute_dpr_hs_)
+                        if (rage > config.combat.cleave_rage_thresh && !ability_queue_manager.cleave_queued && rage >= 20)
                         {
-                            if (mh_swing)
-                            {
-                                rage -= config.combat.heroic_strike_rage_thresh;
-                            }
+                            ability_queue_manager.queue_cleave();
+                            logger_.print("Cleave activated");
                         }
-                        else
+                    }
+                    else
+                    {
+                        if (rage > config.combat.heroic_strike_rage_thresh && !ability_queue_manager.heroic_strike_queued &&
+                            rage >= heroic_strike_rage_cost_)
                         {
                             ability_queue_manager.queue_heroic_strike();
                             logger_.print("Heroic strike activated");
@@ -1380,7 +1387,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
 
                 if (use_rampage_)
                 {
-                    if (time_keeper_.rampage_cd() < config.combat.rampage_use_thresh && time_keeper_.global_ready() && rage > 20 && time_keeper_.can_do_rampage())
+                    if (time_keeper_.rampage_cd() < config.combat.rampage_use_thresh && time_keeper_.global_ready() && rage >= 20 && time_keeper_.can_do_rampage())
                     {
                         time_keeper_.rampage_cast(30.0);
                         time_keeper_.global_cast(1.5);
@@ -1408,7 +1415,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
                     {
                         bt_ww = std::max(time_keeper_.whirlwind_cd(), 0.1) > config.combat.bt_whirlwind_cooldown_thresh;
                     }
-                    if (time_keeper_.blood_thirst_ready() && time_keeper_.global_ready() && rage > 30 && bt_ww)
+                    if (time_keeper_.blood_thirst_ready() && time_keeper_.global_ready() && rage >= 30 && bt_ww)
                     {
                         bloodthirst(weapons[0], special_stats, rage, damage_sources, flurry_charges, rampage_stacks);
                     }
@@ -1421,7 +1428,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
                     {
                         ms_ww = std::max(time_keeper_.whirlwind_cd(), 0.1) > config.combat.bt_whirlwind_cooldown_thresh;
                     }
-                    if (time_keeper_.mortal_strike_ready() && time_keeper_.global_ready() && rage > 30 && ms_ww)
+                    if (time_keeper_.mortal_strike_ready() && time_keeper_.global_ready() && rage >= 30 && ms_ww)
                     {
                         mortal_strike(weapons[0], special_stats, rage, damage_sources, flurry_charges, rampage_stacks);
                     }
@@ -1442,7 +1449,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
                     {
                         use_ww = std::max(time_keeper_.mortal_strike_cd(), 0.1) > config.combat.whirlwind_bt_cooldown_thresh;
                     }
-                    if (time_keeper_.whirlwind_ready() && rage > config.combat.whirlwind_rage_thresh && rage > whirlwind_rage_cost_ &&
+                    if (time_keeper_.whirlwind_ready() && rage > config.combat.whirlwind_rage_thresh && rage >= whirlwind_rage_cost_ &&
                         time_keeper_.global_ready() && use_ww)
                     {
                         if (is_dual_wield)
@@ -1476,7 +1483,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
                     {
                         use_op &= time_keeper_.whirlwind_cd() > config.combat.overpower_ww_cooldown_thresh;
                     }
-                    if (time_keeper_.overpower_ready() && rage < config.combat.overpower_rage_thresh && rage > 5 &&
+                    if (time_keeper_.overpower_ready() && rage < config.combat.overpower_rage_thresh && rage >= 5 &&
                         time_keeper_.global_ready() && time_keeper_.can_do_overpower() && use_op)
                     {
                         overpower(weapons[0], special_stats, rage, damage_sources, flurry_charges, rampage_stacks);
@@ -1506,28 +1513,27 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
                     {
                         use_ham &= time_keeper_.whirlwind_cd() > config.combat.hamstring_cd_thresh;
                     }
-                    if (rage > config.combat.hamstring_thresh_dd && time_keeper_.global_ready() && use_ham)
+                    if (rage > config.combat.hamstring_thresh_dd && time_keeper_.global_ready() && rage >= 10 && use_ham)
                     {
                         hamstring(weapons[0], special_stats, rage, damage_sources, flurry_charges, rampage_stacks);
                     }
                 }
 
                 // Heroic strike or Cleave
-                // TODO move to the top of sim loop, enables 'continue' after casting spells for performance
-                if (number_of_extra_targets_ > 0 && config.combat.cleave_if_adds)
+                if (config.combat.use_heroic_strike)
                 {
-                    if (rage > config.combat.cleave_rage_thresh && !ability_queue_manager.cleave_queued)
+                    if (number_of_extra_targets_ > 0 && config.combat.cleave_if_adds)
                     {
-                        ability_queue_manager.queue_cleave();
-                        logger_.print("Cleave activated");
+                        if (rage > config.combat.cleave_rage_thresh && !ability_queue_manager.cleave_queued && rage >= 20)
+                        {
+                            ability_queue_manager.queue_cleave();
+                            logger_.print("Cleave activated");
+                        }
                     }
-                }
-                else
-                {
-                    if (rage > config.combat.heroic_strike_rage_thresh && !ability_queue_manager.heroic_strike_queued &&
-                        rage > heroic_strike_rage_cost_)
+                    else
                     {
-                        if (config.combat.use_heroic_strike)
+                        if (rage > config.combat.heroic_strike_rage_thresh && !ability_queue_manager.heroic_strike_queued &&
+                            rage >= heroic_strike_rage_cost_)
                         {
                             ability_queue_manager.queue_heroic_strike();
                             logger_.print("Heroic strike activated");
@@ -1546,11 +1552,12 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
         double new_sample = damage_sources.sum_damage_sources() / sim_time;
         dps_distribution_.add_sample(new_sample);
         damage_distribution_ = damage_distribution_ + damage_sources;
+
         rampage_uptime_ = Statistics::update_mean(rampage_uptime_, iter + 1, double(mh_hits_w_rampage) / mh_hits);
         if (is_dual_wield)
         {
-            heroic_strike_uptime_ =
-                Statistics::update_mean(heroic_strike_uptime_, iter + 1, double(oh_hits_w_heroic) / oh_hits);
+            oh_queued_uptime_ =
+                Statistics::update_mean(oh_queued_uptime_, iter + 1, double(oh_hits_w_queued) / oh_hits);
         }
         flurry_uptime_ = Statistics::update_mean(flurry_uptime_, iter + 1, flurry_uptime / time_keeper_.time);
         avg_rage_spent_executing_ =
@@ -1558,7 +1565,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
         if (log_data)
         {
             add_damage_source_to_time_lapse(damage_sources.damage_instances);
-            hist_y[new_sample / 20]++;
+            hist_y[static_cast<int>(new_sample / hist_resolution)]++;
         }
     }
 
@@ -1606,10 +1613,9 @@ std::vector<std::pair<double, Use_effect>> Combat_simulator::get_use_effect_orde
 
 void Combat_simulator::init_histogram()
 {
-    const int res = 20;
     for (int i = 0; i < 1000; i++)
     {
-        hist_x.push_back(i * res);
+        hist_x.push_back(static_cast<int>(i * hist_resolution));
         hist_y.push_back(0);
     }
 }
@@ -1627,34 +1633,20 @@ void Combat_simulator::normalize_timelapse()
 
 void Combat_simulator::prune_histogram()
 {
-    int start_idx{};
-    int end_idx{};
-    for (size_t i = 0; i < hist_x.size(); i++)
+    size_t start_idx = 0;
+    for (; start_idx < hist_x.size(); ++start_idx)
     {
-        if (hist_y[i] != 0 && !start_idx)
-        {
-            start_idx = i;
-            break;
-        }
+        if (hist_y[start_idx] != 0) break;
     }
-    for (size_t i = hist_x.size() - 1; i > 0; i--)
+
+    size_t end_idx = hist_x.size() - 1;
+    for (; end_idx >= 0; --end_idx)
     {
-        if (hist_y[i] != 0 && !end_idx)
-        {
-            end_idx = i;
-            break;
-        }
+        if (hist_y[end_idx] != 0) break;
     }
-    {
-        auto first = hist_x.begin() + start_idx;
-        auto last = hist_x.begin() + end_idx + 1;
-        hist_x = std::vector<int>(first, last);
-    }
-    {
-        auto first = hist_y.begin() + start_idx;
-        auto last = hist_y.begin() + end_idx + 1;
-        hist_y = std::vector<int>(first, last);
-    }
+
+    hist_x = std::vector<int>(&hist_x[start_idx], &hist_x[end_idx] + 1);
+    hist_y = std::vector<int>(&hist_y[start_idx], &hist_y[end_idx] + 1);
 }
 
 std::vector<std::string> Combat_simulator::get_aura_uptimes() const
@@ -1670,9 +1662,9 @@ std::vector<std::string> Combat_simulator::get_aura_uptimes() const
     {
         aura_uptimes.emplace_back("Flurry " + std::to_string(100 * flurry_uptime_));
     }
-    if (heroic_strike_uptime_ != 0.0)
+    if (oh_queued_uptime_ != 0.0)
     {
-        aura_uptimes.emplace_back("'Heroic_strike_bug' " + std::to_string(100 * heroic_strike_uptime_));
+        aura_uptimes.emplace_back("'Heroic_strike_bug' " + std::to_string(100 * oh_queued_uptime_));
     }
     if (rampage_uptime_ != 0.0)
     {
@@ -1694,31 +1686,16 @@ std::vector<std::string> Combat_simulator::get_proc_statistics() const
 
 void Combat_simulator::reset_time_lapse()
 {
-    double resolution = .50;
-    std::vector<double> history;
-    history.reserve(config.sim_time / resolution);
-    for (double t = 0; t < config.sim_time; t += resolution)
-    {
-        history.push_back(0);
-    }
-    history.push_back(0); // This extra bin might be used for last second dot effects
-    if (!(damage_time_lapse.empty()))
-    {
-        damage_time_lapse.clear();
-    }
-    for (size_t i = 0; i < source_map.size(); i++)
-    {
-        damage_time_lapse.push_back(history);
-    }
+    std::vector<double> history(static_cast<size_t>(std::ceil(config.sim_time / time_lapse_resolution)));
+    damage_time_lapse.assign(static_cast<size_t>(Damage_source::size), history);
 }
 
 void Combat_simulator::add_damage_source_to_time_lapse(std::vector<Damage_instance>& damage_instances)
 {
-    double resolution = .50;
     for (const auto& damage_instance : damage_instances)
     {
-        size_t first_idx = source_map.at(damage_instance.damage_source);
-        size_t second_idx = damage_instance.time_stamp / resolution; // automatically floored
+        auto first_idx = static_cast<size_t>(damage_instance.damage_source);
+        auto second_idx = static_cast<size_t>(damage_instance.time_stamp / time_lapse_resolution);
         damage_time_lapse[first_idx][second_idx] += damage_instance.damage;
     }
 }

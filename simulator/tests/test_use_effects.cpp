@@ -71,7 +71,7 @@ TEST(TestSuite, test_use_effects)
     Combat_simulator sim{};
 
     std::vector<Use_effect> use_effects{};
-    use_effects.emplace_back(sim.deathwish);
+    use_effects.emplace_back(sim.death_wish);
     use_effects.emplace_back(sim.recklessness);
     use_effects.emplace_back(sim.bloodrage);
     use_effects.emplace_back(

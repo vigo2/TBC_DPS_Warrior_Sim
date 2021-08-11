@@ -104,5 +104,7 @@ void Damage_sources::add_damage(Damage_source source, double damage, double time
         item_hit_effects_damage += damage;
         item_hit_effects_count++;
         break;
+    default:
+        assert(false);
     }
 }

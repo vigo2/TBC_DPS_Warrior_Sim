@@ -185,10 +185,6 @@ struct Combat_simulator_config
 class Combat_simulator
 {
 public:
-    Combat_simulator() = default;
-
-    virtual ~Combat_simulator() = default;
-
     void set_config(const Combat_simulator_config& new_config);
 
     enum class Hit_result
@@ -211,8 +207,8 @@ public:
     enum class Extra_attack_type
     {
         none, // may proc no extra attacks (Sword Spec, Windfury Totem)
-        self, // may proc itself (any Item on a melee/next melee hit)
-        all, // may proc anything (any Item on a spell hit)
+        self, // may proc itself (e.g. Blinkstrike on a melee/next melee hit)
+        all, // may proc anything (e.g. Blinkstrike on a spell hit)
     };
 
     struct Ability_queue_manager
@@ -329,11 +325,11 @@ public:
         [[nodiscard]] Hit_outcome generate_hit(double damage) const
         {
             auto roll = rand() * 100.0 / RAND_MAX;
-            if (roll < miss_) return Hit_outcome(0, Hit_result::miss);
-            if (roll < dodge_) return Hit_outcome(0, Hit_result::dodge, damage * dm_.hit());
-            if (roll < glance_) return Hit_outcome(damage * dm_.glance(), Hit_result::glancing);
-            if (roll < crit_) return Hit_outcome(damage * dm_.crit(), Hit_result::crit);
-            return Hit_outcome(damage * dm_.hit(), Hit_result::hit);
+            if (roll < miss_) return {0, Hit_result::miss};
+            if (roll < dodge_) return {0, Hit_result::dodge, damage * dm_.hit()};
+            if (roll < glance_) return {damage * dm_.glance(), Hit_result::glancing};
+            if (roll < crit_) return {damage * dm_.crit(), Hit_result::crit};
+            return {damage * dm_.hit(), Hit_result::hit};
         }
     private:
         std::string name_;
@@ -450,7 +446,7 @@ public:
 
     [[nodiscard]] constexpr double get_flurry_uptime() const { return flurry_uptime_; }
 
-    [[nodiscard]] constexpr double get_hs_uptime() const { return heroic_strike_uptime_; }
+    [[nodiscard]] constexpr double get_hs_uptime() const { return oh_queued_uptime_; }
 
     [[nodiscard]] constexpr double get_rampage_uptime() const { return rampage_uptime_; }
 
@@ -464,7 +460,7 @@ public:
 
     Combat_simulator_config config;
 
-    const Use_effect deathwish = {
+    const Use_effect death_wish = {
         "Death_wish", Use_effect::Effect_socket::unique, {}, {0, 0, 0, 0, 0, .20}, -10, 30, 180, true};
 
     const Use_effect recklessness = {
@@ -484,61 +480,65 @@ private:
     Hit_table hit_table_yellow_oh_;
     Hit_table hit_table_overpower_;
     Hit_table hit_table_white_oh_queued_;
-    Damage_sources damage_distribution_{false};
+
     Time_keeper time_keeper_{};
     Buff_manager buff_manager_{};
     Ability_queue_manager ability_queue_manager{};
     Slam_manager slam_manager{1.5};
-    std::vector<int> hist_x{};
-    std::vector<int> hist_y{};
 
     Logger logger_{};
 
-    Distribution dps_distribution_{};
+    // config related
     double armor_reduction_factor_{};
     double armor_reduction_factor_add{};
     int armor_reduction_from_spells_{};
     int armor_reduction_delayed_{};
-    bool recompute_mitigation_{false};
+    bool recompute_mitigation_{};
     int number_of_extra_targets_{};
-
-    double flurry_uptime_{};
-    double heroic_strike_uptime_{};
-    double rampage_uptime_{};
 
     int execute_rage_cost_{};
     int heroic_strike_rage_cost_{};
     int whirlwind_rage_cost_{};
+    int tactical_mastery_rage_{};
 
     double cleave_bonus_damage_{};
-    double rage_spent_on_execute_{};
-    double avg_rage_spent_executing_{};
-    double rage_lost_stance_swap_{};
-    double rage_lost_capped_{};
-    Special_stats flurry_haste_factor_{};
+    Special_stats flurry_{};
 
-    double tactical_mastery_rage_{0};
-    bool deep_wounds_{false};
-    bool use_bloodthirst_{false};
-    bool use_rampage_{false};
-    bool use_mortal_strike_{false};
-    bool use_sweeping_strikes_{false};
-    int sweeping_strikes_charges_ = 0;
+    bool deep_wounds_{};
+    bool use_bloodthirst_{};
+    bool use_rampage_{};
+    bool use_mortal_strike_{};
+    bool use_sweeping_strikes_{};
+    int sweeping_strikes_charges_{};
+
+    std::vector<Use_effect> use_effects_all_{};
+    std::vector<Over_time_effect> over_time_effects_{};
 
     Over_time_effect deep_wound_effect_{"Deep_wounds", {}, 0, 0, 3, 12};
     Hit_effect battle_stance_{"battle_stance", Hit_effect::Type::stat_boost, {}, {-3.0, 0, 0}, 0, 1.5, 0, 0};
     Hit_effect windfury_attack_{"windfury_attack", Hit_effect::Type::stat_boost, {}, {0, 0, 445}, 0, 1.5, 0, 0, 0, 2};
 
-    std::vector<std::vector<double>> damage_time_lapse{};
+    // statistics
+    Damage_sources damage_distribution_{false};
+    Distribution dps_distribution_{};
+
+    double flurry_uptime_{};
+    double oh_queued_uptime_{};
+    double rampage_uptime_{};
+
+    double rage_spent_on_execute_{};
+    double avg_rage_spent_executing_{};
+    double rage_lost_stance_swap_{};
+    double rage_lost_capped_{};
+
     std::unordered_map<std::string, int> proc_data_{};
-    std::vector<Use_effect> use_effects_all_{};
-    std::vector<Over_time_effect> over_time_effects_{};
-    std::map<Damage_source, int> source_map{
-        {Damage_source::white_mh, 0},         {Damage_source::white_oh, 1},          {Damage_source::bloodthirst, 2},
-        {Damage_source::execute, 3},          {Damage_source::heroic_strike, 4},     {Damage_source::cleave, 5},
-        {Damage_source::whirlwind, 6},        {Damage_source::hamstring, 7},         {Damage_source::deep_wounds, 8},
-        {Damage_source::item_hit_effects, 9}, {Damage_source::overpower, 10},        {Damage_source::slam, 11},
-        {Damage_source::mortal_strike, 12},   {Damage_source::sweeping_strikes, 13}};
+
+    static constexpr double time_lapse_resolution = 0.5;
+    static constexpr double hist_resolution = 20;
+
+    std::vector<std::vector<double>> damage_time_lapse{};
+    std::vector<int> hist_x{};
+    std::vector<int> hist_y{};
 };
 
 #include "Combat_simulator.tcc"

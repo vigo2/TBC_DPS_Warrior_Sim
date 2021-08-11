@@ -842,17 +842,17 @@ Anger Management 100.00%
 
 >>> after haste/attack speed split
 
-took 3465 ms
+took 3433 ms
 
 white (mh)    = 213.53 (21.40x)
 white (oh)    = 173.61 (28.48x)
-bloodthirst   = 167.08 (8.39x)
-whirlwind     = 100.38 (5.26x)
-heroic strike = 95.52 (6.13x)
-execute       = 84.15 (4.36x)
+bloodthirst   = 167.30 (8.39x)
+whirlwind     = 100.51 (5.26x)
+heroic strike = 95.64 (6.13x)
+execute       = 84.26 (4.36x)
 deep wounds   = 20.00 (9.88x)
 ----------------------
-total         = 854.28
+total         = 854.86
 
 rage lost 0.07 per minute
 
@@ -1009,17 +1009,17 @@ sword_specialization 1.38 procs/min
 
 >>> after haste/attack speed split, and other stuff ;)
 
-took 5429 ms
+took 5283 ms
 
 white (mh)    = 276.64 (25.16x)
 white (oh)    = 202.43 (29.96x)
-bloodthirst   = 191.58 (8.58x)
-whirlwind     = 107.11 (5.19x)
-heroic strike = 162.88 (9.74x)
-execute       = 98.39 (4.70x)
+bloodthirst   = 191.84 (8.58x)
+whirlwind     = 107.26 (5.19x)
+heroic strike = 163.10 (9.74x)
+execute       = 98.53 (4.70x)
 deep wounds   = 18.84 (8.72x)
 ----------------------
-total         = 1057.87
+total         = 1058.64
 
 rage lost 4.37 per minute
 
