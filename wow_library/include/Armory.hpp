@@ -177,7 +177,6 @@ struct Armory
                 // Phase 1
                 {"choker_of_vile_intent", Attributes{0.0, 20.0}, Special_stats{0.0, 1.14140773620799, 42.0, 0, 0.0}, Socket::neck}, 
                 {"worgen_claw_necklace", Attributes{0.0, 20.0}, Special_stats{0.0, 1.077996195307546, 42.0, 0, 0.0}, Socket::neck}, 
-                {"veterans_pendant_of_triumph", Attributes{0.0, 0.0}, Special_stats{0.8152173913043479, 0.0, 42.0, 0, 0.0}, Socket::neck}, 
                 {"haramads_bargain", Attributes{26.0, 25.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.0}, Socket::neck}, 
                 {"mithril_chain_of_heroism", Attributes{28.0, 22.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.0}, Socket::neck}, 
                 {"natashas_choker", Attributes{0.0, 0.0}, Special_stats{0.6793478260869565, 0.6341154090044389, 50.0, 0, 0.0}, Socket::neck}, 

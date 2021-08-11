@@ -808,7 +808,7 @@ void Combat_simulator::hit_effects(Hit_result hit_result, Weapon_sim& weapon, We
                 break;
             }
             case Hit_effect::Type::stat_boost: {
-                if (hit_effect.name == "tsunami_talisman" && hit_result != Hit_result::crit)
+                if (hit_effect.name == "tsunami_talisman" || hit_effect.name == "hourglass_of_the_unraveller" && hit_result != Hit_result::crit)
                 {
                     break;
                 }
