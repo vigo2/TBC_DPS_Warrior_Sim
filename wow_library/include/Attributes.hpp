@@ -38,7 +38,6 @@ struct Special_stats
     {
     }
 
-    // checkme(vigo) - this seems to have a single usage in Item_optimizer::remove_weaker_items(), which is _gear_ related
     bool operator<(Special_stats other) const
     {
         return (this->hit < other.hit) &&
@@ -131,7 +130,7 @@ struct Special_stats
     int gear_armor_pen{};
 
     double ap_multiplier{};
-    double attack_speed{}; // nyw
+    double attack_speed{};
 };
 
 class Attributes
@@ -147,15 +146,15 @@ public:
         agility = 0;
     }
 
-    [[nodiscard]] Attributes multiply(const Special_stats& special_stats) const
+    [[nodiscard]] Attributes multiply(const Special_stats& multipliers) const
     {
-        const double multiplier = special_stats.stat_multiplier + 1;
+        const double multiplier = multipliers.stat_multiplier + 1;
         return {strength * multiplier, agility * multiplier};
     }
 
-    [[nodiscard]] Special_stats convert_to_special_stats(const Special_stats& special_stats) const
+    [[nodiscard]] Special_stats to_special_stats(const Special_stats& multipliers) const
     {
-        const double multiplier = special_stats.stat_multiplier + 1;
+        const double multiplier = multipliers.stat_multiplier + 1;
         return {agility * multiplier / 33, 0, strength * multiplier * 2};
     }
 

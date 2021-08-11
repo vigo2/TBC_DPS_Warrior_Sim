@@ -178,8 +178,10 @@ struct Combat_simulator_config
 
     struct set_bonus_effect_t
     {
-        int warbringer_2_set{0};
+        bool warbringer_2_set{false};
         bool warbringer_4_set{false};
+        bool destroyer_2_set{false};
+        bool destroyer_4_set{false};
     } set_bonus_effect;
 };
 
@@ -536,6 +538,8 @@ private:
     int execute_rage_cost_{};
     int heroic_strike_rage_cost_{};
     int whirlwind_rage_cost_{};
+    int mortal_strike_rage_cost_{};
+    int bloodthirst_rage_cost_{};
     int tactical_mastery_rage_{};
 
     double cleave_bonus_damage_{};
@@ -553,6 +557,7 @@ private:
 
     Over_time_effect deep_wound_effect_{"Deep_wounds", {}, 0, 0, 3, 12};
     Hit_effect battle_stance_{"battle_stance", Hit_effect::Type::stat_boost, {}, {-3.0, 0, 0}, 0, 1.5, 0, 0};
+    Hit_effect destroyer_2_set_{"destroyer_2_set", Hit_effect::Type::stat_boost, {}, {0, 0, 100}, 0, 5, 0, 0};
     Hit_effect windfury_attack_{"windfury_attack", Hit_effect::Type::stat_boost, {}, {0, 0, 445}, 0, 1.5, 0, 0, 0, 2};
 
     // statistics

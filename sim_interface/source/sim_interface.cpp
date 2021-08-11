@@ -54,7 +54,7 @@ void item_upgrades(std::string& item_strengths_string, Character character_new, 
 
     Armor item_in_socket = character_new.get_item_from_socket(socket, first_item);
     Special_stats item_special_stats = item_in_socket.special_stats;
-    item_special_stats += item_in_socket.attributes.convert_to_special_stats(special_stats);
+    item_special_stats += item_in_socket.attributes.to_special_stats(special_stats);
     std::vector<size_t> stronger_indexies{};
     if (item_in_socket.set_name == Set::none && item_in_socket.use_effects.empty() &&
         item_in_socket.hit_effects.empty())
@@ -64,7 +64,7 @@ void item_upgrades(std::string& item_strengths_string, Character character_new, 
             if (items[i].set_name == Set::none && items[i].use_effects.empty() && items[i].hit_effects.empty())
             {
                 Special_stats armor_special_stats = items[i].special_stats;
-                armor_special_stats += items[i].attributes.convert_to_special_stats(special_stats);
+                armor_special_stats += items[i].attributes.to_special_stats(special_stats);
 
                 if (estimate_special_stats_smart_no_skill(item_special_stats, armor_special_stats))
                 {
@@ -638,9 +638,9 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
                 simulator_dpr.set_config(config);
                 simulator_dpr.simulate(character, 0);
                 double delta_dps = dps_mean - simulator_dpr.get_dps_mean();
-                double dmg_tot = delta_dps * (config.sim_time - 1);
+                double dmg_tot = delta_dps * config.sim_time;
                 double dmg_per_hit = dmg_tot / avg_bt_casts;
-                double dmg_per_rage = dmg_per_hit / 30.0;
+                double dmg_per_rage = dmg_per_hit / (30 - 5 * character.set_bonus_effect.warbringer_2_set);
                 dpr_info += "<b>Bloodthirst</b>: <br>Damage per cast: <b>" +
                             String_helpers::string_with_precision(dmg_per_hit, 4) + "</b><br>Average rage cost: <b>" +
                             String_helpers::string_with_precision(30.0, 3) + "</b><br>DPR: <b>" +
@@ -658,9 +658,9 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
                 simulator_dpr.set_config(config);
                 simulator_dpr.simulate(character, 0);
                 double delta_dps = dps_mean - simulator_dpr.get_dps_mean();
-                double dmg_tot = delta_dps * (config.sim_time - 1);
+                double dmg_tot = delta_dps * config.sim_time;
                 double dmg_per_hit = dmg_tot / avg_ms_casts;
-                double dmg_per_rage = dmg_per_hit / 30.0;
+                double dmg_per_rage = dmg_per_hit / (30 - 5 * character.set_bonus_effect.warbringer_2_set);
                 dpr_info += "<b>Mortal Strike</b>: <br>Damage per cast: <b>" + String_helpers::string_with_precision(dmg_per_hit, 4) +
                             "</b><br>Average rage cost: <b>" + String_helpers::string_with_precision(30.0, 3) + "</b><br>DPR: <b>" +
                             String_helpers::string_with_precision(dmg_per_rage, 4) + "</b><br>";
@@ -677,7 +677,7 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
                 simulator_dpr.set_config(config);
                 simulator_dpr.simulate(character, 0);
                 double delta_dps = dps_mean - simulator_dpr.get_dps_mean();
-                double dmg_tot = delta_dps * (config.sim_time - 1);
+                double dmg_tot = delta_dps * config.sim_time;
                 double dmg_per_hit = dmg_tot / avg_ww_casts;
                 double dmg_per_rage = dmg_per_hit / (25.0 - double(5.0 * character.set_bonus_effect.warbringer_2_set));
                 dpr_info += "<b>Whirlwind</b>: <br>Damage per cast: <b>" +
@@ -697,7 +697,7 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
                 simulator_dpr.set_config(config);
                 simulator_dpr.simulate(character, 0);
                 double delta_dps = dps_mean - simulator_dpr.get_dps_mean();
-                double dmg_tot = delta_dps * (config.sim_time - 1);
+                double dmg_tot = delta_dps * config.sim_time;
                 double avg_mh_dmg =
                     static_cast<double>(dmg_dist.white_mh_damage) / static_cast<double>(dmg_dist.white_mh_count);
                 double avg_mh_rage_lost = avg_mh_dmg * 3.75 / 274.7 + (3.5 * character.weapons[0].swing_speed / 2);
@@ -721,7 +721,7 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
                 simulator_dpr.set_config(config);
                 simulator_dpr.simulate(character, 0);
                 double delta_dps = dps_mean - simulator_dpr.get_dps_mean();
-                double dmg_tot = delta_dps * (config.sim_time - 1);
+                double dmg_tot = delta_dps * config.sim_time;
                 double dmg_per_hs = dmg_tot / avg_hs_casts;
                 double avg_mh_dmg =
                     static_cast<double>(dmg_dist.white_mh_damage) / static_cast<double>(dmg_dist.white_mh_count);
@@ -744,7 +744,7 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
                 simulator_dpr.set_config(config);
                 simulator_dpr.simulate(character, 0);
                 double delta_dps = dps_mean - simulator_dpr.get_dps_mean();
-                double dmg_tot = delta_dps * (config.sim_time - 1);
+                double dmg_tot = delta_dps * config.sim_time;
                 double dmg_per_hs = dmg_tot / avg_cl_casts;
                 double avg_mh_dmg =
                     static_cast<double>(dmg_dist.white_mh_damage) / static_cast<double>(dmg_dist.white_mh_count);
@@ -767,7 +767,7 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
                 simulator_dpr.set_config(config);
                 simulator_dpr.simulate(character, 0);
                 double delta_dps = dps_mean - simulator_dpr.get_dps_mean();
-                double dmg_tot = delta_dps * (config.sim_time - 1);
+                double dmg_tot = delta_dps * config.sim_time;
                 double dmg_per_ha = dmg_tot / avg_ha_casts;
                 double dmg_per_rage = dmg_per_ha / 10;
                 dpr_info += "<b>Hamstring</b>: <br>Damage per cast: <b>" +
@@ -787,7 +787,7 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
                 simulator_dpr.set_config(config);
                 simulator_dpr.simulate(character, 0);
                 double delta_dps = dps_mean - simulator_dpr.get_dps_mean();
-                double dmg_tot = delta_dps * (config.sim_time - 1);
+                double dmg_tot = delta_dps * config.sim_time;
                 double dmg_per_hit = dmg_tot / avg_op_casts;
                 double overpower_cost =
                     simulator.get_rage_lost_stance() / double(simulator.get_n_simulations()) / avg_op_casts + 5.0;
@@ -808,7 +808,7 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
             simulator_dpr.set_config(config);
             simulator_dpr.simulate(character, 0);
             double delta_dps = dps_mean - simulator_dpr.get_dps_mean();
-            double dmg_tot = delta_dps * (config.sim_time - 1);
+            double dmg_tot = delta_dps * config.sim_time;
             double dmg_per_hit = dmg_tot / avg_ex_casts;
             double execute_rage_cost = 15 - static_cast<int>(2.51 * config.talents.improved_execute);
             double execute_cost = simulator.get_avg_rage_spent_executing() / avg_ex_casts + execute_rage_cost;

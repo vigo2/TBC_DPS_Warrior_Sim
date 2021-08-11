@@ -155,6 +155,8 @@ std::ostream& operator<<(std::ostream& os, const Hit_effect::Type& t)
         return os << "damage_magic";
     case Hit_effect::Type::reduce_armor:
         return os << "reduce_armor";
+    case Hit_effect::Type::rage_boost:
+        return os << "rage_boost";
     }
 }
 

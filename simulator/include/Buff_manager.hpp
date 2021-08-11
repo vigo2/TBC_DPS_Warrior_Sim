@@ -46,7 +46,7 @@ struct Combat_buff
 {
     Combat_buff(const Hit_effect& hit_effect, const Special_stats& multipliers, double current_time) :
         name(hit_effect.name),
-        special_stats_boost(hit_effect.special_stats_boost + hit_effect.attribute_boost.convert_to_special_stats(multipliers)),
+        special_stats_boost(hit_effect.to_special_stats(multipliers)),
         stacks(1),
         next_fade(current_time + hit_effect.duration),
         charges(hit_effect.max_charges),
@@ -404,7 +404,8 @@ public:
         {
             auto hit_effect = Hit_effect();
             hit_effect.name = use_effect.name;
-            hit_effect.special_stats_boost = use_effect.get_special_stat_equivalent(*simulation_special_stats);
+            hit_effect.attribute_boost = use_effect.attribute_boost;
+            hit_effect.special_stats_boost = use_effect.special_stats_boost;
             hit_effect.duration = use_effect.duration;
             add_combat_buff(hit_effect, current_time);
         }
@@ -541,7 +542,7 @@ public:
         }
 
         auto& hit_aura = hit_auras.emplace_back(Hit_aura(name, current_time, duration_left));
-        hit_effect.sanitize(); // TODO(vigo) we need weapons here to convert from ppm to probability, and for that, we need a "dummy" weapon
+        hit_effect.sanitize();
         hit_aura.hit_effect_mh = &hit_effects_mh->emplace_back(hit_effect);
         hit_aura.hit_effect_oh = &hit_effects_oh->emplace_back(hit_effect);
         if (hit_aura.next_fade < min_hit_aura) min_hit_aura = hit_aura.next_fade;
@@ -577,10 +578,7 @@ public:
             buff.last_gain = current_time;
         }
 
-        buff.damage = over_time_effect.damage;
-        //buff.rage_gain = over_time_effect.rage_gain;
-        //buff.special_stats = over_time_effect.special_stats;
-        //buff.interval = over_time_effect.interval;
+        buff.damage = over_time_effect.damage; // nothing else ever changes
 
         buff.next_tick = current_time + over_time_effect.interval;
         buff.next_fade = current_time + over_time_effect.duration;

@@ -28,6 +28,8 @@ void Combat_simulator::set_config(const Combat_simulator_config& new_config)
     heroic_strike_rage_cost_ = 15 - config.talents.improved_heroic_strike;
     execute_rage_cost_ = 15 - static_cast<int>(2.51 * config.talents.improved_execute);
     whirlwind_rage_cost_ = 25;
+    mortal_strike_rage_cost_ = 30;
+    bloodthirst_rage_cost_ = 30;
 
     armor_reduction_from_spells_ = 0.0;
     armor_reduction_from_spells_ += 520 * config.n_sunder_armor_stacks;
@@ -482,7 +484,7 @@ void Combat_simulator::mortal_strike(Weapon_sim& main_hand_weapon, Special_stats
 {
     if (config.dpr_settings.compute_dpr_ms_)
     {
-        spend_rage(hit_table_yellow_mh_.isMissOrDodge() ? 6 : 30);
+        spend_rage(hit_table_yellow_mh_.isMissOrDodge() ? 0.2 * mortal_strike_rage_cost_ : mortal_strike_rage_cost_);
         time_keeper_.mortal_strike_cast(6.0 - config.talents.improved_mortal_strike * 0.2);
         time_keeper_.global_cast(1.5);
         return;
@@ -493,7 +495,7 @@ void Combat_simulator::mortal_strike(Weapon_sim& main_hand_weapon, Special_stats
         generate_hit(main_hand_weapon, damage, main_hand_weapon, hit_table_yellow_mh_, special_stats, damage_sources);
     if (hit_outcome.hit_result == Hit_result::miss || hit_outcome.hit_result == Hit_result::dodge)
     {
-        spend_rage(6);
+        spend_rage(0.2 * mortal_strike_rage_cost_);
         if (hit_outcome.hit_result == Hit_result::dodge && config.set_bonus_effect.warbringer_4_set)
         {
             gain_rage(2);
@@ -501,7 +503,7 @@ void Combat_simulator::mortal_strike(Weapon_sim& main_hand_weapon, Special_stats
     }
     else
     {
-        spend_rage(30);
+        spend_rage(mortal_strike_rage_cost_);
         maybe_gain_flurry(hit_outcome.hit_result, flurry_charges, special_stats);
         hit_effects(main_hand_weapon, main_hand_weapon, special_stats, damage_sources, flurry_charges, rampage_stacks);
     }
@@ -516,7 +518,7 @@ void Combat_simulator::bloodthirst(Weapon_sim& main_hand_weapon, Special_stats& 
 {
     if (config.dpr_settings.compute_dpr_bt_)
     {
-        spend_rage(hit_table_yellow_mh_.isMissOrDodge() ? 6 : 30);
+        spend_rage(hit_table_yellow_mh_.isMissOrDodge() ? 0.2 * bloodthirst_rage_cost_ : bloodthirst_rage_cost_);
         time_keeper_.blood_thirst_cast(6.0);
         time_keeper_.global_cast(1.5);
         return;
@@ -528,7 +530,7 @@ void Combat_simulator::bloodthirst(Weapon_sim& main_hand_weapon, Special_stats& 
                                     damage_sources);
     if (hit_outcome.hit_result == Hit_result::miss || hit_outcome.hit_result == Hit_result::dodge)
     {
-        spend_rage(6);
+        spend_rage(0.2 * bloodthirst_rage_cost_);
         if (hit_outcome.hit_result == Hit_result::dodge && config.set_bonus_effect.warbringer_4_set)
         {
             gain_rage(2);
@@ -536,7 +538,7 @@ void Combat_simulator::bloodthirst(Weapon_sim& main_hand_weapon, Special_stats& 
     }
     else
     {
-        spend_rage(30);
+        spend_rage(bloodthirst_rage_cost_);
         maybe_gain_flurry(hit_outcome.hit_result, flurry_charges, special_stats);
         hit_effects(main_hand_weapon, main_hand_weapon, special_stats, damage_sources, flurry_charges, rampage_stacks);
     }
@@ -570,6 +572,10 @@ void Combat_simulator::overpower(Weapon_sim& main_hand_weapon, Special_stats& sp
     {
         maybe_gain_flurry(hit_outcome.hit_result, flurry_charges, special_stats);
         hit_effects(main_hand_weapon, main_hand_weapon, special_stats, damage_sources, flurry_charges, rampage_stacks);
+    }
+    if (config.set_bonus_effect.destroyer_2_set)
+    {
+        buff_manager_.add_combat_buff(destroyer_2_set_, time_keeper_.time);
     }
     time_keeper_.overpower_cast(5.0);
     time_keeper_.global_cast(1.5);
@@ -754,6 +760,11 @@ void Combat_simulator::hit_effects(Weapon_sim& weapon, Weapon_sim& main_hand_wea
             buff_manager_.add_combat_buff(hit_effect, time_keeper_.time);
             break;
         }
+        case Hit_effect::Type::rage_boost: {
+            logger_.print("PROC: ", hit_effect.name, ". Current rage: ", int(rage));
+            gain_rage(hit_effect.damage);
+            break;
+        }
         case Hit_effect::Type::damage_magic: {
             // * 0.83 Assumes a static 17% chance to resist.
             // (100 + special_stats.spell_crit / 2) / 100 is the average damage gained from a x1.5 spell crit
@@ -780,7 +791,8 @@ void Combat_simulator::hit_effects(Weapon_sim& weapon, Weapon_sim& main_hand_wea
             break;
         }
         default:
-            std::cout << ":::::::::::FAULTY HIT EFFECT IN SIMULATION!!!:::::::::";
+            logger_.print("PROC: ", hit_effect.name, " has unknown type ", static_cast<int>(hit_effect.type));
+            assert(false);
             break;
         }
     }
@@ -1003,13 +1015,22 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
         }
     }
 
+    // TODO(vigo) just make character part of the "sim context"
     // Passing set bonuses that are not stats from character to config
     config.set_bonus_effect.warbringer_2_set = character.set_bonus_effect.warbringer_2_set;
     config.set_bonus_effect.warbringer_4_set = character.set_bonus_effect.warbringer_4_set;
+    config.set_bonus_effect.destroyer_2_set = character.set_bonus_effect.destroyer_2_set;
+    config.set_bonus_effect.destroyer_4_set = character.set_bonus_effect.destroyer_4_set;
 
     if (config.set_bonus_effect.warbringer_2_set)
     {
         whirlwind_rage_cost_ = 20;
+    }
+
+    if (config.set_bonus_effect.destroyer_4_set)
+    {
+        mortal_strike_rage_cost_ = 25;
+        bloodthirst_rage_cost_ = 25;
     }
 
     const bool is_dual_wield = character.is_dual_wield();

@@ -1009,32 +1009,32 @@ sword_specialization 1.38 procs/min
 
 >>> after haste/attack speed split, and other stuff ;)
 
-took 5283 ms
+took 5167 ms
 
-white (mh)    = 276.64 (25.16x)
-white (oh)    = 202.43 (29.96x)
-bloodthirst   = 191.84 (8.58x)
-whirlwind     = 107.26 (5.19x)
-heroic strike = 163.10 (9.74x)
-execute       = 98.53 (4.70x)
-deep wounds   = 18.84 (8.72x)
+white (mh)    = 276.48 (25.16x)
+white (oh)    = 202.47 (29.96x)
+bloodthirst   = 191.87 (8.58x)
+whirlwind     = 107.23 (5.19x)
+heroic strike = 163.29 (9.75x)
+execute       = 98.33 (4.69x)
+deep wounds   = 18.83 (8.71x)
 ----------------------
-total         = 1058.64
+total         = 1058.50
 
-rage lost 4.37 per minute
+rage lost 4.54 per minute
 
 Anger Management 100.00%
-windfury_attack 2.49%
+windfury_attack 2.50%
 mongoose_oh 25.53%
-Deep_wounds 98.85%
-mongoose_mh 38.66%
-dragonmaw 27.85%
+Deep_wounds 98.84%
+mongoose_mh 38.64%
+dragonmaw 27.90%
 
-dragonmaw 2.00 procs/min
+dragonmaw 2.01 procs/min
 mongoose_mh 2.01 procs/min
-windfury_totem 8.94 procs/min
-mongoose_oh 1.20 procs/min
-sword_specialization 1.37 procs/min
+windfury_totem 8.95 procs/min
+mongoose_oh 1.19 procs/min
+sword_specialization 1.38 procs/min
 */
 TEST_F(Sim_fixture, test_procs)
 {

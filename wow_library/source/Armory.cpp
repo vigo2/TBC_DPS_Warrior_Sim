@@ -309,27 +309,45 @@ void Armory::compute_total_stats(Character& character) const
         set_counts[weapon.set_name] += 1;
     }
 
-    for (const Set_bonus& set_bonus : set_bonuses)
-    {
-        if (set_counts[set_bonus.set] >= set_bonus.pieces)
+        for (const Set_bonus& set_bonus : set_bonuses)
         {
-            total_attributes += set_bonus.attributes;
-            total_special_stats += set_bonus.special_stats;
-            character.set_bonuses.emplace_back(set_bonus);
-            if (set_bonus.name == "warbringer")
+        if (set_counts[set_bonus.set] >= set_bonus.pieces)
             {
-                if (set_bonus.pieces == 4)
+                total_attributes += set_bonus.attributes;
+                total_special_stats += set_bonus.special_stats;
+                character.set_bonuses.emplace_back(set_bonus);
+                if (set_bonus.name == "warbringer")
                 {
-                    character.set_bonus_effect.warbringer_4_set = true;
-                    character.set_bonus_effect.warbringer_2_set = 1;
+                    if (set_bonus.pieces == 4)
+                    {
+                        character.set_bonus_effect.warbringer_4_set = true;
+                        character.set_bonus_effect.warbringer_2_set = true;
+                    }
+                    else
+                    {
+                        character.set_bonus_effect.warbringer_2_set = true;
+                    }
                 }
-                else
+                if (set_bonus.name == "destroyer")
                 {
-                    character.set_bonus_effect.warbringer_2_set = 1;
+                    if (set_bonus.pieces == 4)
+                    {
+                        character.set_bonus_effect.destroyer_4_set = true;
+                        character.set_bonus_effect.destroyer_2_set = true;
+                    }
+                    else
+                    {
+                        character.set_bonus_effect.destroyer_2_set = true;
+                    }
+                }
+                // TODO(vigo) it's a lot simpler to check for presence of "solarians_sapphire" directly
+                // PS: Solarian has a set on it. This is a workaround to have solarian giving BS AP bonus
+                if (set_bonus.name == "solarian_bs_bonus")
+                {
+                    character.set_bonus_effect.solarian_bs_bonus = true;
                 }
             }
         }
-    }
 
     if (character.race == Race::draenei && !character.has_buff(buffs.heroic_presence))
     {
@@ -362,7 +380,7 @@ void Armory::compute_total_stats(Character& character) const
         }
     }
 
-    // Effects gained from talents
+    // Effects gained from talents and set bonuses
     for (auto& use_effect : use_effects)
     {
         if (use_effect.name == "battle_shout")
@@ -370,6 +388,10 @@ void Armory::compute_total_stats(Character& character) const
             if (character.talents.booming_voice_talent)
             {
                 use_effect.duration = 180.0;
+            }
+            if (character.set_bonus_effect.solarian_bs_bonus)
+            {
+                use_effect.special_stats_boost.attack_power += 70;
             }
             if (character.talents.commanding_presence_talent > 0)
             {
@@ -410,7 +432,7 @@ void Armory::compute_total_stats(Character& character) const
         total_special_stats += ss;
     }
 
-    total_special_stats += total_attributes.convert_to_special_stats(total_special_stats);
+    total_special_stats += total_attributes.to_special_stats(total_special_stats);
     character.total_attributes = total_attributes.multiply(total_special_stats);
     character.total_special_stats = total_special_stats;
     character.use_effects = use_effects;

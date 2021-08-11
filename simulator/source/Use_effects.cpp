@@ -109,7 +109,7 @@ std::vector<std::pair<double, Use_effect>> compute_use_effect_order(std::vector<
 double estimate_power(const Use_effect& use_effect, const Special_stats& special_stats,
                                            double total_ap)
 {
-    double use_effect_ap_boost = use_effect.get_special_stat_equivalent(special_stats).attack_power;
+    double use_effect_ap_boost = use_effect.to_special_stats(special_stats).attack_power;
 
     double use_effect_haste_boost = total_ap * use_effect.special_stats_boost.haste;
 

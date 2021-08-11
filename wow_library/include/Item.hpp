@@ -50,7 +50,8 @@ enum class Set
     wastewalker,
     doomplate,
     warbringer,
-
+    destroyer,
+    solarian_bs_bonus,
 };
 
 /* enum class Gem_bonus
@@ -111,28 +112,33 @@ struct Over_time_effect
 {
     Over_time_effect() = default;
 
-    ~Over_time_effect() = default;
+    Over_time_effect(std::string name, Special_stats special_stats, double rage_gain, double damage,
+                     int interval, int duration) :
+        name(std::move(name)),
+        special_stats(special_stats),
+        rage_gain(rage_gain),
+        damage(damage),
+        interval(interval),
+        duration(duration) {};
 
-    Over_time_effect(std::string name, Special_stats special_stats, double rage_gain, double damage, int interval,
-                     int duration)
-        : name(std::move(name))
-        , special_stats(special_stats)
-        , rage_gain(rage_gain)
-        , damage(damage)
-        , interval(interval)
-        , duration(duration) {};
-
-    std::string name;
-    Special_stats special_stats;
-    double rage_gain;
-    double damage;
-    int interval;
-    int duration;
+    std::string name{};
+    Special_stats special_stats{}; // unused (?)
+    double rage_gain{};
+    double damage{};
+    int interval{};
+    int duration{};
 
     int over_time_buff_idx{-1};
 };
 
-// TODO(vigo) check usages, and remove rare or unused stuff
+// TODO(vigo) remove or repurpose some fields
+//  Hit_effect (or Proc, for brevity) should describe /how/ something is triggered:
+//   - proc chance (ppm, percentage, always)
+//   - proc conditions (specific or both weapons, required Hit_result and Hit_type)
+//   - whether it stacks or has charges
+//   - internal cooldown
+//  A proc grants a number of buffs or one-shot-effects (extra attack, rage),
+//   but typically only one.
 class Hit_effect
 {
 public:
@@ -145,7 +151,8 @@ public:
         stat_boost,
         damage_physical,
         damage_magic,
-        reduce_armor
+        reduce_armor, // deprecated
+        rage_boost,
     };
 
     Hit_effect() = default;
@@ -161,11 +168,11 @@ public:
         duration(duration),
         cooldown(cooldown),
         probability(probability),
-        attack_power_boost(attack_power_boost),
+        attack_power_boost(attack_power_boost), // unused
         max_charges(max_charges),
-        armor_reduction(armor_reduction),
+        armor_reduction(armor_reduction), // unused
         ppm(ppm),
-        affects_both_weapons(affects_both_weapons),
+        affects_both_weapons(affects_both_weapons), // unused
         max_stacks(max_stacks) {}
 
     void sanitize()
@@ -187,9 +194,9 @@ public:
         }
     }
 
-    [[nodiscard]] Special_stats get_special_stat_equivalent(const Special_stats& special_stats) const
+    [[nodiscard]] Special_stats to_special_stats(const Special_stats& multipliers) const
     {
-        return attribute_boost.convert_to_special_stats(special_stats) + special_stats_boost;
+        return attribute_boost.to_special_stats(multipliers) + special_stats_boost;
     }
 
     std::string name{};
@@ -229,8 +236,6 @@ public:
 
     Use_effect() = default;
 
-    ~Use_effect() = default;
-
     Use_effect(std::string name, Effect_socket effect_socket, Attributes attribute_boost,
                Special_stats special_stats_boost, double rage_boost, double duration, double cooldown,
                bool triggers_gcd, std::vector<Hit_effect> hit_effects = std::vector<Hit_effect>(),
@@ -246,19 +251,19 @@ public:
         , hit_effects(std::move(hit_effects))
         , over_time_effects(std::move(over_time_effects)){};
 
-    inline Special_stats get_special_stat_equivalent(const Special_stats& special_stats) const
+    [[nodiscard]] Special_stats to_special_stats(const Special_stats& multipliers) const
     {
-        return attribute_boost.convert_to_special_stats(special_stats) + special_stats_boost;
+        return attribute_boost.to_special_stats(multipliers) + special_stats_boost;
     }
 
-    std::string name;
+    std::string name{};
     Effect_socket effect_socket{};
     Attributes attribute_boost{};
     Special_stats special_stats_boost{};
     double rage_boost{};
     double duration{};
     double cooldown{};
-    bool triggers_gcd{false};
+    bool triggers_gcd{};
     std::vector<Hit_effect> hit_effects{};
     std::vector<Over_time_effect> over_time_effects{};
 };
