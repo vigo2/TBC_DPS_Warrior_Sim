@@ -697,7 +697,8 @@ struct Armory
                 // Phase 2
                 // main_hand / one_hand
                 {"wicked_edge_of_the_planes", Attributes{0.0, 0.0}, Special_stats{1.0416666666666667, 0.0, 48.0, 0, 0.0}, 2.7, 184, 343, Weapon_socket::main_hand, Weapon_type::axe}, 
-                {"netherbane", Attributes{0.0, 25.0}, Special_stats{0.0, 0.0, 40.0, 0, 0.0}, 2.6, 175, 327, Weapon_socket::main_hand, Weapon_type::axe},
+                {"netherbane", Attributes{0.0, 25.0}, Special_stats{0.0, 0.0, 40.0, 0, 0.0}, 2.6, 175, 327, Weapon_socket::one_hand, Weapon_type::axe},
+                {"merciless_gladiators_cleaver", Attributes{0.0, 0.0}, Special_stats{0.8605072464, 0.634115409, 30.0, 0, 0.0}, 2.6, 177, 330, Weapon_socket::one_hand, Weapon_type::axe}, 
 
             };
 
