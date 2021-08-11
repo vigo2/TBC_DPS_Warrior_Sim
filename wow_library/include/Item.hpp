@@ -50,7 +50,8 @@ enum class Set
     wastewalker,
     doomplate,
     warbringer,
-
+    destroyer,
+    solarian_bs_bonus,
 };
 
 /* enum class Gem_bonus
@@ -142,7 +143,8 @@ public:
         stat_boost,
         damage_physical,
         damage_magic,
-        reduce_armor
+        reduce_armor,
+        rage_boost,
     };
 
     Hit_effect() = default;

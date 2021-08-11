@@ -178,8 +178,10 @@ struct Combat_simulator_config
 
     struct set_bonus_effect_t
     {
-        int warbringer_2_set{0};
+        bool warbringer_2_set{false};
         bool warbringer_4_set{false};
+        bool destroyer_2_set{false};
+        bool destroyer_4_set{false};
     } set_bonus_effect;
 };
 
@@ -350,7 +352,7 @@ public:
                       Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks, double attack_power_bonus = 0,
                       bool is_extra_attack = false);
    
-    void hit_effects(Weapon_sim& weapon, Weapon_sim& main_hand_weapon, Special_stats& special_stats, double& rage,
+    void hit_effects(Hit_result hit_result, Weapon_sim& weapon, Weapon_sim& main_hand_weapon, Special_stats& special_stats, double& rage,
                      Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks, bool is_extra_attack = false,
                      bool is_instant = true);
 

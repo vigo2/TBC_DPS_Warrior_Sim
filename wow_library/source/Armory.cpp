@@ -347,12 +347,29 @@ void Armory::compute_total_stats(Character& character) const
                     if (set_bonus.pieces == 4)
                     {
                         character.set_bonus_effect.warbringer_4_set = true;
-                        character.set_bonus_effect.warbringer_2_set = 1;
+                        character.set_bonus_effect.warbringer_2_set = true;
                     }
                     else
                     {
-                        character.set_bonus_effect.warbringer_2_set = 1;
+                        character.set_bonus_effect.warbringer_2_set = true;
                     }
+                }
+                if (set_bonus.name == "destroyer")
+                {
+                    if (set_bonus.pieces == 4)
+                    {
+                        character.set_bonus_effect.destroyer_4_set = true;
+                        character.set_bonus_effect.destroyer_2_set = true;
+                    }
+                    else
+                    {
+                        character.set_bonus_effect.destroyer_2_set = true;
+                    }
+                }
+                // PS: Solarian has a set on it. This is a workaround to have solarian giving BS AP bonus
+                if (set_bonus.name == "solarian_bs_bonus")
+                {
+                    character.set_bonus_effect.solarian_bs_bonus = true;
                 }
             }
         }
@@ -384,7 +401,7 @@ void Armory::compute_total_stats(Character& character) const
         }
     }
 
-    // Effects gained from talents
+    // Effects gained from talents and set bonuses
     for (auto& use_effect : use_effects)
     {
         if (use_effect.name == "battle_shout")
@@ -392,6 +409,10 @@ void Armory::compute_total_stats(Character& character) const
             if (character.talents.booming_voice_talent)
             {
                 use_effect.duration = 180.0;
+            }
+            if (character.set_bonus_effect.solarian_bs_bonus)
+            {
+                use_effect.special_stats_boost.attack_power += 70;
             }
             if (character.talents.commanding_presence_talent > 0)
             {

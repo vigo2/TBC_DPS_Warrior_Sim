@@ -180,8 +180,11 @@ public:
 
     struct
     {
-        int warbringer_2_set{0};
+        bool warbringer_2_set{false};
         bool warbringer_4_set{false};
+        bool destroyer_2_set{false};
+        bool destroyer_4_set{false};
+        bool solarian_bs_bonus{false};
     } set_bonus_effect;
 
     Attributes base_attributes;
