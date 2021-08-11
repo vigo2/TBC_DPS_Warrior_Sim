@@ -634,8 +634,8 @@ struct Armory
 
                 // Phase 2
                 {"lionheart_executioner", Attributes{52.0, 44.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.0}, 3.6, 365, 549, Weapon_socket::two_hand, Weapon_type::sword, {{"lionheart_executioner", Hit_effect::Type::stat_boost, {100, 0}, {}, 0, 10, 0, 3.6 / 60}}}, 
-                {"twinblade_of_the_phoenix", Attributes{0.0, 0.0}, Special_stats{1.6757246376811596, 0.0, 110.0, 0, 0.0}, 0.0, 0.0, 0.0, Weapon_socket::two_hand, Weapon_type::sword}, 
-                {"merciless_gladiators_greatsword", Attributes{42.0, 0.0}, Special_stats{1.9021739130434785, 1.14140773620799, 0.0, 0, 0.0}, 0.0, 0.0, 0.0, Weapon_socket::two_hand, Weapon_type::sword}, 
+                {"twinblade_of_the_phoenix", Attributes{0.0, 0.0}, Special_stats{1.6757246376811596, 0.0, 110.0, 0, 0.0}, 3.6, 375, 564, Weapon_socket::two_hand, Weapon_type::sword}, 
+                {"merciless_gladiators_greatsword", Attributes{42.0, 0.0}, Special_stats{1.9021739130434785, 1.14140773620799, 0.0, 0, 0.0}, 3.6, 365, 549, Weapon_socket::two_hand, Weapon_type::sword}, 
             };
 
     std::vector<Weapon> two_handed_axes_polearm_t
