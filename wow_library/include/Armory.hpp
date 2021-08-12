@@ -708,6 +708,7 @@ struct Armory
                 {"the_night_blade", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0},1.8, 117.0, 176.0, Weapon_socket::one_hand, Weapon_type::dagger, {{"the_night_blade", Hit_effect::Type::reduce_armor, {}, {}, 0, 10, 0, 2.0*1.8/60.0, 0, 1, 435, 3}}},
                 {"retainers_blade", Attributes{0.0, 22.0}, Special_stats{0.0, 0.0, 0.0}, 1.5, 97, 146, Weapon_socket::one_hand, Weapon_type::dagger},
                 {"guile_of_khoraazi", Attributes{0.0, 19.0}, Special_stats{0.0, 0.0, 38.0}, 1.6, 104, 156, Weapon_socket::one_hand, Weapon_type::dagger},
+                {"feltooth_eviscerator", Attributes{0.0, 0.0}, Special_stats{0.9963768116, 0.0, 34.0}, 1.4, 83, 156, Weapon_socket::one_hand, Weapon_type::dagger},
             };
 
     std::vector<Weapon> maces_t
