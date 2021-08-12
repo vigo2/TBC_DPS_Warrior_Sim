@@ -675,6 +675,7 @@ struct Armory
 
                 // Phase 2
                 {"stormherald", Attributes{42.0, 42.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.0}, 3.8, 386, 579, Weapon_socket::two_hand, Weapon_type::mace}, 
+                {"world_breaker", Attributes{50.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.0}, 3.7, 371, 558, Weapon_socket::two_hand, Weapon_type::mace, {{"world_breaker", Hit_effect::Type::stat_boost, {}, {40.76086957, 0, 0}, 0, 4, 0, 3.7/60}}},
             };
 
     std::vector<Weapon> axes_t
