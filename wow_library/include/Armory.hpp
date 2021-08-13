@@ -559,7 +559,7 @@ struct Armory
                 // Phase 2
                 {"solarians_sapphire", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.0}, Socket::trinket, Set::solarian_bs_bonus}, 
                 {"tsunami_talisman", Attributes{0.0, 0.0}, Special_stats{1.7210144927536233, 0.6341154090044389, 0.0, 0, 0.0}, Socket::trinket, Set::none, {{"tsunami_talisman", Hit_effect::Type::stat_boost, {}, {0.0, 0.0, 340}, 0, 10, 45, .1}}}, 
-                {"darkmoon_card_crusade", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 120.0, 0, 0.0}, Socket::trinket}, 
+                //{"darkmoon_card_crusade", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 120}, Socket::trinket}, 
             };
 
     std::vector<Armor> ranged_t
@@ -610,6 +610,7 @@ struct Armory
                 {"latros_shifting_sword", Attributes{0.0, 15.0}, Special_stats{0.0, 0.0, 26.0, 0, 0.00, 0, 0, 0, 0, 0, 0, 3.5510462904248574}, 1.4, 70, 131, Weapon_socket::one_hand, Weapon_type::sword}, 
                 {"kings_defender", Attributes{0.0, 0.0}, Special_stats{0.0, 1.077996195307546, 0.0, 0, 0.0}, 1.6, 98, 182, Weapon_socket::one_hand, Weapon_type::sword}, 
                 {"gladiators_quickblade", Attributes{0.0, 0.0}, Special_stats{0.6793478260869565, 0.570703868103995, 28.0, 0, 0.0}, 1.5, 95, 178, Weapon_socket::one_hand, Weapon_type::sword}, 
+                {"blazeguard", Attributes{0.0, 17.0}, Special_stats{0.0, 1.077996195, 0.0, 0, 0.0}, 1.6, 102, 190, Weapon_socket::one_hand, Weapon_type::sword},
 
                 // Phase 2
                 // main_hand / one_hand
@@ -686,6 +687,7 @@ struct Armory
                 // main_hand / one_hand
                 {"black_planar_edge", Attributes{0.0, 0.0}, Special_stats{0.9510869565217392, 0.0, 44.0, 0, 0.0}, 2.7, 172, 320, Weapon_socket::main_hand, Weapon_type::axe}, 
                 {"gladiators_cleaver", Attributes{0.0, 0.0}, Special_stats{0.6793478260869565, 0.570703868103995, 28.0, 0, 0.0}, 2.6, 189, 285, Weapon_socket::one_hand, Weapon_type::axe}, 
+                {"gladiators_hacker", Attributes{0.0, 0.0}, Special_stats{0.6793478260869565, 0.570703868103995, 28.0, 0, 0.0}, 1.5, 95, 178, Weapon_socket::one_hand, Weapon_type::axe}, 
                 {"the_decapitator", Attributes{0.0, 0.0}, Special_stats{1.2228260869565217, 0.0, 0.0, 0, 0.0}, 2.6, 167, 312, Weapon_socket::main_hand, Weapon_type::axe, {{"the_decapitator", Hit_effect::Type::damage_physical, {}, {}, 540, 0, 180, 1}}}, 
                 {"the_planar_edge", Attributes{0.0, 0.0}, Special_stats{0.9057971014492754, 0.0, 42.0, 0, 0.0}, 2.7, 159, 296, Weapon_socket::main_hand, Weapon_type::axe}, 
                 {"fel_edged_battleaxe", Attributes{0.0, 0.0}, Special_stats{0.9510869565217392, 0.8877615726062144, 0.0, 0, 0.0}, 2.2, 128, 239, Weapon_socket::one_hand, Weapon_type::axe}, 
