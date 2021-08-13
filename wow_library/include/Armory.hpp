@@ -257,7 +257,8 @@ struct Armory
     std::vector<Armor> chest_t
             {
                 // Phase 1
-                {"bulwark_of_kings", Attributes{35.0, 0.0}, Special_stats{1.6757246376811596, 1.4584654407102093, 0.0, 0, 0.0}, Socket::chest, Set::none, {}, {{"bulwark_of_kings", Use_effect::Effect_socket::shared, {150, 0}, {}, 0, 15, 900, true}}}, 
+                {"bulwark_of_kings", Attributes{35.0, 0.0}, Special_stats{1.6757246376811596, 1.4584654407102093, 0.0, 0, 0.0}, Socket::chest, Set::none, {}, {{"bulwark_of_kings", Use_effect::Effect_socket::shared, {150, 0}, {}, 0, 15, 900, true}}},
+                {"bulwark_of_kings_no_cd", Attributes{35.0, 0.0}, Special_stats{1.6757246376811596, 1.4584654407102093, 0.0, 0, 0.0}, Socket::chest}, 
                 {"terrorweave_tunic", Attributes{0.0, 0.0}, Special_stats{1.1322463768115942, 1.3316423589093216, 96.0, 0, 0.0}, Socket::chest}, 
                 {"breastplate_of_kings", Attributes{31.0, 0.0}, Special_stats{1.403985507246377, 1.2682308180088777, 0.0, 0, 0.0}, Socket::chest}, 
                 {"warbringer_breastplate", Attributes{44.0, 0.0}, Special_stats{1.177536231884058, 0.0, 0.0, 0, 0.0}, Socket::chest, Set::warbringer}, 
@@ -286,7 +287,8 @@ struct Armory
                 {"chestguard_of_no_remorse", Attributes{0.0, 0.0}, Special_stats{0.9510869565, 0.0, 0.0, 92, 0.0}, Socket::chest},
 
                 // Phase 2
-                {"bulwark_of_ancient_kings", Attributes{40.0, 0.0}, Special_stats{1.8568840579710146, 1.585288522511097, 0.0, 0, 0.0}, Socket::chest, Set::none, {}, {{"bulwark_of_ancient_kings", Use_effect::Effect_socket::shared, {150, 0}, {}, 0, 15, 900, true}}}, 
+                {"bulwark_of_ancient_kings", Attributes{40.0, 0.0}, Special_stats{1.8568840579710146, 1.585288522511097, 0.0, 0, 0.0}, Socket::chest, Set::none, {}, {{"bulwark_of_ancient_kings", Use_effect::Effect_socket::shared, {150, 0}, {}, 0, 15, 900, true}}},
+                {"bulwark_of_ancient_kings_no_cd", Attributes{40.0, 0.0}, Special_stats{1.8568840579710146, 1.585288522511097, 0.0, 0, 0.0}, Socket::chest}, 
                 {"bloodsea_brigand_s_vest", Attributes{0.0, 0.0}, Special_stats{1.6304347826086958, 1.7121116043119848, 92.0, 0, 0.0}, Socket::chest}, 
                 {"destroyer_breasplate", Attributes{50.0, 0.0}, Special_stats{1.4945652173913044, 0.9511731135066582, 0.0, 0, 0.0}, Socket::chest, Set::destroyer}, 
                 {"krakken_heart_breastplate", Attributes{61.0, 43.0}, Special_stats{0.0, 1.9023462270133165, 0.0, 0, 0.0}, Socket::chest}, 
@@ -532,7 +534,7 @@ struct Armory
                 // Phase 1
                 {"dragonspine_trophy", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 40.0, 0, 0.0}, Socket::trinket, Set::none, {{"dragonspine_trophy", Hit_effect::Type::stat_boost, {}, {0, 0, 0, 0, .206}, 0, 10, 20, 0, 0, 1, 0, 0, 1}}}, 
                 {"bloodlust_brooch", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 72.0, 0, 0.0}, Socket::trinket, Set::none, {}, {{"bloodlust_brooch", Use_effect::Effect_socket::shared, {0,  0}, {0, 0, 278}, 0, 20, 120, true}}}, 
-                {"hourglass_of_the_unraveller", Attributes{0.0, 0.0}, Special_stats{1.4492753623188408, 0.0, 0.0, 0, 0.0}, Socket::trinket, Set::none, {{"hourglass_of_the_unraveller", Hit_effect::Type::stat_boost, {}, {0.0, 0.0, 300}, 0, 10, 45, .1}}}, 
+                {"hourglass_of_the_unraveller", Attributes{0.0, 0.0}, Special_stats{1.4492753623188408, 0.0, 0.0, 0, 0.0}, Socket::trinket, Set::none, {{"hourglass_of_the_unraveller", Hit_effect::Type::stat_boost, {}, {0.0, 0.0, 300}, 0, 10, 50, .1}}}, 
                 {"abacus_of_violent_odds", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 64.0, 0, 0.0}, Socket::trinket, Set::none, {}, {{"abacus_of_violent_odds", Use_effect::Effect_socket::shared, {0,  0}, {0, 0, 0, 0, .16}, 0, 10, 120, true}}}, 
                 {"bladefists_breadth", Attributes{26.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.0}, Socket::trinket, Set::none, {}, {{"bladefists_breadth", Use_effect::Effect_socket::shared, {0,  0}, {0, 0, 200}, 0, 15, 90, true}}}, 
                 {"core_of_arkelos", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 52.0, 0, 0.0}, Socket::trinket, Set::none, {}, {{"core_of_arkelos", Use_effect::Effect_socket::shared, {0,  0}, {0, 0, 200}, 0, 20, 120, true}}}, 
@@ -675,6 +677,7 @@ struct Armory
 
                 // Phase 2
                 {"stormherald", Attributes{42.0, 42.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.0}, 3.8, 386, 579, Weapon_socket::two_hand, Weapon_type::mace}, 
+                {"world_breaker", Attributes{50.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.0}, 3.7, 371, 558, Weapon_socket::two_hand, Weapon_type::mace, {{"world_breaker", Hit_effect::Type::stat_boost, {}, {40.76086957, 0, 0}, 0, 4, 0, 3.7/60}}},
             };
 
     std::vector<Weapon> axes_t
@@ -708,6 +711,7 @@ struct Armory
                 {"the_night_blade", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0},1.8, 117.0, 176.0, Weapon_socket::one_hand, Weapon_type::dagger, {{"the_night_blade", Hit_effect::Type::reduce_armor, {}, {}, 0, 10, 0, 2.0*1.8/60.0, 0, 1, 435, 3}}},
                 {"retainers_blade", Attributes{0.0, 22.0}, Special_stats{0.0, 0.0, 0.0}, 1.5, 97, 146, Weapon_socket::one_hand, Weapon_type::dagger},
                 {"guile_of_khoraazi", Attributes{0.0, 19.0}, Special_stats{0.0, 0.0, 38.0}, 1.6, 104, 156, Weapon_socket::one_hand, Weapon_type::dagger},
+                {"feltooth_eviscerator", Attributes{0.0, 0.0}, Special_stats{0.9963768116, 0.0, 34.0}, 1.4, 83, 156, Weapon_socket::one_hand, Weapon_type::dagger},
             };
 
     std::vector<Weapon> maces_t
