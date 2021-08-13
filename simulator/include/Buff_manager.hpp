@@ -380,13 +380,13 @@ public:
             return;
         }
 
-        if (use_effect.rage_boost > 0 && rage_manager->get_rage() + use_effect.rage_boost < 0)
+        if (use_effect.rage_boost > 0 && rage_manager->get_rage() + use_effect.rage_boost > 100)
         {
             min_use_effect = current_time + 0.5;
             return;
         }
 
-        if (use_effect.rage_boost < 0 && rage_manager->get_rage() + use_effect.rage_boost > 100)
+        if (use_effect.rage_boost < 0 && rage_manager->get_rage() + use_effect.rage_boost < 0)
         {
             min_use_effect = current_time + 0.5;
             return;
