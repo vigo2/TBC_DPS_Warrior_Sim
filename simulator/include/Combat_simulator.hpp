@@ -499,17 +499,17 @@ public:
     Combat_simulator_config config;
 
     const Use_effect death_wish = {
-        "Death_wish", Use_effect::Effect_socket::unique, {}, {0, 0, 0, 0, 0, .20}, -10, 30, 180, true};
+        "death_wish", Use_effect::Effect_socket::unique, {}, {0, 0, 0, 0, 0, .20}, -10, 30, 180, true};
 
     const Use_effect recklessness = {
-        "Recklessness", Use_effect::Effect_socket::unique, {}, {100, 0, 0}, 0, 15, 900, true};
+        "recklessness", Use_effect::Effect_socket::unique, {}, {100, 0, 0}, 0, 15, 900, true};
 
-    const Use_effect bloodrage = {"Bloodrage", Use_effect::Effect_socket::unique, {}, {}, 10, 10, 60, false,
+    const Use_effect bloodrage = {"bloodrage", Use_effect::Effect_socket::unique, {}, {}, 10, 10, 60, false,
                                   {},          {{"Bloodrage", {}, 1, 0, 1, 10}}};
 
-    const Over_time_effect essence_of_the_red = {"Essence of the Red", {}, 20, 0, 1, 600};
+    const Over_time_effect essence_of_the_red = {"essence_of_the_red", {}, 20, 0, 1, 600};
 
-    const Over_time_effect anger_management = {"Anger Management", {}, 1, 0, 3, 600};
+    const Over_time_effect anger_management = {"anger_management", {}, 1, 0, 3, 600};
 
 private:
     Hit_table hit_table_white_mh_;
@@ -555,7 +555,7 @@ private:
     std::vector<Use_effect> use_effects_all_{};
     std::vector<Over_time_effect> over_time_effects_{};
 
-    Over_time_effect deep_wound_effect_{"Deep_wounds", {}, 0, 0, 3, 12};
+    Over_time_effect deep_wound_effect_{"deep_wound", {}, 0, 0, 3, 12};
     Hit_effect battle_stance_{"battle_stance", Hit_effect::Type::stat_boost, {}, {-3.0, 0, 0}, 0, 1.5, 0, 0};
     Hit_effect destroyer_2_set_{"destroyer_2_set", Hit_effect::Type::stat_boost, {}, {0, 0, 100}, 0, 5, 0, 0};
     Hit_effect windfury_attack_{"windfury_attack", Hit_effect::Type::stat_boost, {}, {0, 0, 445}, 0, 1.5, 0, 0, 0, 2};
