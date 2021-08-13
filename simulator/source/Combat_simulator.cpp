@@ -726,12 +726,12 @@ void Combat_simulator::hit_effects(Weapon_sim& weapon, Weapon_sim& main_hand_wea
 
         //logger_.print("Proc PPM: ", hit_effect.ppm, " Proc chance: ", probability, "Proc ICD: ");
         buff_manager_.start_cooldown(hit_effect, time_keeper_.time);
-        hit_effect.procs++;
         switch (hit_effect.type)
         {
         case Hit_effect::Type::windfury_hit: { // only triggered by melee or next_melee; can _not_ proc itself or (presumably) other extra attacks
             if (hit_type == Hit_type::spell || extra_attack_type != Extra_attack_type::all) break;
 
+            hit_effect.procs++;
             logger_.print("PROC: extra hit from: ", hit_effect.name);
             windfury_attack_.duration = hit_type == Hit_type::next_melee ? 1.5 : 0.01;
             buff_manager_.add_combat_buff(windfury_attack_, time_keeper_.time);
@@ -742,6 +742,7 @@ void Combat_simulator::hit_effects(Weapon_sim& weapon, Weapon_sim& main_hand_wea
         case Hit_effect::Type::sword_spec: { // can _not_ proc itself or other extra attacks
             if (extra_attack_type != Extra_attack_type::all) break;
 
+            hit_effect.procs++;
             logger_.print("PROC: extra hit from: ", hit_effect.name);
             swing_weapon(main_hand_weapon, main_hand_weapon, special_stats, damage_sources, flurry_charges,
                          rampage_stacks, Extra_attack_type::none);
@@ -750,22 +751,26 @@ void Combat_simulator::hit_effects(Weapon_sim& weapon, Weapon_sim& main_hand_wea
         case Hit_effect::Type::extra_hit: { // _can_ proc itself and other extra attacks on instant attacks
             if (extra_attack_type == Extra_attack_type::none) break;
 
+            hit_effect.procs++;
             logger_.print("PROC: extra hit from: ", hit_effect.name);
             swing_weapon(main_hand_weapon, main_hand_weapon, special_stats, damage_sources, flurry_charges,
                          rampage_stacks, hit_type == Hit_type::spell ? Extra_attack_type::all : Extra_attack_type::self);
             break;
         }
         case Hit_effect::Type::stat_boost: {
+            hit_effect.procs++;
             logger_.print("PROC: ", hit_effect.name, " stats increased for ", hit_effect.duration, "s");
             buff_manager_.add_combat_buff(hit_effect, time_keeper_.time);
             break;
         }
         case Hit_effect::Type::rage_boost: {
+            hit_effect.procs++;
             logger_.print("PROC: ", hit_effect.name, ". Current rage: ", int(rage));
             gain_rage(hit_effect.damage);
             break;
         }
         case Hit_effect::Type::damage_magic: {
+            hit_effect.procs++;
             // * 0.83 Assumes a static 17% chance to resist.
             // (100 + special_stats.spell_crit / 2) / 100 is the average damage gained from a x1.5 spell crit
             double effect_damage = hit_effect.damage * 0.83 * (100 + special_stats.spell_crit / 2) / 100 *
@@ -775,6 +780,7 @@ void Combat_simulator::hit_effects(Weapon_sim& weapon, Weapon_sim& main_hand_wea
             break;
         }
         case Hit_effect::Type::damage_physical: {
+            hit_effect.procs++;
             auto hit = generate_hit(main_hand_weapon, hit_effect.damage, main_hand_weapon, hit_table_yellow_mh_,
                                     special_stats, damage_sources);
             damage_sources.add_damage(Damage_source::item_hit_effects, hit.damage, time_keeper_.time);
