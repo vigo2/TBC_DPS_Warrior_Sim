@@ -88,7 +88,7 @@ void Combat_simulator::set_config(const Combat_simulator_config& new_config)
     if (config.enable_blood_fury)
     {
         use_effects_all_.emplace_back(
-            Use_effect{"Blood_fury", Use_effect::Effect_socket::unique, {}, {0, 0, 282}, 0, 15, 120, false});
+            Use_effect{"blood_fury", Use_effect::Effect_socket::unique, {}, {0, 0, 282}, 0, 15, 120, false});
     }
 
     if (config.essence_of_the_red_)
@@ -1044,33 +1044,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
     const double sim_time = config.sim_time;
     const double time_execute_phase = sim_time * (100.0 - config.execute_phase_percentage_) / 100.0;
 
-    // Configure use effects
-    auto use_effects_all = use_effects_all_;
-    for (const auto& use_effect : character.use_effects)
-    {
-        use_effects_all.push_back(use_effect);
-    }
-
-    if (config.enable_unleashed_rage > 0)
-    {
-        Special_stats ss;
-        ss.ap_multiplier = 0.1;
-        use_effects_all.emplace_back(Use_effect{"unleashed_rage", Use_effect::Effect_socket::unique, {}, ss, 0, sim_time - config.unleashed_rage_start_, sim_time + 5, false});
-    }
-
-    double ap_equiv{};
-    if (is_dual_wield)
-    {
-        ap_equiv = get_character_ap_equivalent(starting_special_stats, character.weapons[0], character.weapons[1],
-                                               sim_time, {});
-    }
-    else
-    {
-        ap_equiv = get_character_ap_equivalent(starting_special_stats, character.weapons[0], sim_time, {});
-    }
-
-    auto use_effect_order = Use_effects::compute_use_effect_order(use_effects_all, starting_special_stats,
-                                                                  sim_time, ap_equiv, 0, 0);
+    auto use_effect_order = get_use_effect_order(character);
 
     auto empty_hit_effects = std::vector<Hit_effect>();
     if (is_dual_wield)
@@ -1601,14 +1575,20 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
 
 std::vector<std::pair<double, Use_effect>> Combat_simulator::get_use_effect_order(const Character& character)
 {
-    // Copy paste from the simulate function
-    std::vector<Use_effect> use_effects_all = use_effects_all_;
+    auto use_effects_all = use_effects_all_;
     for (const auto& use_effect : character.use_effects)
     {
         use_effects_all.push_back(use_effect);
     }
 
-    double ap_equiv{};
+    if (config.enable_unleashed_rage > 0)
+    {
+        Special_stats ss;
+        ss.ap_multiplier = 0.1;
+        use_effects_all.emplace_back(Use_effect{"unleashed_rage", Use_effect::Effect_socket::unique, {}, ss, 0, config.sim_time - config.unleashed_rage_start_, config.sim_time + 5, false});
+    }
+
+    double ap_equiv;
     if (character.is_dual_wield())
     {
         ap_equiv = get_character_ap_equivalent(character.total_special_stats, character.weapons[0],
@@ -1616,8 +1596,8 @@ std::vector<std::pair<double, Use_effect>> Combat_simulator::get_use_effect_orde
     }
     else
     {
-        ap_equiv =
-            get_character_ap_equivalent(character.total_special_stats, character.weapons[0], config.sim_time, {});
+        ap_equiv = get_character_ap_equivalent(character.total_special_stats, character.weapons[0],
+                                               config.sim_time, {});
     }
     return Use_effects::compute_use_effect_order(use_effects_all, character.total_special_stats, config.sim_time, ap_equiv, 0, 0);
 }

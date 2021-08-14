@@ -512,12 +512,12 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
     std::vector<std::string> use_effect_order_string{};
     {
         auto use_effect_order = simulator.get_use_effect_order(character);
-        for (const auto& use_effect_timing : use_effect_order)
+        for (auto it = use_effect_order.crbegin(); it != use_effect_order.crend(); ++it)
         {
             use_effect_order_string.emplace_back(
-                use_effect_timing.second.name + " " +
-                String_helpers::string_with_precision(use_effect_timing.first, 3) + " " +
-                String_helpers::string_with_precision(use_effect_timing.second.duration, 3));
+                it->second.name + " " +
+                String_helpers::string_with_precision(it->first, 3) + " " +
+                String_helpers::string_with_precision(it->second.duration, 3));
         }
     }
     for (const auto& wep : character.weapons)

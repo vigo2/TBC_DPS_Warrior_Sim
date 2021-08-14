@@ -75,8 +75,8 @@ TEST(TestSuite, test_use_effects)
     use_effects.emplace_back(sim.recklessness);
     use_effects.emplace_back(sim.bloodrage);
     use_effects.emplace_back(
-        Use_effect{"Blood_fury", Use_effect::Effect_socket::unique, {}, {0, 0, 300}, 0, 15, 120, true});
-    use_effects.emplace_back(Use_effect{"Berserking", Use_effect::Effect_socket::unique, {}, {}, 0, 10, 180, false});
+        Use_effect{"blood_fury", Use_effect::Effect_socket::unique, {}, {0, 0, 300}, 0, 15, 120, true});
+    use_effects.emplace_back(Use_effect{"berserking", Use_effect::Effect_socket::unique, {}, {}, 0, 10, 180, false});
     use_effects.emplace_back(use1.use_effects[0]);
     use_effects.emplace_back(use2.use_effects[0]);
     use_effects.emplace_back(use3.use_effects[0]);
@@ -96,15 +96,15 @@ TEST(TestSuite, test_use_effects)
             ic++;
         if (effect.second.name == "bulwark_of_kings")
             bk++;
-        if (effect.second.name == "Blood_fury")
+        if (effect.second.name == "blood_fury")
             bf++;
-        if (effect.second.name == "Berserking")
+        if (effect.second.name == "berserking")
             bs++;
-        if (effect.second.name == "Bloodrage")
+        if (effect.second.name == "bloodrage")
             br++;
-        if (effect.second.name == "Recklessness")
+        if (effect.second.name == "recklessness")
             rl++;
-        if (effect.second.name == "Death_wish")
+        if (effect.second.name == "death_wish")
             dw++;
     }
     EXPECT_EQ(ic, 3);
