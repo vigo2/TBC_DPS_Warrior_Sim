@@ -111,6 +111,8 @@ std::ostream& operator<<(std::ostream& os, const Race& race)
         return os << "troll";
     case Race::undead:
         return os << "undead";
+    default:
+        return os;
     }
 }
 

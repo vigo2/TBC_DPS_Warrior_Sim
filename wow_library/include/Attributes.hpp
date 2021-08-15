@@ -3,6 +3,7 @@
 
 #include <ostream>
 #include <vector>
+#include <cassert>
 
 double multiplicative_addition(double val1, double val2);
 

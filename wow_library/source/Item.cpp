@@ -157,6 +157,8 @@ std::ostream& operator<<(std::ostream& os, const Hit_effect::Type& t)
         return os << "reduce_armor";
     case Hit_effect::Type::rage_boost:
         return os << "rage_boost";
+    default:
+        return os;
     }
 }
 

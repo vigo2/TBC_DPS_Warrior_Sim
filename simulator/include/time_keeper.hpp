@@ -1,5 +1,6 @@
 #ifndef WOW_SIMULATOR_TIME_KEEPER_HPP
 #define WOW_SIMULATOR_TIME_KEEPER_HPP
+#include <limits>
 
 class Time_keeper
 {

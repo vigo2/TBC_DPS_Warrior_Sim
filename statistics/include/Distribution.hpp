@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <utility>
+#include <iostream>
 
 class Distribution
 {
