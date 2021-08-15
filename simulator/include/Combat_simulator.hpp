@@ -452,41 +452,41 @@ public:
 
     [[nodiscard]] std::unordered_map<std::string, double> get_aura_uptimes_map() const { return buff_manager_.get_aura_uptimes_map(); }
 
-    [[nodiscard]] std::unordered_map<std::string, int> get_proc_data() const { return proc_data_; }
+    [[nodiscard]] const std::unordered_map<std::string, int>& get_proc_data() const { return proc_data_; }
 
     [[nodiscard]] std::vector<std::string> get_proc_statistics() const;
 
     void reset_time_lapse();
 
-    [[nodiscard]] std::vector<std::vector<double>> get_damage_time_lapse() const;
+    [[nodiscard]] const std::vector<std::vector<double>>& get_damage_time_lapse() const { return damage_time_lapse_; };
 
     [[nodiscard]] std::string get_debug_topic() const;
 
-    Damage_sources get_damage_distribution() { return damage_distribution_; }
+    [[nodiscard]] const Damage_sources& get_damage_distribution() const { return damage_distribution_; }
 
-    [[nodiscard]] constexpr Distribution get_dps_distribution() const { return dps_distribution_; }
+    [[nodiscard]] const Distribution& get_dps_distribution() const { return dps_distribution_; }
 
-    [[nodiscard]] constexpr double get_dps_mean() const { return dps_distribution_.mean_; }
+    [[nodiscard]] double get_dps_mean() const { return dps_distribution_.mean_; }
 
-    [[nodiscard]] constexpr double get_dps_variance() const { return dps_distribution_.variance_; }
+    [[nodiscard]] double get_dps_variance() const { return dps_distribution_.variance_; }
 
-    [[nodiscard]] constexpr int get_n_simulations() const { return config.n_batches; }
+    [[nodiscard]] int get_n_simulations() const { return config.n_batches; }
 
-    [[nodiscard]] constexpr double get_rage_lost_stance() const { return rage_lost_stance_swap_; }
+    [[nodiscard]] double get_rage_lost_stance() const { return rage_lost_stance_swap_; }
 
-    [[nodiscard]] constexpr double get_rage_lost_capped() const { return rage_lost_capped_; }
+    [[nodiscard]] double get_rage_lost_capped() const { return rage_lost_capped_; }
 
-    [[nodiscard]] constexpr double get_avg_rage_spent_executing() const { return avg_rage_spent_executing_; }
+    [[nodiscard]] double get_avg_rage_spent_executing() const { return avg_rage_spent_executing_; }
 
-    std::vector<int>& get_hist_x() { return hist_x; }
+    [[nodiscard]] const std::vector<int>& get_hist_x() const { return hist_x; }
 
-    std::vector<int>& get_hist_y() { return hist_y; }
+    [[nodiscard]] const std::vector<int>& get_hist_y() const { return hist_y; }
 
-    [[nodiscard]] constexpr double get_flurry_uptime() const { return flurry_uptime_; }
+    [[nodiscard]] double get_flurry_uptime() const { return flurry_uptime_; }
 
-    [[nodiscard]] constexpr double get_hs_uptime() const { return oh_queued_uptime_; }
+    [[nodiscard]] double get_hs_uptime() const { return oh_queued_uptime_; }
 
-    [[nodiscard]] constexpr double get_rampage_uptime() const { return rampage_uptime_; }
+    [[nodiscard]] double get_rampage_uptime() const { return rampage_uptime_; }
 
     void init_histogram();
 
@@ -581,7 +581,7 @@ private:
     static constexpr double time_lapse_resolution = 0.5;
     static constexpr double hist_resolution = 20;
 
-    std::vector<std::vector<double>> damage_time_lapse{};
+    std::vector<std::vector<double>> damage_time_lapse_{};
     std::vector<int> hist_x{};
     std::vector<int> hist_y{};
 };

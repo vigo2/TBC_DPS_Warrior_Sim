@@ -1613,7 +1613,7 @@ void Combat_simulator::init_histogram()
 
 void Combat_simulator::normalize_timelapse()
 {
-    for (auto& damage_time_lapse_i : damage_time_lapse)
+    for (auto& damage_time_lapse_i : damage_time_lapse_)
     {
         for (auto& singe_damage_instance : damage_time_lapse_i)
         {
@@ -1630,7 +1630,7 @@ void Combat_simulator::prune_histogram()
         if (hist_y[start_idx] != 0) break;
     }
 
-    size_t end_idx = hist_x.size() - 1;
+    int end_idx = static_cast<int>(hist_x.size()) - 1;
     for (; end_idx >= 0; --end_idx)
     {
         if (hist_y[end_idx] != 0) break;
@@ -1678,7 +1678,7 @@ std::vector<std::string> Combat_simulator::get_proc_statistics() const
 void Combat_simulator::reset_time_lapse()
 {
     std::vector<double> history(static_cast<size_t>(std::ceil(config.sim_time / time_lapse_resolution)));
-    damage_time_lapse.assign(static_cast<size_t>(Damage_source::size), history);
+    damage_time_lapse_.assign(static_cast<size_t>(Damage_source::size), history);
 }
 
 void Combat_simulator::add_damage_source_to_time_lapse(std::vector<Damage_instance>& damage_instances)
@@ -1687,13 +1687,8 @@ void Combat_simulator::add_damage_source_to_time_lapse(std::vector<Damage_instan
     {
         auto first_idx = static_cast<size_t>(damage_instance.damage_source);
         auto second_idx = static_cast<size_t>(damage_instance.time_stamp / time_lapse_resolution);
-        damage_time_lapse[first_idx][second_idx] += damage_instance.damage;
+        damage_time_lapse_[first_idx][second_idx] += damage_instance.damage;
     }
-}
-
-std::vector<std::vector<double>> Combat_simulator::get_damage_time_lapse() const
-{
-    return damage_time_lapse;
 }
 
 std::string Combat_simulator::get_debug_topic() const
