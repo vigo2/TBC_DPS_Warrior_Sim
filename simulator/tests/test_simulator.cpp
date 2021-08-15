@@ -616,6 +616,54 @@ TEST_F(Sim_fixture, test_flurry_uptime)
     EXPECT_NEAR((dd.white_mh_count + dd.heroic_strike_count) / (config.sim_time / mh.swing_speed * haste), (1 - flurryUptime) + flurryUptime * flurryHaste, 0.0001);
 }
 
+void time_simulate(Combat_simulator& sim, const Character& character)
+{
+    auto start = std::chrono::steady_clock::now();
+    sim.simulate(character);
+    auto end = std::chrono::steady_clock::now();
+    std::cout << "took " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << " ms" << std::endl;
+    std::cout << std::endl;
+}
+
+void print_results(const std::string name, const Combat_simulator& sim, bool print_uptimes_and_procs)
+{
+    std::cout << name << std::endl;
+    std::cout << std::endl;
+
+    auto dd = sim.get_damage_distribution();
+
+    auto f = 1.0 / (sim.config.sim_time * sim.config.n_batches);
+    auto g = 60 * f;
+
+    std::cout << std::fixed << std::setprecision(2);
+    std::cout << "white (mh)    = " << f * dd.white_mh_damage << " (" << g * dd.white_mh_count << "x)" << std::endl;
+    if (dd.white_oh_count > 0) std::cout << "white (oh)    = " << f * dd.white_oh_damage << " (" << g * dd.white_oh_count << "x)" << std::endl;
+    if (dd.mortal_strike_count > 0) std::cout << "mortal strike = " << f * dd.mortal_strike_damage << " (" << g * dd.mortal_strike_count << "x)" << std::endl;
+    if (dd.cleave_count > 0) std::cout << "cleave        = " << f * dd.cleave_damage << " (" << g * dd.cleave_count << "x)" << std::endl;
+    if (dd.bloodthirst_count > 0) std::cout << "bloodthirst   = " << f * dd.bloodthirst_damage << " (" << g * dd.bloodthirst_count << "x)" << std::endl;
+    if (dd.whirlwind_count > 0) std::cout << "whirlwind     = " << f * dd.whirlwind_damage << " (" << g * dd.whirlwind_count << "x)" << std::endl;
+    if (dd.slam_count > 0) std::cout << "slam          = " << f * dd.slam_damage << " (" << g * dd.slam_count << "x)" << std::endl;
+    if (dd.heroic_strike_count > 0) std::cout << "heroic strike = " << f * dd.heroic_strike_damage << " (" << g * dd.heroic_strike_count << "x)" << std::endl;
+    if (dd.execute_count > 0) std::cout << "execute       = " << f * dd.execute_damage << " (" << g * dd.execute_count << "x)" << std::endl;
+    if (dd.deep_wounds_count > 0) std::cout << "deep wounds   = " << f * dd.deep_wounds_damage << " (" << g * dd.deep_wounds_count << "x)" << std::endl;
+    if (dd.overpower_count > 0) std::cout << "overpower     = " << f * dd.overpower_damage << " (" << g * dd.overpower_count << "x)" << std::endl;
+    if (dd.item_hit_effects_count > 0) std::cout << "hit effects   = " << f * dd.item_hit_effects_damage << " (" << g * dd.item_hit_effects_count << "x)" << std::endl;
+    std::cout << "----------------------" << std::endl;
+    std::cout << "total         = " << f * dd.sum_damage_sources() << std::endl;
+    std::cout << std::endl;
+
+    if (!print_uptimes_and_procs) return;
+
+    for (const auto& e : sim.get_aura_uptimes_map()) {
+        std::cout << e.first << " " << 100 * f * e.second << "%" << std::endl;
+    }
+    std::cout << std::endl;
+    for (const auto& e : sim.get_proc_data()) {
+        std::cout << e.first << " " << g * e.second << " procs/min" << std::endl;
+    }
+    std::cout << std::endl;
+}
+
 /*
 >> results on master:
 
@@ -738,39 +786,9 @@ TEST_F(Sim_fixture, test_arms)
     config.talents.mace_specialization = 0;
     sim.set_config(config);
 
-    auto start = std::chrono::steady_clock::now();
-    sim.simulate(character);
-    auto end = std::chrono::steady_clock::now();
-    std::cout << "took " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << " ms" << std::endl;
-    std::cout << std::endl;
+    time_simulate(sim, character);
 
-    auto dd = sim.get_damage_distribution();
-
-    auto f = 1 / (config.sim_time * config.n_batches);
-    auto g = 60 * f;
-
-    std::cout << std::fixed << std::setprecision(2);
-    std::cout << "white (mh)    = " << f * dd.white_mh_damage << " (" << g * dd.white_mh_count << "x)" << std::endl;
-    if (dd.white_oh_count > 0) std::cout << "white (oh)    = " << f * dd.white_oh_damage << " (" << g * dd.white_oh_count << "x)" << std::endl;
-    if (dd.slam_count > 0) std::cout << "slam          = " << f * dd.slam_damage << " (" << g * dd.slam_count << "x)" << std::endl;
-    if (dd.mortal_strike_count > 0) std::cout << "mortal strike = " << f * dd.mortal_strike_damage << " (" << g * dd.mortal_strike_count << "x)" << std::endl;
-    if (dd.whirlwind_count > 0) std::cout << "whirlwind     = " << f * dd.whirlwind_damage << " (" << g * dd.whirlwind_count << "x)" << std::endl;
-    if (dd.deep_wounds_count > 0) std::cout << "deep wounds   = " << f * dd.deep_wounds_damage << " (" << g * dd.deep_wounds_count << "x)" << std::endl;
-    if (dd.execute_count > 0) std::cout << "execute       = " << f * dd.execute_damage << " (" << g * dd.execute_count << "x)" << std::endl;
-    if (dd.heroic_strike_count > 0) std::cout << "heroic strike = " << f * dd.heroic_strike_damage << " (" << g * dd.heroic_strike_count << "x)" << std::endl;
-    if (dd.item_hit_effects_count > 0) std::cout << "hit effects   = " << f * dd.item_hit_effects_damage << " (" << g * dd.item_hit_effects_count << "x)" << std::endl;
-    std::cout << "----------------------" << std::endl;
-    std::cout << "total         = " << f * dd.sum_damage_sources() << std::endl;
-    std::cout << std::endl;
-    std::cout << "rage lost " << g * sim.get_rage_lost_capped() << " per minute " << std::endl;
-    std::cout << std::endl;
-    for (const auto& e : sim.get_aura_uptimes_map()) {
-        std::cout << e.first << " " << 100 * f * e.second << "%" << std::endl;
-    }
-    std::cout << std::endl;
-    for (const auto& e : sim.get_proc_data()) {
-        std::cout << e.first << " " << g * e.second << " procs/min" << std::endl;
-    }
+    print_results(test_info_->name(), sim, true);
 
     EXPECT_EQ(0, 0);
 }
@@ -909,41 +927,8 @@ TEST_F(Sim_fixture, test_fury)
 
     sim.set_config(config);
 
-    auto start = std::chrono::steady_clock::now();
-    sim.simulate(character);
-    auto end = std::chrono::steady_clock::now();
-    std::cout << "took " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << " ms" << std::endl;
-    std::cout << std::endl;
-
-    auto dd = sim.get_damage_distribution();
-
-    auto f = 1.0 / (config.sim_time * config.n_batches);
-    auto g = 60 * f;
-
-    std::cout << std::fixed << std::setprecision(2);
-    std::cout << "white (mh)    = " << f * dd.white_mh_damage << " (" << g * dd.white_mh_count << "x)" << std::endl;
-    if (dd.white_oh_count > 0) std::cout << "white (oh)    = " << f * dd.white_oh_damage << " (" << g * dd.white_oh_count << "x)" << std::endl;
-    if (dd.mortal_strike_count > 0) std::cout << "mortal strike = " << f * dd.mortal_strike_damage << " (" << g * dd.mortal_strike_count << "x)" << std::endl;
-    if (dd.cleave_count > 0) std::cout << "cleave        = " << f * dd.cleave_damage << " (" << g * dd.cleave_count << "x)" << std::endl;
-    if (dd.bloodthirst_count > 0) std::cout << "bloodthirst   = " << f * dd.bloodthirst_damage << " (" << g * dd.bloodthirst_count << "x)" << std::endl;
-    if (dd.whirlwind_count > 0) std::cout << "whirlwind     = " << f * dd.whirlwind_damage << " (" << g * dd.whirlwind_count << "x)" << std::endl;
-    if (dd.slam_count > 0) std::cout << "slam          = " << f * dd.slam_damage << " (" << g * dd.slam_count << "x)" << std::endl;
-    if (dd.heroic_strike_count > 0) std::cout << "heroic strike = " << f * dd.heroic_strike_damage << " (" << g * dd.heroic_strike_count << "x)" << std::endl;
-    if (dd.execute_count > 0) std::cout << "execute       = " << f * dd.execute_damage << " (" << g * dd.execute_count << "x)" << std::endl;
-    if (dd.deep_wounds_count > 0) std::cout << "deep wounds   = " << f * dd.deep_wounds_damage << " (" << g * dd.deep_wounds_count << "x)" << std::endl;
-    if (dd.item_hit_effects_count > 0) std::cout << "hit effects   = " << f * dd.item_hit_effects_damage << " (" << g * dd.item_hit_effects_count << "x)" << std::endl;
-    std::cout << "----------------------" << std::endl;
-    std::cout << "total         = " << f * dd.sum_damage_sources() << std::endl;
-    std::cout << std::endl;
-    std::cout << "rage lost " << g * sim.get_rage_lost_capped() << " per minute " << std::endl;
-    std::cout << std::endl;
-    for (const auto& e : sim.get_aura_uptimes_map()) {
-        std::cout << e.first << " " << 100 * f * e.second << "%" << std::endl;
-    }
-    std::cout << std::endl;
-    for (const auto& e : sim.get_proc_data()) {
-        std::cout << e.first << " " << g * e.second << " procs/min" << std::endl;
-    }
+    time_simulate(sim, character);
+    print_results(test_info_->name(), sim, true);
 
     EXPECT_EQ(0, 0);
 }
@@ -1038,7 +1023,7 @@ sword_specialization 1.38 procs/min
 */
 TEST_F(Sim_fixture, test_procs)
 {
-    config.sim_time = 5 * 60;
+    config.sim_time = 120;
     config.n_batches = 25000;
     config.main_target_initial_armor_ = 6200.0;
 
@@ -1046,26 +1031,32 @@ TEST_F(Sim_fixture, test_procs)
     auto executioner = Hit_effect{"executioner", Hit_effect::Type::stat_boost, {}, {}, 0, 15, 0, 0, 0, 0, 0, 1, 1};
     executioner.special_stats_boost.gear_armor_pen = 840;
 
+    Special_stats mongoose_buff;
+    mongoose_buff.attack_speed = 0.02;
+
     auto doomplate_4pc = Hit_effect{"doomplate_4pc", Hit_effect::Type::stat_boost, {}, {0, 0, 160}, 0, 15, 0, 0.02, 0, 0, 1, 0};
 
     Armory armory;
 
     character.equip_armor(armory.find_armor(Socket::trinket, "badge_of_the_swarmguard"));
+    character.equip_armor(armory.find_armor(Socket::trinket, "bloodlust_brooch"));
     character.buffs.emplace_back(armory.buffs.battle_shout);
+    character.buffs.emplace_back(armory.buffs.haste_potion);
+    character.buffs.emplace_back(armory.buffs.bloodlust);
 
-    //armory.compute_total_stats(character);
+    armory.compute_total_stats(character);
 
     auto mh = Weapon{"test_mh", {}, {}, 2.7, 270, 270, Weapon_socket::one_hand, Weapon_type::axe};
     //mh.hit_effects.emplace_back(executioner);
     mh.hit_effects.emplace_back(Hit_effect{"dragonmaw", Hit_effect::Type::stat_boost, {}, {0, 0, 0, 0, .134}, 0, 10, 0, 2.7 / 60});
-    mh.hit_effects.emplace_back(Hit_effect{"mongoose_mh", Hit_effect::Type::stat_boost, {0,120}, {0, 0, 0, 0, 0.02}, 0, 15, 0, 2.7/60});
+    mh.hit_effects.emplace_back(Hit_effect{"mongoose_mh", Hit_effect::Type::stat_boost, {0,120}, mongoose_buff, 0, 15, 0, 2.7/60});
     //mh.hit_effects.emplace_back(Hit_effect{dmc_crusade});
     mh.hit_effects.emplace_back(Hit_effect{"windfury_totem", Hit_effect::Type::windfury_hit, {}, {0, 0, 445}, 0, 0, 0, 0.2});
     //mh.hit_effects.emplace_back(doomplate_4pc);
 
     auto oh = Weapon{"test_oh", {}, {}, 2.6, 260, 260, Weapon_socket::one_hand, Weapon_type::sword};
     //oh.hit_effects.emplace_back(executioner);
-    oh.hit_effects.emplace_back(Hit_effect{"mongoose_oh", Hit_effect::Type::stat_boost, {0,120}, {0, 0, 0, 0, 0.02}, 0, 15, 0, 2.6/60});
+    oh.hit_effects.emplace_back(Hit_effect{"mongoose_oh", Hit_effect::Type::stat_boost, {0,120}, mongoose_buff, 0, 15, 0, 2.6/60});
     //oh.hit_effects.emplace_back(Hit_effect{dmc_crusade});
     oh.hit_effects.emplace_back(Hit_effect{"sword_specialization", Hit_effect::Type::sword_spec, {}, {}, 0, 0, 0.5, 0.05});
     //oh.hit_effects.emplace_back(doomplate_4pc);
@@ -1080,11 +1071,16 @@ TEST_F(Sim_fixture, test_procs)
     character.total_special_stats.expertise = 5;
     character.total_special_stats.axe_expertise = 5;
 
+    Special_stats mult;
+    mult.ap_multiplier = 0.1;
+    character.total_special_stats += mult;
+
     // hello, use effects ;)
-    //config.talents.death_wish = true;
-    //config.combat.use_death_wish = true;
-    //config.enable_bloodrage = true;
-    //config.enable_blood_fury = true;
+    config.talents.death_wish = true;
+    config.combat.use_death_wish = true;
+    config.enable_bloodrage = true;
+    config.enable_blood_fury = true;
+    config.enable_unleashed_rage = true;
 
     config.talents.flurry = 5;
     config.talents.rampage = true;
@@ -1122,42 +1118,23 @@ TEST_F(Sim_fixture, test_procs)
 
     sim.set_config(config);
 
-    auto start = std::chrono::steady_clock::now();
-    sim.simulate(character);
-    auto end = std::chrono::steady_clock::now();
-    std::cout << "took " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << " ms" << std::endl;
-    std::cout << std::endl;
+    time_simulate(sim, character);
+    print_results(test_info_->name(), sim, true);
 
-    auto dd = sim.get_damage_distribution();
+    time_simulate(sim, character);
+    print_results(test_info_->name(), sim, true);
 
-    auto f = 1.0 / (config.sim_time * config.n_batches);
-    auto g = 60 * f;
+    time_simulate(sim, character);
+    print_results(test_info_->name(), sim, true);
 
-    std::cout << std::fixed << std::setprecision(2);
-    std::cout << "white (mh)    = " << f * dd.white_mh_damage << " (" << g * dd.white_mh_count << "x)" << std::endl;
-    if (dd.white_oh_count > 0) std::cout << "white (oh)    = " << f * dd.white_oh_damage << " (" << g * dd.white_oh_count << "x)" << std::endl;
-    if (dd.mortal_strike_count > 0) std::cout << "mortal strike = " << f * dd.mortal_strike_damage << " (" << g * dd.mortal_strike_count << "x)" << std::endl;
-    if (dd.cleave_count > 0) std::cout << "cleave        = " << f * dd.cleave_damage << " (" << g * dd.cleave_count << "x)" << std::endl;
-    if (dd.bloodthirst_count > 0) std::cout << "bloodthirst   = " << f * dd.bloodthirst_damage << " (" << g * dd.bloodthirst_count << "x)" << std::endl;
-    if (dd.whirlwind_count > 0) std::cout << "whirlwind     = " << f * dd.whirlwind_damage << " (" << g * dd.whirlwind_count << "x)" << std::endl;
-    if (dd.slam_count > 0) std::cout << "slam          = " << f * dd.slam_damage << " (" << g * dd.slam_count << "x)" << std::endl;
-    if (dd.heroic_strike_count > 0) std::cout << "heroic strike = " << f * dd.heroic_strike_damage << " (" << g * dd.heroic_strike_count << "x)" << std::endl;
-    if (dd.execute_count > 0) std::cout << "execute       = " << f * dd.execute_damage << " (" << g * dd.execute_count << "x)" << std::endl;
-    if (dd.deep_wounds_count > 0) std::cout << "deep wounds   = " << f * dd.deep_wounds_damage << " (" << g * dd.deep_wounds_count << "x)" << std::endl;
-    if (dd.item_hit_effects_count > 0) std::cout << "hit effects   = " << f * dd.item_hit_effects_damage << " (" << g * dd.item_hit_effects_count << "x)" << std::endl;
-    if (dd.overpower_count > 0) std::cout << "overpower     = " << f * dd.overpower_damage << " (" << g * dd.overpower_count << "x)" << std::endl;
-    std::cout << "----------------------" << std::endl;
-    std::cout << "total         = " << f * dd.sum_damage_sources() << std::endl;
-    std::cout << std::endl;
-    std::cout << "rage lost " << g * sim.get_rage_lost_capped() << " per minute " << std::endl;
-    std::cout << std::endl;
-    for (const auto& e : sim.get_aura_uptimes_map()) {
-        std::cout << e.first << " " << 100 * f * e.second << "%" << std::endl;
-    }
-    std::cout << std::endl;
-    for (const auto& e : sim.get_proc_data()) {
-        std::cout << e.first << " " << g * e.second << " procs/min" << std::endl;
-    }
+    auto char_plus = character;
+    char_plus.total_special_stats += {1, 0, 0};
+
+    time_simulate(sim, char_plus);
+    print_results(test_info_->name(), sim, true);
+
+    time_simulate(sim, character);
+    print_results(test_info_->name(), sim, true);
 
     EXPECT_EQ(0, 0);
 }

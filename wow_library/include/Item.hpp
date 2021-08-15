@@ -196,7 +196,7 @@ public:
 
     [[nodiscard]] Special_stats to_special_stats(const Special_stats& multipliers) const
     {
-        return attribute_boost.to_special_stats(multipliers) + special_stats_boost;
+        return special_stats_boost + attribute_boost.to_special_stats(multipliers);
     }
 
     std::string name{};
@@ -253,7 +253,7 @@ public:
 
     [[nodiscard]] Special_stats to_special_stats(const Special_stats& multipliers) const
     {
-        return attribute_boost.to_special_stats(multipliers) + special_stats_boost;
+        return special_stats_boost + attribute_boost.to_special_stats(multipliers);
     }
 
     std::string name{};

@@ -54,6 +54,8 @@ struct Special_stats
 
     Special_stats operator+(const Special_stats& rhs) const
     {
+        assert(rhs.haste == 0 || rhs.attack_speed == 0);
+
         return {
             critical_strike + rhs.critical_strike,
             hit + rhs.hit,
@@ -78,6 +80,8 @@ struct Special_stats
 
     Special_stats operator-(const Special_stats& rhs) const
     {
+        assert(rhs.haste == 0 || rhs.attack_speed == 0);
+
         return {
             critical_strike - rhs.critical_strike,
             hit - rhs.hit,

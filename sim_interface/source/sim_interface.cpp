@@ -978,10 +978,10 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
         {
             Character char_plus = character;
             Character char_minus = character;
-            char_plus.total_special_stats.attack_power += 300;
-            char_minus.total_special_stats.attack_power -= 300;
+            char_plus.total_special_stats += {0, 0, 100};
+            char_minus.total_special_stats -= {0, 0, 100};
             Stat_weight base_line =
-                compute_stat_weight(simulator, char_plus, char_minus, "attack power", 100, 3, dps_mean, dps_sample_std);
+                compute_stat_weight(simulator, char_plus, char_minus, "attack power", 100, 1, dps_mean, dps_sample_std);
             stat_weights.emplace_back(
                 "attack_power: " + std::to_string(base_line.dps_plus) + " " + std::to_string(base_line.std_dps_plus) +
                 " " + std::to_string(base_line.dps_minus) + " " + std::to_string(base_line.std_dps_minus));
@@ -1031,10 +1031,10 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
             {
                 Character char_plus = character;
                 Character char_minus = character;
-                char_plus.total_special_stats.haste = (char_plus.total_special_stats.haste + 1) * 1.1 - 1;
-                char_minus.total_special_stats.haste = (char_minus.total_special_stats.haste + 1) / 1.1 - 1;
+                char_plus.total_special_stats.haste += 0.02;
+                char_minus.total_special_stats.haste -= 0.02;
                 Stat_weight hit =
-                    compute_stat_weight(simulator, char_plus, char_minus, "haste", 1, 10, dps_mean, dps_sample_std);
+                    compute_stat_weight(simulator, char_plus, char_minus, "haste", 1, 2, dps_mean, dps_sample_std);
                 stat_weights.emplace_back("1%Haste " + std::to_string(hit.dps_plus) + " " +
                                           std::to_string(hit.std_dps_plus) + " " + std::to_string(hit.dps_minus) + " " +
                                           std::to_string(hit.std_dps_minus));

@@ -1208,6 +1208,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
 
                 slam(weapons[0], special_stats, damage_sources, flurry_charges, rampage_stacks);
                 slam_manager.finish_slam();
+                oldHaste = special_stats.haste;
                 weapons[0].next_swing = time_keeper_.time + weapons[0].swing_speed / (1 + special_stats.haste);
             }
 

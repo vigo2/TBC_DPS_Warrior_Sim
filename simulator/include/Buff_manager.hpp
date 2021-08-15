@@ -91,6 +91,8 @@ public:
         hit_effects_mh = &hit_effects_mh_input;
         hit_effects_oh = &hit_effects_oh_input;
 
+        hit_auras.clear();
+
         use_effects = use_effects_input;
 
         rage_manager = rage_manager_input;
