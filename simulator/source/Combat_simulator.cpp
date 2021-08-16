@@ -1467,7 +1467,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
                 {
                     execute(weapons[0], special_stats, rage, damage_sources, flurry_charges, rampage_stacks);
                 }
-                if (rage > heroic_strike_rage_cost && !ability_queue_manager.heroic_strike_queued &&
+                if (rage > config.combat.hs_rage_thresh_exec_phase && rage > heroic_strike_rage_cost && !ability_queue_manager.heroic_strike_queued &&
                     config.combat.use_hs_in_exec_phase)
                 {
                     if (config.combat.use_heroic_strike)

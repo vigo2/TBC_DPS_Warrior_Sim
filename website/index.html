@@ -320,7 +320,7 @@
       onload="openTab('event', 'Simulator');open_armor();show_div('cleave_if_adds', 'cleave_div');
       show_div('use_hamstring', 'hamstring_div');show_div('multi_target_mode', 'multi_target_div');
       show_div('periodic_damage', 'periodic_damage_div');show_div('ability_queue', 'ability_queue_div');
-      show_div('dual_wield_mode', 'dual_wield_div');displayTalentBootup();calcTotalTalents();load_talent_dual_wield_fury();">
+      show_div('dual_wield_mode', 'dual_wield_div');show_div('use_hs_in_exec_phase', 'hs_exec_div');displayTalentBootup();calcTotalTalents();load_talent_dual_wield_fury();">
 
 <div class="tab">
     <button class="tablinks" onclick="openTab(event, 'Simulator')">Simulator</button>
@@ -4636,8 +4636,12 @@
         <div class="description" id="heroic_strike_div">
             <label for="heroic_strike_rage_thresh_dd">Heroic strike when rage is above:</label>
             <input type="number" id="heroic_strike_rage_thresh_dd" name="quantity" min="0" max="100" value="70"><br>
-            <input type="checkbox" id="use_hs_in_exec_phase">
+            <input type="checkbox" id="use_hs_in_exec_phase" onclick="show_div('use_hs_in_exec_phase', 'hs_exec_div')">
             <label for="use_hs_in_exec_phase"> Use heroic strike in execute phase</label><br>
+            <div class="description" id="hs_exec_div">
+                <label for="hs_rage_thresh_exec_phase_dd">HS when rage is above (Execute phase):</label>
+                <input type="number" id="hs_rage_thresh_exec_phase_dd" name="quantity" min="0" max="100" value="0"><br>
+            </div>
         </div>
 
         <input type="checkbox" id="cleave_if_adds" onclick="show_div('cleave_if_adds', 'cleave_div')">
@@ -4960,7 +4964,7 @@
 
     let float_options = ["n_simulations_dd", "n_simulations_stat_dd", "n_simulations_talent_dd",
         "opponent_level_dd", "boss_armor_dd", "fight_time_dd",
-        "sunder_armor_dd", "heroic_strike_rage_thresh_dd", "cleave_rage_thresh_dd", "whirlwind_rage_thresh_dd", "bt_whirlwind_cooldown_thresh_dd",
+        "sunder_armor_dd", "heroic_strike_rage_thresh_dd", "hs_rage_thresh_exec_phase_dd", "cleave_rage_thresh_dd", "whirlwind_rage_thresh_dd", "bt_whirlwind_cooldown_thresh_dd",
         "whirlwind_bt_cooldown_thresh_dd", "overpower_rage_thresh_dd", "overpower_bt_cooldown_thresh_dd",
         "overpower_ww_cooldown_thresh_dd", "hamstring_cd_thresh_dd", "initial_rage_dd", "hamstring_thresh_dd",
         "max_optimize_time_dd", "number_of_extra_targets_dd", "extra_target_armor_dd", "extra_target_level_dd",

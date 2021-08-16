@@ -641,10 +641,10 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
                 double delta_dps = dps_mean - simulator_dpr.get_dps_mean();
                 double dmg_tot = delta_dps * (config.sim_time - 1);
                 double dmg_per_hit = dmg_tot / avg_bt_casts;
-                double dmg_per_rage = dmg_per_hit / (30.0 - double(5.0 * character.set_bonus_effect.warbringer_2_set));
+                double dmg_per_rage = dmg_per_hit / (30.0 - double(5.0 * character.set_bonus_effect.destroyer_4_set));
                 dpr_info += "<b>Bloodthirst</b>: <br>Damage per cast: <b>" +
                             String_helpers::string_with_precision(dmg_per_hit, 4) + "</b><br>Average rage cost: <b>" +
-                            String_helpers::string_with_precision(30.0, 3) + "</b><br>DPR: <b>" +
+                            String_helpers::string_with_precision(30.0 - double(5.0 * character.set_bonus_effect.destroyer_4_set), 3) + "</b><br>DPR: <b>" +
                             String_helpers::string_with_precision(dmg_per_rage, 4) + "</b><br>";
                 config.dpr_settings.compute_dpr_bt_ = false;
             }
@@ -661,9 +661,9 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
                 double delta_dps = dps_mean - simulator_dpr.get_dps_mean();
                 double dmg_tot = delta_dps * (config.sim_time - 1);
                 double dmg_per_hit = dmg_tot / avg_ms_casts;
-                double dmg_per_rage = dmg_per_hit / (30.0 - double(5.0 * character.set_bonus_effect.warbringer_2_set));
+                double dmg_per_rage = dmg_per_hit / (30.0 - double(5.0 * character.set_bonus_effect.destroyer_4_set));
                 dpr_info += "<b>Mortal Strike</b>: <br>Damage per cast: <b>" + String_helpers::string_with_precision(dmg_per_hit, 4) +
-                            "</b><br>Average rage cost: <b>" + String_helpers::string_with_precision(30.0, 3) + "</b><br>DPR: <b>" +
+                            "</b><br>Average rage cost: <b>" + String_helpers::string_with_precision(30.0 - double(5.0 * character.set_bonus_effect.destroyer_4_set), 3) + "</b><br>DPR: <b>" +
                             String_helpers::string_with_precision(dmg_per_rage, 4) + "</b><br>";
                 config.dpr_settings.compute_dpr_ms_ = false;
             }

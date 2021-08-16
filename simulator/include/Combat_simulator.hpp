@@ -107,6 +107,7 @@ struct Combat_simulator_config
         double overpower_bt_cooldown_thresh{};
         double overpower_ww_cooldown_thresh{};
         double heroic_strike_rage_thresh{};
+        double hs_rage_thresh_exec_phase{};
         double cleave_rage_thresh{};
         double heroic_strike_damage{};
         bool cleave_if_adds{false};
