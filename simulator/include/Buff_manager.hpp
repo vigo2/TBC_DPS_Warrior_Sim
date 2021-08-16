@@ -226,18 +226,7 @@ public:
     {
         if (hit_effect.combat_buff_idx == -1)
         {
-            for (auto& buff : combat_buffs)
-            {
-                if (buff.name == hit_effect.name)
-                {
-                    if (buff.stacks == 0) return;
-                    buff.charges -= 1;
-                    if (buff.charges > 0) return;
-                    buff.next_fade = current_time; // for correct uptime bookkeeping
-                    return do_fade_buff(buff, logger);
-                }
-            }
-
+            // it's required that hit_effect can be successfully registered (i.e. combat_buff_idx is eventually set)
             return; // not up
         }
 
