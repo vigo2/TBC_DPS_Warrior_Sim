@@ -10,7 +10,7 @@ Find_values<T>::Find_values(const std::vector<std::string>& string_vec, const st
 }
 
 template <typename T>
-T Find_values<T>::find(const std::string& name)
+T Find_values<T>::find(const std::string& name, const T dflt)
 {
     auto it = std::find(string_vec.cbegin(), string_vec.cend(), name);
     if (it != string_vec.cend())
@@ -18,6 +18,6 @@ T Find_values<T>::find(const std::string& name)
         auto pos = it - string_vec.cbegin();
         return value_vec[pos];
     }
-    return {0};
+    return dflt;
 }
 

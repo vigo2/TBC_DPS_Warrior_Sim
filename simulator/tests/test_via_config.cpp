@@ -109,11 +109,11 @@ TEST_F(Sim_fixture, test_via_config)
     std::vector<std::string> stat_weights{"crit","expertise","hit","haste"};
 
     Sim_input sim_input(race, armor, weapons,
-              buffs, enchants, gems,
-              stat_weights,
-              options, float_options_string, float_options_val,
-              talent_string, talent_val,
-              empty, empty);
+                        buffs, enchants, gems,
+                        stat_weights,
+                        options, float_options_string, float_options_val,
+                        talent_string, talent_val,
+                        empty, empty);
 
     Sim_interface sim_interface;
 

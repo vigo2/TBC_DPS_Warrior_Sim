@@ -102,7 +102,7 @@ void Combat_simulator_config::get_combat_simulator_config(const T& input)
         combat.deep_wounds = true;
     }
     
-    combat.heroic_strike_damage = 208;
+    combat.heroic_strike_damage = 176;
 
     if (String_helpers::find_string(input.options, "first_hit_heroic_strike"))
     {
@@ -135,7 +135,7 @@ void Combat_simulator_config::get_combat_simulator_config(const T& input)
         Find_values<double> fv(input.float_options_string, input.float_options_val);
 
         combat.heroic_strike_rage_thresh = fv.find("heroic_strike_rage_thresh_dd");
-        combat.hs_rage_thresh_exec_phase = fv.find("hs_rage_thresh_exec_phase_dd");
+        combat.hs_rage_thresh_exec_phase = fv.find("hs_rage_thresh_exec_phase_dd", combat.heroic_strike_rage_thresh);
         combat.cleave_rage_thresh = fv.find("cleave_rage_thresh_dd");
         combat.whirlwind_rage_thresh = fv.find("whirlwind_rage_thresh_dd");
         combat.hamstring_cd_thresh = fv.find("hamstring_cd_thresh_dd");

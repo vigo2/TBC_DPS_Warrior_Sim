@@ -112,25 +112,33 @@ struct Over_time_effect
 {
     Over_time_effect() = default;
 
-    ~Over_time_effect() = default;
+    Over_time_effect(std::string name, Special_stats special_stats, double rage_gain, double damage,
+                     int interval, int duration) :
+        name(std::move(name)),
+        special_stats(special_stats),
+        rage_gain(rage_gain),
+        damage(damage),
+        interval(interval),
+        duration(duration) {};
 
-    Over_time_effect(std::string name, Special_stats special_stats, double rage_gain, double damage, int interval,
-                     int duration)
-        : name(std::move(name))
-        , special_stats(special_stats)
-        , rage_gain(rage_gain)
-        , damage(damage)
-        , interval(interval)
-        , duration(duration){};
+    std::string name{};
+    Special_stats special_stats{}; // unused (?)
+    double rage_gain{};
+    double damage{};
+    int interval{};
+    int duration{};
 
-    std::string name;
-    Special_stats special_stats;
-    double rage_gain;
-    double damage;
-    int interval;
-    int duration;
+    int over_time_buff_idx{-1};
 };
 
+// TODO(vigo) remove or repurpose some fields
+//  Hit_effect (or Proc, for brevity) should describe /how/ something is triggered:
+//   - proc chance (ppm, percentage, always)
+//   - proc conditions (specific or both weapons, required Hit_result and Hit_type)
+//   - whether it stacks or has charges
+//   - internal cooldown
+//  A proc grants a number of buffs or one-shot-effects (extra attack, rage),
+//   but typically only one.
 class Hit_effect
 {
 public:
@@ -143,52 +151,79 @@ public:
         stat_boost,
         damage_physical,
         damage_magic,
-        reduce_armor,
+        reduce_armor, // deprecated
         rage_boost,
     };
 
     Hit_effect() = default;
 
     Hit_effect(std::string name, Type type, Attributes attribute_boost, Special_stats special_stats_boost,
-               double damage, int duration, double cooldown, double probability, double attack_power_boost = 0, int n_targets = 1,
-               int armor_reduction = 0, int max_stacks = 0, double ppm = 0.0, bool affects_both_weapons = false)
-        : name(std::move(name))
-        , type(type)
-        , attribute_boost(attribute_boost)
-        , special_stats_boost(special_stats_boost)
-        , damage(damage)
-        , duration(duration)
-        , cooldown(cooldown)
-        , probability(probability)
-        , attack_power_boost(attack_power_boost)
-        , n_targets(n_targets)
-        , armor_reduction(armor_reduction)
-        , ppm(ppm)
-        , affects_both_weapons(affects_both_weapons)
-        , max_stacks(max_stacks){};
+               double damage, double duration, double cooldown, double probability, double attack_power_boost = 0, int max_charges = 1,
+               int armor_reduction = 0, int max_stacks = 1, double ppm = 0.0, bool affects_both_weapons = false) :
+        name(std::move(name)),
+        type(type),
+        attribute_boost(attribute_boost),
+        special_stats_boost(special_stats_boost),
+        damage(damage),
+        duration(duration),
+        cooldown(cooldown),
+        probability(probability),
+        attack_power_boost(attack_power_boost), // unused
+        max_charges(max_charges),
+        armor_reduction(armor_reduction), // unused
+        ppm(ppm),
+        affects_both_weapons(affects_both_weapons), // unused
+        max_stacks(max_stacks) {}
 
-    inline Special_stats get_special_stat_equivalent(const Special_stats& special_stats, double ap_multiplier = 0) const
+    void sanitize()
     {
-        return attribute_boost.convert_to_special_stats(special_stats, ap_multiplier) + special_stats_boost;
+        if (type == Type::reduce_armor)
+        {
+            type = Type::stat_boost;
+            special_stats_boost.gear_armor_pen = armor_reduction;
+        }
+
+        if (max_charges == 0)
+        {
+            max_charges = 1;
+        }
+
+        if (max_stacks == 0)
+        {
+            max_stacks = 1;
+        }
     }
 
-    std::string name;
-    Type type;
-    Attributes attribute_boost;
-    Special_stats special_stats_boost;
-    double damage;
-    int duration;
-    double cooldown;
-    double probability;
-    double attack_power_boost;
-    int n_targets;
-    int armor_reduction;
-    double ppm;
-    bool affects_both_weapons;
-    int max_stacks;
-    double time_counter;
-    int stacks_counter;
+    [[nodiscard]] Special_stats to_special_stats(const Special_stats& multipliers) const
+    {
+        return special_stats_boost + attribute_boost.to_special_stats(multipliers);
+    }
+
+    std::string name{};
+    Type type{};
+    Attributes attribute_boost{};
+    Special_stats special_stats_boost{};
+    double damage{};
+    double duration{};
+    double cooldown{};
+    double probability{};
+    double attack_power_boost{}; // unused; was in use for windfury_totem only
+    int max_charges{1}; // used to be "n_targets", and unused; now used for charges (for windfury attack or flurry)
+    int armor_reduction{}; // deprecated, use special_stats_boost.gear_armor_pen instead (3 usages)
+    double ppm{};
+    bool affects_both_weapons{}; // unused
+    int max_stacks{1};
+
+    double time_counter{}; // "next_ready", aka cooldown end
+
+    int procs{}; // statistics
+
+    int combat_buff_idx{-1}; // "link" to combat buff
 };
+
+std::ostream& operator<<(std::ostream& os, const Hit_effect::Type& t);
+
+std::ostream& operator<<(std::ostream& os, const Hit_effect& he);
 
 class Use_effect
 {
@@ -200,8 +235,6 @@ public:
     };
 
     Use_effect() = default;
-
-    ~Use_effect() = default;
 
     Use_effect(std::string name, Effect_socket effect_socket, Attributes attribute_boost,
                Special_stats special_stats_boost, double rage_boost, double duration, double cooldown,
@@ -218,19 +251,19 @@ public:
         , hit_effects(std::move(hit_effects))
         , over_time_effects(std::move(over_time_effects)){};
 
-    inline Special_stats get_special_stat_equivalent(const Special_stats& special_stats, double ap_multiplier = 0) const
+    [[nodiscard]] Special_stats to_special_stats(const Special_stats& multipliers) const
     {
-        return attribute_boost.convert_to_special_stats(special_stats, ap_multiplier) + special_stats_boost;
+        return special_stats_boost + attribute_boost.to_special_stats(multipliers);
     }
 
-    std::string name;
+    std::string name{};
     Effect_socket effect_socket{};
     Attributes attribute_boost{};
     Special_stats special_stats_boost{};
     double rage_boost{};
     double duration{};
     double cooldown{};
-    bool triggers_gcd{false};
+    bool triggers_gcd{};
     std::vector<Hit_effect> hit_effects{};
     std::vector<Over_time_effect> over_time_effects{};
 };
@@ -266,7 +299,8 @@ struct Enchant
         nethercobra,
         mongoose,
         hit,
-        cats_swiftness
+        cats_swiftness,
+        executioner,
     };
 
     Enchant() = default;

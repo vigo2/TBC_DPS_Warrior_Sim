@@ -5,65 +5,41 @@
 Character::Character(const Race& race, int level)
     : base_attributes{}, total_attributes{}, base_special_stats{}, total_special_stats{}, race{race}, level(level)
 {
-    base_special_stats = Special_stats{0,          0,          160, 0,          0,
-                                       0,          0,          0,   0,          0,  
-                                       0,          0,          0,   0,          0,
-                                       0,};
+    base_special_stats = Special_stats{};
+    base_special_stats.attack_power = 190;
+    base_special_stats.critical_strike = 1.141;
+
     switch (race)
     {
     case Race::human:
         base_attributes = Attributes{145, 96};
         base_special_stats.sword_expertise = 5;
         base_special_stats.mace_expertise = 5;
-        base_special_stats.axe_expertise = 0.0;
         break;
     case Race::dwarf:
         base_attributes = Attributes{147, 92};
-        base_special_stats.sword_expertise = 0.0;
-        base_special_stats.mace_expertise = 0.0;
-        base_special_stats.axe_expertise = 0.0;
         break;
     case Race::night_elf:
         base_attributes = Attributes{142, 101};
-        base_special_stats.sword_expertise = 0.0;
-        base_special_stats.mace_expertise = 0.0;
-        base_special_stats.axe_expertise = 0.0;
         break;
     case Race::gnome:
         base_attributes = Attributes{140, 99};
-        base_special_stats.sword_expertise = 0.0;
-        base_special_stats.mace_expertise = 0.0;
-        base_special_stats.axe_expertise = 0.0;
         break;
     case Race::draenei:
         base_attributes = Attributes{146, 93};
-        base_special_stats.sword_expertise = 0.0;
-        base_special_stats.mace_expertise = 0.0;
-        base_special_stats.axe_expertise = 0.0;
         break;
     case Race::orc:
         base_attributes = Attributes{148, 93};
-        base_special_stats.sword_expertise = 0.0;
-        base_special_stats.mace_expertise = 0.0;
         base_special_stats.axe_expertise = 5;
         break;
     case Race::tauren:
         base_attributes = Attributes{150, 91};
-        base_special_stats.sword_expertise = 0.0;
-        base_special_stats.mace_expertise = 0.0;
-        base_special_stats.axe_expertise = 0.0;
         break;
     case Race::troll:
         base_attributes = Attributes{146, 98};
-        base_special_stats.sword_expertise = 0.0;
-        base_special_stats.mace_expertise = 0.0;
-        base_special_stats.axe_expertise = 0.0;
         break;
     case Race::undead:
         base_attributes = Attributes{144, 94};
-        base_special_stats.sword_expertise = 0.0;
-        base_special_stats.mace_expertise = 0.0;
-        base_special_stats.axe_expertise = 0.0;
         break;
     default:
         assert(false);
@@ -111,6 +87,33 @@ Character character_setup(const Armory& armory, const std::string& race, const s
     armory.compute_total_stats(character);
 
     return character;
+}
+
+std::ostream& operator<<(std::ostream& os, const Race& race)
+{
+    switch (race)
+    {
+    case Race::human:
+        return os << "human";
+    case Race::dwarf:
+        return os << "dwarf";
+    case Race::night_elf:
+        return os << "night_elf";
+    case Race::gnome:
+        return os << "gnome";
+    case Race::draenei:
+        return os << "draenei";
+    case Race::orc:
+        return os << "orc";
+    case Race::tauren:
+        return os << "tauren";
+    case Race::troll:
+        return os << "troll";
+    case Race::undead:
+        return os << "undead";
+    default:
+        return os;
+    }
 }
 
 std::ostream& operator<<(std::ostream& os, const Character& character)

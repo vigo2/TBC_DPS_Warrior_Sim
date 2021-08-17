@@ -4,6 +4,8 @@
 #include "find_values.hpp"
 #include "string_helpers.hpp"
 
+#include <unordered_map>
+
 Attributes Armory::get_enchant_attributes(Socket socket, Enchant::Type type) const
 {
     switch (socket)
@@ -206,14 +208,16 @@ Special_stats Armory::get_enchant_special_stats(Socket socket, Enchant::Type typ
     }
 }
 
-Hit_effect Armory::enchant_hit_effect(double weapon_speed, Enchant::Type type) const
+Hit_effect Armory::enchant_hit_effect(Weapon& weapon, Enchant::Type type) const
 {
     switch (type)
     {
     case Enchant::Type::crusader:
-        return {"crusader", Hit_effect::Type::stat_boost, {60, 0}, {0, 0, 0}, 0, 15, 0, weapon_speed / 60};
+        return {weapon.socket == Socket::off_hand ? "crusader_oh" : "crusader_mh", Hit_effect::Type::stat_boost, {60, 0}, {0, 0, 0}, 0, 15, 0, weapon.swing_speed / 60};
     case Enchant::Type::mongoose:
-        return {"mongoose", Hit_effect::Type::stat_boost, {0, 120}, {0, 0, 0, 0, 0.02}, 0, 15, 0, weapon_speed / 60};
+        return {weapon.socket == Socket::off_hand ? "mongoose_oh" : "mongoose_mh", Hit_effect::Type::stat_boost, {0, 120}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.02}, 0, 15, 0, weapon.swing_speed / 60};
+    case Enchant::Type::executioner:
+        return {"executioner", Hit_effect::Type::stat_boost, {}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 840}, 0, 15, 0, weapon.swing_speed / 60};
     default:
         return {"none", Hit_effect::Type::none, {}, {}, 0, 0, 0, 0};
     }
@@ -260,8 +264,8 @@ void Armory::compute_total_stats(Character& character) const
 
     total_attributes += character.base_attributes;
     total_special_stats += character.base_special_stats;
-    std::vector<Set> set_names{};
     std::vector<Use_effect> use_effects{};
+    std::unordered_map<Set, int> set_counts{};
     for (const Armor& armor : character.armor)
     {
         total_attributes += armor.attributes;
@@ -270,7 +274,7 @@ void Armory::compute_total_stats(Character& character) const
         total_attributes += get_enchant_attributes(armor.socket, armor.enchant.type);
         total_special_stats += get_enchant_special_stats(armor.socket, armor.enchant.type);
 
-        set_names.emplace_back(armor.set_name);
+        set_counts[armor.set_name] += 1;
         for (const auto& use_effect : armor.use_effects)
         {
             use_effects.emplace_back(use_effect);
@@ -296,48 +300,18 @@ void Armory::compute_total_stats(Character& character) const
         {
             use_effects.emplace_back(use_effect);
         }
-        auto hit_effect = enchant_hit_effect(weapon.swing_speed, weapon.enchant.type);
+        auto hit_effect = enchant_hit_effect(weapon, weapon.enchant.type);
         if (hit_effect.type != Hit_effect::Type::none)
         {
             weapon.hit_effects.emplace_back(hit_effect);
         }
 
-        set_names.emplace_back(weapon.set_name);
+        set_counts[weapon.set_name] += 1;
     }
 
-    std::vector<Set> unique_set_names{};
-    for (const Set& set_name : set_names)
-    {
-        if (set_name != Set::none)
-        {
-            bool unique = true;
-            for (const Set& set_name_unique : unique_set_names)
-            {
-                if (set_name == set_name_unique)
-                {
-                    unique = false;
-                }
-            }
-            if (unique)
-            {
-                unique_set_names.emplace_back(set_name);
-            }
-        }
-    }
-
-    for (const Set& unique_set_name : unique_set_names)
-    {
-        int count = 0;
-        for (const Set& set_name : set_names)
-        {
-            if (set_name == unique_set_name)
-            {
-                count++;
-            }
-        }
         for (const Set_bonus& set_bonus : set_bonuses)
         {
-            if (set_bonus.set == unique_set_name && count >= set_bonus.pieces)
+        if (set_counts[set_bonus.set] >= set_bonus.pieces)
             {
                 total_attributes += set_bonus.attributes;
                 total_special_stats += set_bonus.special_stats;
@@ -366,6 +340,7 @@ void Armory::compute_total_stats(Character& character) const
                         character.set_bonus_effect.destroyer_2_set = true;
                     }
                 }
+                // TODO(vigo) it's a lot simpler to check for presence of "solarians_sapphire" directly
                 // PS: Solarian has a set on it. This is a workaround to have solarian giving BS AP bonus
                 if (set_bonus.name == "solarian_bs_bonus")
                 {
@@ -373,6 +348,10 @@ void Armory::compute_total_stats(Character& character) const
                 }
             }
         }
+
+    if (character.race == Race::draenei && !character.has_buff(buffs.heroic_presence))
+    {
+        character.add_buff(buffs.heroic_presence);
     }
 
     for (const auto& buff : character.buffs)
@@ -437,20 +416,23 @@ void Armory::compute_total_stats(Character& character) const
 
     if (character.talents.one_handed_weapon_specialization > 0 && character.is_dual_wield())
     {
-        double multiplier = double(character.talents.one_handed_weapon_specialization) / 50.0;
-        character.talent_special_stats += {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, multiplier};
+        Special_stats ss;
+        ss.damage_mod_physical = 0.02 * character.talents.one_handed_weapon_specialization;
+        character.talent_special_stats += ss;
     }
 
     // Cruelty etc.
     total_special_stats += character.talent_special_stats;
-    total_special_stats.critical_strike += 3; // crit from berserker stance
+
+    total_special_stats += {3, 0, 0}; // crit from berserker stance
     if (character.talents.improved_berserker_stance > 0)
     {
-        double ap_multiplier = double(character.talents.improved_berserker_stance) * 0.02;
-        total_special_stats.attack_power += total_special_stats.attack_power * ap_multiplier;
+        Special_stats ss;
+        ss.ap_multiplier = 0.02 * character.talents.improved_berserker_stance;
+        total_special_stats += ss;
     }
 
-    total_special_stats += total_attributes.convert_to_special_stats(total_special_stats, character.talents.improved_berserker_stance * 0.02);
+    total_special_stats += total_attributes.to_special_stats(total_special_stats);
     character.total_attributes = total_attributes.multiply(total_special_stats);
     character.total_special_stats = total_special_stats;
     character.use_effects = use_effects;
@@ -501,9 +483,9 @@ bool Armory::check_if_weapons_valid(std::vector<Weapon>& weapons) const
 {
     bool is_valid{true};
     is_valid &= weapons.size() <= 2;
-    is_valid &= (weapons[0].socket != Socket::off_hand);
     if (weapons.size() == 2)
     {
+        is_valid &= (weapons[0].socket != Socket::off_hand);
         is_valid &= (weapons[1].socket != Socket::main_hand);
     }
     if (weapons.size() == 1)
@@ -1242,9 +1224,7 @@ void Armory::add_buffs_to_character(Character& character, const std::vector<std:
     // Player buffs
     if (String_helpers::find_string(buffs_vec, "battle_shout"))
     {
-
         character.add_buff(buffs.battle_shout);
-
     }
     if (String_helpers::find_string(buffs_vec, "blessing_of_kings"))
     {
@@ -1253,14 +1233,13 @@ void Armory::add_buffs_to_character(Character& character, const std::vector<std:
     if (String_helpers::find_string(buffs_vec, "blessing_of_might"))
     {
         character.add_buff(buffs.blessing_of_might);
-
     }
     if (String_helpers::find_string(buffs_vec, "windfury_totem"))
     {
         Buff totem = buffs.windfury_totem;
         if (String_helpers::find_string(buffs_vec, "improved_weapon_totems"))
         {
-            totem.hit_effects[0].attack_power_boost *= 1.3;
+            totem.hit_effects[0].special_stats_boost.attack_power *= 1.3;
         }
         character.add_buff(totem);
     }

@@ -173,6 +173,7 @@ TEST_F(Sim_fixture, test_hit_effects_extra_hit)
     EXPECT_NEAR(proc_data["test_wep_oh"], expected_procs_oh, conf_interval_oh / 2);
 }
 
+// expected to fail - the statistical model is plain wrong
 TEST_F(Sim_fixture, test_hit_effects_icd)
 {
     config.sim_time = 1000.0;
@@ -234,7 +235,7 @@ TEST_F(Sim_fixture, test_hit_effects_windfury_hit)
     double mh_proc_prob = 0.1;
     double oh_proc_prob = 0.2;
     Hit_effect test_effect_mh{"test_wep_mh", Hit_effect::Type::windfury_hit, {}, {}, 0, 0, 0, mh_proc_prob};
-    Hit_effect test_effect_oh{"test_wep_oh", Hit_effect::Type::windfury_hit, {}, {}, 0, 0, 0, mh_proc_prob};
+    Hit_effect test_effect_oh{"test_wep_oh", Hit_effect::Type::windfury_hit, {}, {}, 0, 0, 0, oh_proc_prob};
     character.weapons[0].hit_effects.push_back(test_effect_mh);
     character.weapons[1].hit_effects.push_back(test_effect_oh);
 
@@ -419,12 +420,11 @@ TEST_F(Sim_fixture, test_hit_effects_stat_boost_short_duration)
 {
     config.sim_time = 1000.0;
     config.n_batches = 100.0;
-    config.performance_mode = false;
 
     double mh_proc_prob = 1.0;
-    int mh_proc_duration = 1;
+    double mh_proc_duration = 1;
     double oh_proc_prob = 1.0;
-    int oh_proc_duration = 2;
+    double oh_proc_duration = 2;
     Hit_effect test_effect_mh{"test_wep_mh", Hit_effect::Type::stat_boost, {50, 0}, {}, 0, mh_proc_duration, 0,
                               mh_proc_prob};
     Hit_effect test_effect_oh{"test_wep_oh", Hit_effect::Type::stat_boost, {}, {10, 0, 0, 0, 0.1}, 0, oh_proc_duration, 0,
@@ -465,13 +465,12 @@ TEST_F(Sim_fixture, test_hit_effects_stat_boost_long_duration)
 {
     config.sim_time = 10000.0;
     config.n_batches = 100.0;
-    config.performance_mode = false;
 
     // Small chance on hit to decrease second order terms, i.e., procing stat buff while a stat buff is already active
     double mh_proc_prob = .01;
-    int mh_proc_duration = 30;
+    double mh_proc_duration = 30;
     double oh_proc_prob = .01;
-    int oh_proc_duration = 20;
+    double oh_proc_duration = 20;
     Hit_effect test_effect_mh{"test_wep_mh", Hit_effect::Type::stat_boost, {50, 0}, {}, 0, mh_proc_duration, 0,
                               mh_proc_prob};
     Hit_effect test_effect_oh{"test_wep_oh", Hit_effect::Type::stat_boost, {}, {10, 0, 0, 0, 0.1}, 0, oh_proc_duration, 0,
@@ -523,13 +522,12 @@ TEST_F(Sim_fixture, test_hit_effects_stat_boost_long_duration_overlap)
 {
     config.sim_time = 1000.0;
     config.n_batches = 100.0;
-    config.performance_mode = false;
 
     // Small chance on hit to decrease second order terms, i.e., procing stat buff while a stat buff is already active
     double mh_proc_prob = .95;
-    int mh_proc_duration = 17;
+    double mh_proc_duration = 17;
     double oh_proc_prob = .85;
-    int oh_proc_duration = 19;
+    double oh_proc_duration = 19;
     Hit_effect test_effect_mh{"test_wep_mh", Hit_effect::Type::stat_boost, {50, 0}, {}, 0, mh_proc_duration, 0,
                               mh_proc_prob};
     Hit_effect test_effect_oh{"test_wep_oh", Hit_effect::Type::stat_boost, {}, {10, 0, 0, 0, 0.1}, 0, oh_proc_duration, 0,
@@ -618,36 +616,56 @@ TEST_F(Sim_fixture, test_flurry_uptime)
     EXPECT_NEAR((dd.white_mh_count + dd.heroic_strike_count) / (config.sim_time / mh.swing_speed * haste), (1 - flurryUptime) + flurryUptime * flurryHaste, 0.0001);
 }
 
+void time_simulate(Combat_simulator& sim, const Character& character)
+{
+    auto start = std::chrono::steady_clock::now();
+    sim.simulate(character);
+    auto end = std::chrono::steady_clock::now();
+    std::cout << "took " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << " ms" << std::endl;
+    std::cout << std::endl;
+}
+
+void print_results(const std::string name, const Combat_simulator& sim, bool print_uptimes_and_procs)
+{
+    std::cout << name << std::endl;
+    std::cout << std::endl;
+
+    auto dd = sim.get_damage_distribution();
+
+    auto f = 1.0 / (sim.config.sim_time * sim.config.n_batches);
+    auto g = 60 * f;
+
+    std::cout << std::fixed << std::setprecision(2);
+    std::cout << "white (mh)    = " << f * dd.white_mh_damage << " (" << g * dd.white_mh_count << "x)" << std::endl;
+    if (dd.white_oh_count > 0) std::cout << "white (oh)    = " << f * dd.white_oh_damage << " (" << g * dd.white_oh_count << "x)" << std::endl;
+    if (dd.mortal_strike_count > 0) std::cout << "mortal strike = " << f * dd.mortal_strike_damage << " (" << g * dd.mortal_strike_count << "x)" << std::endl;
+    if (dd.cleave_count > 0) std::cout << "cleave        = " << f * dd.cleave_damage << " (" << g * dd.cleave_count << "x)" << std::endl;
+    if (dd.bloodthirst_count > 0) std::cout << "bloodthirst   = " << f * dd.bloodthirst_damage << " (" << g * dd.bloodthirst_count << "x)" << std::endl;
+    if (dd.whirlwind_count > 0) std::cout << "whirlwind     = " << f * dd.whirlwind_damage << " (" << g * dd.whirlwind_count << "x)" << std::endl;
+    if (dd.slam_count > 0) std::cout << "slam          = " << f * dd.slam_damage << " (" << g * dd.slam_count << "x)" << std::endl;
+    if (dd.heroic_strike_count > 0) std::cout << "heroic strike = " << f * dd.heroic_strike_damage << " (" << g * dd.heroic_strike_count << "x)" << std::endl;
+    if (dd.execute_count > 0) std::cout << "execute       = " << f * dd.execute_damage << " (" << g * dd.execute_count << "x)" << std::endl;
+    if (dd.deep_wounds_count > 0) std::cout << "deep wounds   = " << f * dd.deep_wounds_damage << " (" << g * dd.deep_wounds_count << "x)" << std::endl;
+    if (dd.overpower_count > 0) std::cout << "overpower     = " << f * dd.overpower_damage << " (" << g * dd.overpower_count << "x)" << std::endl;
+    if (dd.item_hit_effects_count > 0) std::cout << "hit effects   = " << f * dd.item_hit_effects_damage << " (" << g * dd.item_hit_effects_count << "x)" << std::endl;
+    std::cout << "----------------------" << std::endl;
+    std::cout << "total         = " << f * dd.sum_damage_sources() << std::endl;
+    std::cout << std::endl;
+
+    if (!print_uptimes_and_procs) return;
+
+    for (const auto& e : sim.get_aura_uptimes_map()) {
+        std::cout << e.first << " " << 100 * f * e.second << "%" << std::endl;
+    }
+    std::cout << std::endl;
+    for (const auto& e : sim.get_proc_data()) {
+        std::cout << e.first << " " << g * e.second << " procs/min" << std::endl;
+    }
+    std::cout << std::endl;
+}
+
 /*
-results on master:
-
-took 8112 ms
-
-white (mh)    = 283.418
-mortal strike = 86.3654
-whirlwind     = 44.3856
-slam          = 296.372
-heroic strike = 1.04357
-deep wounds   = 50.1407
-----------------------
-total         = 784.141 / 786.763
-rage lost 12509.3
-
-after yellow hit table changes:
-
-took 8486 ms
-
-white (mh)    = 282.8
-mortal strike = 83.5754
-whirlwind     = 43.1117
-slam          = 286.858
-heroic strike = 1.00548
-deep wounds   = 48.7256
-----------------------
-total         = 768.48 / 771.05
-rage lost 12686.2
-
-different rand() sequence after mace spec fix:
+>> results on master:
 
 took 6994 ms
 
@@ -660,7 +678,74 @@ deep wounds   = 48.7078
 ----------------------
 total         = 768.312 / 770.882
 rage lost 12012.1
- */
+
+>> after heroic strike fix & rampage/overpower changes:
+
+took 6163 ms
+
+white (mh)    = 282.746
+mortal strike = 83.5375
+whirlwind     = 43.15
+slam          = 287.001
+heroic strike = 0.961978
+deep wounds   = 48.7231
+----------------------
+total         = 768.415 / 770.985
+rage lost 12138.6
+
+>> after over_time_buff / deep wound changes:
+
+took 5492 ms
+
+white (mh)    = 282.709 (15.7341x)
+slam          = 286.883 (14.0663x)
+mortal strike = 83.4875 (4.18832x)
+whirlwind     = 43.1253 (2.55086x)
+deep wounds   = 42.0281 (13.3422x)
+execute       = 22.3852 (1.22389x)
+heroic strike = 0.964171 (0.04656x)
+----------------------
+total         = 761.583 / 764.131
+rage lost 11748
+
+>> after sim_time changes (new format)
+
+took 3884 ms
+
+white (mh)    = 283.65 (15.79x)
+slam          = 287.80 (14.11x)
+mortal strike = 83.80 (4.20x)
+whirlwind     = 43.22 (2.56x)
+deep wounds   = 42.16 (13.38x)
+execute       = 22.49 (1.23x)
+heroic strike = 0.97 (0.05x)
+----------------------
+total         = 764.08
+
+rage lost 0.10 per minute
+
+Deep_wounds 88.15%
+Anger Management 100.00%
+
+>> after haste and attack speed split
+
+took 2157 ms
+
+white (mh)    = 283.57 (15.78x)
+slam          = 287.85 (14.12x)
+mortal strike = 83.64 (4.19x)
+whirlwind     = 43.19 (2.55x)
+deep wounds   = 42.16 (13.38x)
+execute       = 22.60 (1.24x)
+heroic strike = 1.04 (0.05x)
+----------------------
+total         = 764.05
+
+rage lost 0.09 per minute
+
+Deep_wounds 88.15%
+Anger Management 100.00%
+*/
 TEST_F(Sim_fixture, test_arms)
 {
     config.sim_time = 5 * 60;
@@ -701,78 +786,15 @@ TEST_F(Sim_fixture, test_arms)
     config.talents.mace_specialization = 0;
     sim.set_config(config);
 
-    auto start = std::chrono::steady_clock::now();
-    sim.simulate(character);
-    auto end = std::chrono::steady_clock::now();
-    std::cout << "took " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << " ms" << std::endl;
-    std::cout << std::endl;
+    time_simulate(sim, character);
 
-    auto dd = sim.get_damage_distribution();
+    print_results(test_info_->name(), sim, true);
 
-    auto f = 1 / (config.sim_time * config.n_batches);
-
-    std::cout << "white (mh)    = " << f * dd.white_mh_damage << std::endl;
-    if (dd.white_oh_count > 0) std::cout << "white (oh)    = " << f * dd.white_oh_damage << std::endl;
-    if (dd.mortal_strike_count > 0) std::cout << "mortal strike = " << f * dd.mortal_strike_damage << std::endl;
-    if (dd.whirlwind_count > 0) std::cout << "whirlwind     = " << f * dd.whirlwind_damage << std::endl;
-    if (dd.slam_count > 0) std::cout << "slam          = " << f * dd.slam_damage << std::endl;
-    if (dd.heroic_strike_count > 0) std::cout << "heroic strike = " << f * dd.heroic_strike_damage << std::endl;
-    if (dd.deep_wounds_count > 0) std::cout << "deep wounds   = " << f * dd.deep_wounds_damage << std::endl;
-    if (dd.item_hit_effects_count > 0) std::cout << "hit effects   = " << f * dd.item_hit_effects_damage << std::endl;
-    std::cout << "----------------------" << std::endl;
-    std::cout << "total         = " << f * dd.sum_damage_sources() << " / " << sim.get_dps_mean() << std::endl;
-
-    std::cout << "rage lost " << sim.get_rage_lost_capped() << std::endl;
     EXPECT_EQ(0, 0);
 }
 
 /*
-results on master:
-
-took 14402 ms
-
-white (mh)    = 211.653
-white (oh)    = 173.392
-heroic strike = 102.595
-bloodthirst   = 167.043
-whirlwind     = 101.591
-execute       = 83.6768
-deep wounds   = 38.3068
-----------------------
-total         = 878.257 / 881.195
-rage lost 8530.75
-
-after yellow hit table changes, including whirlwind bug fixes:
-
-took 15413 ms
-
-white (mh)    = 211.509
-white (oh)    = 173.097
-heroic strike = 99.7399
-bloodthirst   = 166.799
-whirlwind     = 100.103
-execute       = 83.5759
-deep wounds   = 38.1976
-----------------------
-total         = 873.022 / 875.943
-rage lost 8540.98
-
-after too-much-rage-on-oh-dodge fix:
-
-took 9738 ms
-
-white (mh)    = 212.632
-white (oh)    = 173.029
-heroic strike = 98.5237
-bloodthirst   = 166.584
-whirlwind     = 100.028
-execute       = 83.4919
-deep wounds   = 38.1934
-----------------------
-total         = 872.482 / 875.399
-rage lost 8721.51
-
- different rand() sequence after mace spec fix:
+>>> results on master:
 
 took 9671 ms
 
@@ -786,7 +808,75 @@ deep wounds   = 38.2024
 ----------------------
 total         = 872.337 / 875.255
 rage lost 8648.78
- */
+
+>>> after heroic strike fix & rampage/overpower changes:
+
+took 9223 ms
+
+white (mh)    = 212.676
+white (oh)    = 172.942
+heroic strike = 95.3933
+bloodthirst   = 166.764
+whirlwind     = 100.027
+execute       = 83.2502
+deep wounds   = 38.1973
+----------------------
+total         = 869.249 / 872.157
+rage lost 8478.46
+
+>>> after over_time_buffs / deep wound changes:
+
+took 8160 ms
+
+white (mh)    = 212.649 (21.3161x)
+white (oh)    = 172.938 (28.3863x)
+bloodthirst   = 166.533 (8.36789x)
+whirlwind     = 99.9227 (5.24548x)
+heroic strike = 95.4492 (6.11997x)
+execute       = 83.3244 (4.31656x)
+deep wounds   = 19.9497 (9.8517x)
+----------------------
+total         = 850.766 / 853.611
+rage lost 8702.61
+
+>>> after sim_time changes (new format)
+
+took 5846 ms
+
+white (mh)    = 213.40 (21.40x)
+white (oh)    = 173.72 (28.48x)
+bloodthirst   = 167.18 (8.39x)
+whirlwind     = 100.28 (5.26x)
+heroic strike = 95.51 (6.13x)
+execute       = 84.09 (4.35x)
+deep wounds   = 20.01 (9.88x)
+----------------------
+total         = 854.19
+
+rage lost 0.07 per minute
+
+Deep_wounds 98.31%
+Anger Management 100.00%
+
+>>> after haste/attack speed split
+
+took 3433 ms
+
+white (mh)    = 213.53 (21.40x)
+white (oh)    = 173.61 (28.48x)
+bloodthirst   = 167.30 (8.39x)
+whirlwind     = 100.51 (5.26x)
+heroic strike = 95.64 (6.13x)
+execute       = 84.26 (4.36x)
+deep wounds   = 20.00 (9.88x)
+----------------------
+total         = 854.86
+
+rage lost 0.07 per minute
+
+Deep_wounds 98.31%
+Anger Management 100.00%
+*/
 TEST_F(Sim_fixture, test_fury)
 {
     config.sim_time = 5 * 60;
@@ -837,29 +927,248 @@ TEST_F(Sim_fixture, test_fury)
 
     sim.set_config(config);
 
-    auto start = std::chrono::steady_clock::now();
-    sim.simulate(character);
-    auto end = std::chrono::steady_clock::now();
-    std::cout << "took " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << " ms" << std::endl;
-    std::cout << std::endl;
-
-    auto dd = sim.get_damage_distribution();
-
-    auto f = 1.0 / (config.sim_time * config.n_batches);
-
-    std::cout << "white (mh)    = " << f * dd.white_mh_damage << std::endl;
-    if (dd.white_oh_count > 0) std::cout << "white (oh)    = " << f * dd.white_oh_damage << std::endl;
-    if (dd.heroic_strike_count > 0) std::cout << "heroic strike = " << f * dd.heroic_strike_damage << std::endl;
-    if (dd.cleave_count > 0) std::cout << "cleave        = " << f * dd.cleave_damage << std::endl;
-    if (dd.bloodthirst_count > 0) std::cout << "bloodthirst   = " << f * dd.bloodthirst_damage << std::endl;
-    if (dd.whirlwind_count > 0) std::cout << "whirlwind     = " << f * dd.whirlwind_damage << std::endl;
-    if (dd.execute_count > 0) std::cout << "execute       = " << f * dd.execute_damage << std::endl;
-    if (dd.deep_wounds_count > 0) std::cout << "deep wounds   = " << f * dd.deep_wounds_damage << std::endl;
-    if (dd.item_hit_effects_count > 0) std::cout << "hit effects   = " << f * dd.item_hit_effects_damage << std::endl;
-    std::cout << "----------------------" << std::endl;
-    std::cout << "total         = " << f * dd.sum_damage_sources() << " / " << sim.get_dps_mean() << std::endl;
-
-    std::cout << "rage lost " << sim.get_rage_lost_capped() << std::endl;
+    time_simulate(sim, character);
+    print_results(test_info_->name(), sim, true);
 
     EXPECT_EQ(0, 0);
+}
+
+/*
+>>> baseline, after deep wound fixes
+
+took 14558 ms
+
+white (mh)    = 277.576 (25.2471x)
+white (oh)    = 200.944 (29.9224x)
+bloodthirst   = 189.134 (8.5567x)
+whirlwind     = 106.055 (5.17051x)
+heroic strike = 164.315 (9.8308x)
+execute       = 97.9637 (4.66646x)
+deep wounds   = 18.6281 (8.6935x)
+----------------------
+total         = 1054.62 / 1058.14
+rage lost 576971
+
+>>> after lazy add and other perf work
+
+took 8139 ms
+
+white (mh)    = 277.931 (25.263x)
+white (oh)    = 201.414 (29.951x)
+bloodthirst   = 189.787 (8.56638x)
+whirlwind     = 106.299 (5.17456x)
+heroic strike = 164.903 (9.85761x)
+execute       = 98.0892 (4.67223x)
+deep wounds   = 18.5604 (8.66152x)
+----------------------
+total         = 1056.98 / 1060.52
+rage lost 584443
+
+>>> more perf work, sim_time update, new layout
+
+took 7802 ms
+
+white (mh)    = 278.81 (25.35x)
+white (oh)    = 202.05 (30.05x)
+bloodthirst   = 190.20 (8.59x)
+whirlwind     = 106.61 (5.19x)
+heroic strike = 165.30 (9.88x)
+execute       = 98.79 (4.70x)
+deep wounds   = 18.61 (8.69x)
+----------------------
+total         = 1060.36
+
+rage lost 4.64 per minute
+
+Deep_wounds 98.85%
+Anger Management 100.00%
+mongoose_oh 25.62%
+mongoose_mh 38.86%
+dragonmaw 28.01%
+
+dragonmaw 2.02 procs/min
+mongoose_mh 2.03 procs/min
+windfury_totem 4.82 procs/min
+mongoose_oh 1.20 procs/min
+sword_specialization 1.38 procs/min
+
+>>> after haste/attack speed split, and other stuff ;)
+
+took 5167 ms
+
+white (mh)    = 276.48 (25.16x)
+white (oh)    = 202.47 (29.96x)
+bloodthirst   = 191.87 (8.58x)
+whirlwind     = 107.23 (5.19x)
+heroic strike = 163.29 (9.75x)
+execute       = 98.33 (4.69x)
+deep wounds   = 18.83 (8.71x)
+----------------------
+total         = 1058.50
+
+rage lost 4.54 per minute
+
+Anger Management 100.00%
+windfury_attack 2.50%
+mongoose_oh 25.53%
+Deep_wounds 98.84%
+mongoose_mh 38.64%
+dragonmaw 27.90%
+
+dragonmaw 2.01 procs/min
+mongoose_mh 2.01 procs/min
+windfury_totem 8.95 procs/min
+mongoose_oh 1.19 procs/min
+sword_specialization 1.38 procs/min
+*/
+TEST_F(Sim_fixture, test_procs)
+{
+    config.sim_time = 120;
+    config.n_batches = 25000;
+    config.main_target_initial_armor_ = 6200.0;
+
+    auto dmc_crusade = Hit_effect{"dmc_crusade", Hit_effect::Type::stat_boost, {}, {0, 0, 6}, 0, 10, 0, 1, 0, 0, 0, 20};
+    auto executioner = Hit_effect{"executioner", Hit_effect::Type::stat_boost, {}, {}, 0, 15, 0, 0, 0, 0, 0, 1, 1};
+    executioner.special_stats_boost.gear_armor_pen = 840;
+
+    Special_stats mongoose_buff;
+    mongoose_buff.attack_speed = 0.02;
+
+    auto doomplate_4pc = Hit_effect{"doomplate_4pc", Hit_effect::Type::stat_boost, {}, {0, 0, 160}, 0, 15, 0, 0.02, 0, 0, 1, 0};
+
+    Armory armory;
+
+    character.equip_armor(armory.find_armor(Socket::trinket, "badge_of_the_swarmguard"));
+    character.equip_armor(armory.find_armor(Socket::trinket, "bloodlust_brooch"));
+    character.buffs.emplace_back(armory.buffs.battle_shout);
+    character.buffs.emplace_back(armory.buffs.haste_potion);
+    character.buffs.emplace_back(armory.buffs.bloodlust);
+
+    armory.compute_total_stats(character);
+
+    auto mh = Weapon{"test_mh", {}, {}, 2.7, 270, 270, Weapon_socket::one_hand, Weapon_type::axe};
+    //mh.hit_effects.emplace_back(executioner);
+    mh.hit_effects.emplace_back(Hit_effect{"dragonmaw", Hit_effect::Type::stat_boost, {}, {0, 0, 0, 0, .134}, 0, 10, 0, 2.7 / 60});
+    mh.hit_effects.emplace_back(Hit_effect{"mongoose_mh", Hit_effect::Type::stat_boost, {0,120}, mongoose_buff, 0, 15, 0, 2.7/60});
+    //mh.hit_effects.emplace_back(Hit_effect{dmc_crusade});
+    mh.hit_effects.emplace_back(Hit_effect{"windfury_totem", Hit_effect::Type::windfury_hit, {}, {0, 0, 445}, 0, 0, 0, 0.2});
+    //mh.hit_effects.emplace_back(doomplate_4pc);
+
+    auto oh = Weapon{"test_oh", {}, {}, 2.6, 260, 260, Weapon_socket::one_hand, Weapon_type::sword};
+    //oh.hit_effects.emplace_back(executioner);
+    oh.hit_effects.emplace_back(Hit_effect{"mongoose_oh", Hit_effect::Type::stat_boost, {0,120}, mongoose_buff, 0, 15, 0, 2.6/60});
+    //oh.hit_effects.emplace_back(Hit_effect{dmc_crusade});
+    oh.hit_effects.emplace_back(Hit_effect{"sword_specialization", Hit_effect::Type::sword_spec, {}, {}, 0, 0, 0.5, 0.05});
+    //oh.hit_effects.emplace_back(doomplate_4pc);
+
+    character.equip_weapon(mh, oh);
+
+    character.total_special_stats.attack_power = 2800;
+    character.total_special_stats.critical_strike = 35;
+    character.total_special_stats.hit = 3;
+    character.total_special_stats.haste = 0.05; // haste should probably use % as well, for consistency
+    character.total_special_stats.crit_multiplier = 0.03;
+    character.total_special_stats.expertise = 5;
+    character.total_special_stats.axe_expertise = 5;
+
+    Special_stats mult;
+    mult.ap_multiplier = 0.1;
+    character.total_special_stats += mult;
+
+    // hello, use effects ;)
+    config.talents.death_wish = true;
+    config.combat.use_death_wish = true;
+    config.enable_bloodrage = true;
+    config.enable_blood_fury = true;
+    config.enable_unleashed_rage = true;
+
+    config.talents.flurry = 5;
+    config.talents.rampage = true;
+    config.combat.rampage_use_thresh = 3;
+    config.combat.use_rampage = true;
+    config.talents.dual_wield_specialization = 5;
+    config.talents.deep_wounds = 3;
+    config.combat.deep_wounds = true;
+    config.talents.improved_heroic_strike = 3;
+    config.talents.improved_whirlwind = 1;
+    config.talents.impale = 2;
+    config.talents.unbridled_wrath = 5;
+    config.talents.weapon_mastery = 2;
+    config.talents.bloodthirst = 1;
+    config.talents.anger_management = true;
+    config.combat.heroic_strike_rage_thresh = 60;
+    config.combat.use_heroic_strike = true;
+    /*
+    config.multi_target_mode_ = true;
+    config.combat.cleave_if_adds = true;
+    config.combat.cleave_rage_thresh = 60;
+    config.number_of_extra_targets = 4;
+    config.extra_target_duration = config.sim_time;
+    config.extra_target_initial_armor_ = config.main_target_initial_armor_;
+    config.extra_target_level = config.main_target_level;
+    */
+    config.combat.use_bt_in_exec_phase = true;
+    config.combat.use_ww_in_exec_phase = false;
+    config.combat.use_bloodthirst = true;
+    config.combat.use_whirlwind = true;
+    config.execute_phase_percentage_ = 20;
+
+    config.combat.use_overpower = false;
+    config.combat.overpower_rage_thresh = 25;
+
+    sim.set_config(config);
+
+    time_simulate(sim, character);
+    print_results(test_info_->name(), sim, true);
+
+    time_simulate(sim, character);
+    print_results(test_info_->name(), sim, true);
+
+    time_simulate(sim, character);
+    print_results(test_info_->name(), sim, true);
+
+    auto char_plus = character;
+    char_plus.total_special_stats += {1, 0, 0};
+
+    time_simulate(sim, char_plus);
+    print_results(test_info_->name(), sim, true);
+
+    time_simulate(sim, character);
+    print_results(test_info_->name(), sim, true);
+
+    EXPECT_EQ(0, 0);
+}
+
+TEST_F(Sim_fixture, base_stats)
+{
+    std::vector<Race> races = {
+        Race::human, Race::gnome, Race::dwarf, Race::night_elf, Race::draenei,
+        Race::orc, Race::undead, Race::tauren, Race::troll
+    };
+
+    std::vector<int> expected_ap = {
+        480, 470, 484, 474, 482,
+        486, 478, 490, 482
+    };
+
+    std::vector<double> expected_crit = {
+        7.05, 7.14, 6.93, 7.20, 6.96,
+        6.96, 6.99, 6.90, 7.11
+    };
+
+    Armory armory;
+
+    for (std::vector<Race>::size_type i = 0; i < races.size(); ++i)
+    {
+        auto toon = Character(races[i], 70);
+        armory.compute_total_stats(toon);
+
+        std::cout << "race - " << races[i] << std::endl;
+        std::cout << toon.total_attributes;
+        std::cout << toon.total_special_stats;
+        std::cout << std::endl;
+
+        EXPECT_EQ(toon.total_special_stats.attack_power, expected_ap[i]);
+        EXPECT_NEAR(toon.total_special_stats.critical_strike, expected_crit[i], 0.002);
+    }
 }

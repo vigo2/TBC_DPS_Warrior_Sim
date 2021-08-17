@@ -2,371 +2,446 @@
 #define WOW_SIMULATOR_BUFF_MANAGER_HPP
 
 #include "Attributes.hpp"
+#include "Rage_manager.hpp"
 #include "Item.hpp"
 
-#include <algorithm>
-#include <cmath>
-#include <map>
+#include "time_keeper.hpp"
+#include "damage_sources.hpp"
+#include "logger.hpp"
+
 #include <unordered_map>
-#include <vector>
 
 struct Over_time_buff
 {
-    Over_time_buff(std::string id, Special_stats special_stats, int init_time, double rage_gain, double damage,
-                   int interval, int duration)
-        : id(std::move(id))
-        , special_stats(special_stats)
-        , init_time(init_time)
-        , total_ticks(duration / interval)
-        , current_ticks(1)
-        , rage_gain(rage_gain)
-        , damage(damage)
-        , interval(interval){};
+    static constexpr double inactive = -1;
 
-    std::string id;
-    Special_stats special_stats;
-    int init_time;
-    int total_ticks;
-    int current_ticks;
+    Over_time_buff(const Over_time_effect& effect, double current_time) :
+        name(effect.name),
+        rage_gain(effect.rage_gain),
+        damage(effect.damage),
+        special_stats(effect.special_stats),
+        interval(effect.interval),
+        next_tick(current_time + effect.interval),
+        next_fade(current_time + effect.duration),
+        uptime(0),
+        last_gain(current_time) {}
+
+    std::string name;
+
     double rage_gain;
     double damage;
-    int interval;
+    Special_stats special_stats;
+
+    double interval;
+
+    double next_tick;
+    double next_fade;
+
+    // statistics
+    double uptime;
+    double last_gain;
 };
 
 struct Combat_buff
 {
-    Combat_buff() = default;
-    ~Combat_buff() = default;
+    Combat_buff(const Hit_effect& hit_effect, const Special_stats& multipliers, double current_time) :
+        name(hit_effect.name),
+        special_stats_boost(hit_effect.to_special_stats(multipliers)),
+        stacks(1),
+        next_fade(current_time + hit_effect.duration),
+        charges(hit_effect.max_charges),
+        uptime(0),
+        last_gain(current_time) {}
 
-    Combat_buff(Special_stats special_stats, double duration_left, bool is_independent_stacks = false, bool is_shared_stacks = false)
-        : special_stats(special_stats), duration_left(duration_left), is_independent_stacks(is_independent_stacks), is_shared_stacks(is_shared_stacks){};
+    const std::string name;
+    const Special_stats special_stats_boost;
+    int stacks;
 
-    Special_stats special_stats{};
-    double duration_left{};
-    bool is_independent_stacks{};
-    bool is_shared_stacks{};
+    double next_fade;
+    int charges; // alternative way of removing buffs
+
+    // statistics
+    double uptime;
+    double last_gain;
 };
 
-struct Hit_buff
+struct Hit_aura
 {
-    Hit_buff(std::string id, double duration_left) : id(std::move(id)), duration_left(duration_left){};
+    static constexpr double inactive = -1;
 
-    std::string id;
-    double duration_left;
+    Hit_aura(std::string name, double current_time, double duration) :
+        name(std::move(name)),
+        next_fade(current_time + duration),
+        hit_effect_mh(nullptr),
+        hit_effect_oh(nullptr) { }
+
+    std::string name;
+    double next_fade;
+
+    Hit_effect* hit_effect_mh; // disabled on next_fade
+    Hit_effect* hit_effect_oh;
 };
 
 class Buff_manager
 {
 public:
-    void initialize(Special_stats& special_stats, const std::vector<std::pair<double, Use_effect>>& use_effects_order,
-                    std::vector<Hit_effect>& hit_effects_mh_input, std::vector<Hit_effect>& hit_effects_oh_input,
-                    double tactical_mastery_rage, bool performance_mode_in)
+    void initialize(std::vector<Hit_effect>& hit_effects_mh_input, std::vector<Hit_effect>& hit_effects_oh_input,
+                    std::vector<std::pair<double, Use_effect>>& use_effects_input, Rage_manager* rage_manager_input)
     {
-        performance_mode = performance_mode_in;
-        stat_gains.clear();
-        hit_gains.clear();
-        hit_stacks.clear();
-        over_time_buffs.clear();
-        simulation_special_stats = &special_stats;
         hit_effects_mh = &hit_effects_mh_input;
         hit_effects_oh = &hit_effects_oh_input;
-        use_effect_order = use_effects_order;
-        deep_wounds_damage = 0.0;
-        deep_wounds_timestamps.clear();
-        need_to_recompute_hit_tables = true;
-        tactical_mastery_rage_ = tactical_mastery_rage;
-    };
 
-    [[nodiscard]] double get_dt(double sim_time) const
+        hit_auras.clear();
+
+        use_effects = use_effects_input;
+
+        rage_manager = rage_manager_input;
+    }
+
+    void reset(Special_stats& special_stats, Damage_sources& damage_sources)
     {
-        double dt = 1e10;
-        dt = std::min(dt, next_event);
-        double interval_dt = std::fmod(sim_time, double(min_interval));
-        if (interval_dt < 0.0)
+        simulation_special_stats = &special_stats;
+        simulation_damage_sources = &damage_sources;
+
+        for (auto& he : *hit_effects_mh)
         {
-            interval_dt = std::abs(interval_dt);
+            he.time_counter = 0;
+        }
+
+        for (auto& he : *hit_effects_oh)
+        {
+            he.time_counter = 0;
+        }
+
+        for (auto& buff : combat_buffs)
+        {
+            buff.stacks = 0;
+            buff.next_fade = std::numeric_limits<double>::max();
+        }
+        min_combat_buff = std::numeric_limits<double>::max();
+
+        for (auto& buff : over_time_buffs)
+        {
+            buff.next_tick = Over_time_buff::inactive;
+            buff.next_fade = -1; // this is used for determining whether a buff is active or not
+        }
+        min_over_time_buff = std::numeric_limits<double>::max();
+
+        for (auto& hit_aura : hit_auras)
+        {
+            hit_aura.next_fade = Hit_aura::inactive;
+            hit_aura.hit_effect_mh->time_counter = std::numeric_limits<double>::max();
+            hit_aura.hit_effect_oh->time_counter = std::numeric_limits<double>::max();
+        }
+        min_hit_aura = std::numeric_limits<double>::max();
+
+        use_effect_index = 0;
+        min_use_effect = use_effects.empty() ? std::numeric_limits<double>::max() : use_effects[0].first - 1;
+
+        need_to_recompute_mitigation = true;
+        need_to_recompute_hit_tables = true;
+    }
+
+    void reset_statistics()
+    {
+        for (auto& he : *hit_effects_mh)
+        {
+            he.procs = 0;
+        }
+
+        for (auto& he : *hit_effects_oh)
+        {
+            he.procs = 0;
+        }
+
+        for (auto& buff : combat_buffs)
+        {
+            buff.uptime = 0;
+        }
+
+        for (auto& buff : over_time_buffs)
+        {
+            buff.uptime = 0;
+        }
+    }
+
+    void update_aura_uptimes(double current_time) {
+        for (auto& buff : combat_buffs)
+        {
+            if (buff.stacks > 0) buff.uptime += current_time - (buff.last_gain > 0 ? buff.last_gain : 0);
+        }
+        for (auto& buff : over_time_buffs)
+        {
+            if (buff.next_fade > current_time) buff.uptime += current_time - (buff.last_gain > 0 ? buff.last_gain : 0);
+        }
+    }
+
+    [[nodiscard]] double next_event(double current_time) const
+    {
+        auto next_event = std::numeric_limits<double>::max();
+        if (min_combat_buff >= current_time && min_combat_buff < next_event) next_event = min_combat_buff;
+        if (min_over_time_buff >= current_time && min_over_time_buff < next_event) next_event = min_over_time_buff;
+        if (min_hit_aura >= current_time && min_hit_aura < next_event) next_event = min_hit_aura;
+        if (min_use_effect >= current_time && min_use_effect < next_event) next_event = min_use_effect;
+        return next_event;
+    }
+
+    void increment(Time_keeper& time_keeper, Logger& logger)
+    {
+        auto current_time = time_keeper.time;
+        increment_combat_buffs(current_time, logger);
+        increment_over_time_buffs(current_time, logger);
+        increment_hit_auras(current_time, logger);
+        increment_use_effects(current_time, time_keeper, logger);
+    }
+
+    void increment_combat_buffs(double current_time, Logger& logger)
+    {
+        if (min_combat_buff >= current_time)
+        {
+            return;
+        }
+
+        min_combat_buff = std::numeric_limits<double>::max();
+        for (auto& buff : combat_buffs)
+        {
+            if (buff.stacks == 0) // inactive
+            {
+                continue;
+            }
+
+            if (buff.next_fade >= current_time) // not ready
+            {
+                if (buff.next_fade < min_combat_buff) min_combat_buff = buff.next_fade;
+                continue;
+            }
+
+            assert(current_time - buff.next_fade < 1.01e-5);
+
+            do_fade_buff(buff, logger);
+        }
+    }
+
+    void remove_charge(const Hit_effect& hit_effect, double current_time, Logger& logger)
+    {
+        if (hit_effect.combat_buff_idx == -1)
+        {
+            // it's required that hit_effect can be successfully registered (i.e. combat_buff_idx is eventually set)
+            return; // not up
+        }
+
+        auto& buff = combat_buffs[hit_effect.combat_buff_idx];
+        if (buff.stacks == 0) return;
+        buff.charges -= 1;
+        if (buff.charges > 0) return;
+        buff.next_fade = current_time; // for correct uptime bookkeeping
+        do_fade_buff(buff, logger);
+    }
+
+    void do_fade_buff(Combat_buff& buff, Logger& logger)
+    {
+        const auto& ssb = buff.special_stats_boost;
+        for (int i = 0; i < buff.stacks; i++)
+        {
+            (*simulation_special_stats) -= ssb;
+        }
+        buff.stacks = 0;
+        buff.charges = 0;
+        need_to_recompute_hit_tables |= (ssb.critical_strike > 0 || ssb.hit > 0 || ssb.expertise > 0);
+        need_to_recompute_mitigation |= (ssb.gear_armor_pen > 0);
+
+        // special case, should be removed
+        if (buff.name == "battle_stance")
+        {
+            rage_manager->swap_stance();
+        }
+
+        buff.uptime += buff.next_fade - (buff.last_gain > 0 ? buff.last_gain : 0);
+
+        logger.print(buff.name, " fades.");
+    }
+
+    void increment_over_time_buffs(double current_time, Logger& logger)
+    {
+        if (min_over_time_buff >= current_time)
+        {
+            return;
+        }
+
+        min_over_time_buff = std::numeric_limits<double>::max();
+        for (auto& buff : over_time_buffs)
+        {
+            if (buff.next_tick == Over_time_buff::inactive) // inactive
+            {
+                continue;
+            }
+
+            if (buff.next_tick >= current_time) // not ready
+            {
+                if (buff.next_tick < min_over_time_buff) min_over_time_buff = buff.next_tick;
+                continue;
+            }
+
+            assert(current_time - buff.next_tick < 1.01e-5);
+
+            // this used to support everything at once, but no over_time_buff actually granted rage, dealt damage, and added stats.
+            //  nothing does the latter, afaik
+            if (buff.rage_gain > 0)
+            {
+                rage_manager->gain_rage(buff.rage_gain);
+                logger.print("Over time effect: ", buff.name, " tick. Current rage: ", int(rage_manager->get_rage()));
+            }
+            else if (buff.damage > 0)
+            {
+                simulation_damage_sources->add_damage(Damage_source::deep_wounds, buff.damage, current_time);
+                logger.print("Over time effect: ", buff.name, " tick. Damage: ", int(buff.damage));
+            }
+            else
+            {
+                (*simulation_special_stats) += buff.special_stats;
+            }
+
+            if (buff.next_fade < current_time)
+            {
+                buff.next_tick = Over_time_buff::inactive;
+                buff.uptime += buff.next_fade - (buff.last_gain > 0 ? buff.last_gain : 0);
+                logger.print("Over time effect: ", buff.name, " fades.");
+            }
+            else
+            {
+                buff.next_tick += buff.interval;
+                if (buff.next_tick < min_over_time_buff) min_over_time_buff = buff.next_tick;
+            }
+        }
+    }
+
+    void increment_hit_auras(double current_time, Logger& logger)
+    {
+        if (min_hit_aura >= current_time)
+        {
+            return;
+        }
+
+        min_hit_aura = std::numeric_limits<double>::max();
+        for (auto& hit_aura : hit_auras)
+        {
+            if (hit_aura.next_fade == Hit_aura::inactive)
+            {
+                continue;
+            }
+
+            if (hit_aura.next_fade >= current_time)
+            {
+                if (hit_aura.next_fade < min_hit_aura) min_hit_aura = hit_aura.next_fade;
+                continue;
+            }
+
+            assert(current_time - hit_aura.next_fade < 1.01e-5);
+
+            assert(hit_aura.hit_effect_mh != nullptr);
+            assert(hit_aura.hit_effect_oh != nullptr);
+
+            // or have a specialized add_combat_buff() here, probably
+            assert(hit_aura.hit_effect_mh->combat_buff_idx >= 0);
+            assert(hit_aura.hit_effect_oh->combat_buff_idx == hit_aura.hit_effect_mh->combat_buff_idx);
+
+            hit_aura.hit_effect_mh->time_counter = std::numeric_limits<double>::max(); // disable hit_effects, effectively
+            hit_aura.hit_effect_oh->time_counter = std::numeric_limits<double>::max();
+
+            auto& buff = combat_buffs[hit_aura.hit_effect_mh->combat_buff_idx];
+            buff.next_fade = hit_aura.next_fade; // for correct uptime bookkeeping
+            do_fade_buff(buff, logger);
+
+            hit_aura.next_fade = Hit_aura::inactive;
+        }
+    }
+
+    void increment_use_effects(double current_time, Time_keeper& time_keeper, Logger& logger)
+    {
+        if (min_use_effect >= current_time)
+        {
+            return;
+        }
+
+        auto& use_effect = use_effects[use_effect_index].second;
+
+        if (use_effect.triggers_gcd && !time_keeper.global_ready())
+        {
+            min_use_effect = current_time + time_keeper.global_cd();
+            return;
+        }
+
+        if (use_effect.rage_boost > 0 && rage_manager->get_rage() + use_effect.rage_boost > 100)
+        {
+            min_use_effect = current_time + 0.5;
+            return;
+        }
+
+        if (use_effect.rage_boost < 0 && rage_manager->get_rage() + use_effect.rage_boost < 0)
+        {
+            min_use_effect = current_time + 0.5;
+            return;
+        }
+
+        if (!use_effect.hit_effects.empty())
+        {
+            add_hit_aura(use_effect.name, use_effect.hit_effects[0], use_effect.hit_effects[0].duration, current_time);
+        }
+        else if (!use_effect.over_time_effects.empty())
+        {
+            add_over_time_buff(use_effect.over_time_effects[0], current_time);
         }
         else
         {
-            interval_dt = double(min_interval) - interval_dt;
+            auto hit_effect = Hit_effect();
+            hit_effect.name = use_effect.name;
+            hit_effect.attribute_boost = use_effect.attribute_boost;
+            hit_effect.special_stats_boost = use_effect.special_stats_boost;
+            hit_effect.duration = use_effect.duration;
+            add_combat_buff(hit_effect, current_time);
         }
-        dt = std::min(dt, interval_dt);
-        return dt;
-    }
 
-    void increment_stat_gains(double current_time, double dt, double& rage, double& rage_lost_stance, bool debug,
-                              std::vector<std::string>& debug_msg)
-    {
-        int stacks = 1;
-        for (auto it = stat_gains.begin(); it != stat_gains.end();)
+        if (use_effect.rage_boost > 0)
         {
-            const auto& name = it->first;
-            auto& buff = it->second;
+            rage_manager->gain_rage(use_effect.rage_boost);
+            logger.print("Current rage: ", int(rage_manager->get_rage()));
+        }
 
-            if (!performance_mode && current_time > 0.0)
-            {
-                aura_uptime[name] += dt;
-            }
+        if (use_effect.rage_boost < 0)
+        {
+            rage_manager->spend_rage(-use_effect.rage_boost);
+            logger.print("Current rage: ", int(rage_manager->get_rage()));
+        }
 
-            buff.duration_left -= dt;
-            if (buff.duration_left < 0.0)
-            {
-                if (debug)
-                {
-                    debug_msg.emplace_back(name + " fades.");
-                }
-                if (name == "battle_stance")
-                {
-                    if (rage > tactical_mastery_rage_)
-                    {
-                        rage_lost_stance += rage - tactical_mastery_rage_;
-                        rage = tactical_mastery_rage_;
-                    }
-                }
+        if (use_effect.triggers_gcd)
+        {
+            time_keeper.global_cast(1.5);
+        }
 
-                if (buff.is_independent_stacks)
-                {
-                    stacks = 0;
-                    for (auto& hit_effect_mh : (*hit_effects_mh))
-                    {
-                        if (name == hit_effect_mh.name)
-                        {
-                            stacks = hit_effect_mh.stacks_counter;
-                            hit_effect_mh.stacks_counter = 0;
-                            break;
-                        }
-                    }
-                    if (!(stacks > 0))
-                    {
-                        for (auto& hit_effect_oh : (*hit_effects_oh))
-                        {
-                            if (name == hit_effect_oh.name)
-                            {
-                                stacks = hit_effect_oh.stacks_counter;
-                                hit_effect_oh.stacks_counter = 0;
-                                break;
-                            }
-                        }
-                    }
-                }
-                else if (buff.is_shared_stacks)
-                {
-                    stacks = arpen_stacks_counter;
-                    arpen_stacks_counter = 0;
-                    need_to_recompute_mitigation = true;
-                    // for (auto& hit_effects_mh : (*hit_effects_mh))
-                    // {
-                    //     if (it->first == hit_effects_mh.name)
-                    //     {
-                    //         stacks = hit_effects_mh.stacks_counter;
-                    //         hit_effects_mh.stacks_counter = 0;
-                    //         break;
-                    //     }
-                    // }
-                    // for (auto& hit_effects_oh : (*hit_effects_oh))
-                    // {
-                    //     if (it->first == hit_effects_oh.name)
-                    //     {
-                    //         stacks = hit_effects_oh.stacks_counter;
-                    //         hit_effects_oh.stacks_counter = 0;
-                    //         break;
-                    //     }
-                    // }
-                }
+        use_effect_index += 1;
 
-                for (int i = 0; i < stacks; i++)
-                {
-                    (*simulation_special_stats) -= buff.special_stats;
-                }
-                // if (it->second.special_stats.gear_armor_pen > 0)
-                // {
-                //     need_to_recompute_mitigation = true;
-                // }
-                if (buff.special_stats.hit > 0 || buff.special_stats.critical_strike > 0 || buff.special_stats.expertise > 0)
-                {
-                    need_to_recompute_hit_tables = true;
-                }
-                it = stat_gains.erase(it);
-            }
-            else
-            {
-                next_event = std::min(next_event, buff.duration_left);
-                ++it;
-            }
+        if (use_effect_index < use_effects.size())
+        {
+            min_use_effect = use_effects[use_effect_index].first;
+
+            const auto& ue = use_effects[use_effect_index];
+            if (ue.second.triggers_gcd || ue.second.rage_boost != 0) min_use_effect -= 1;
+        }
+        else
+        {
+            min_use_effect = std::numeric_limits<double>::max();
         }
     }
 
-    void increment_hit_gains(double current_time, double dt, bool debug, std::vector<std::string>& debug_msg)
+    void start_cooldown(const Hit_effect& hit_effect, double current_time) const
     {
-        for (auto it = hit_gains.begin(); it != hit_gains.end();)
-        {
-            auto& buff = *it;
-            if (!performance_mode && current_time > 0.0)
-            {
-                aura_uptime[buff.id] += dt;
-            }
-            buff.duration_left -= dt;
-            if (buff.duration_left < 0.0)
-            {
-                if (debug)
-                {
-                    debug_msg.emplace_back(buff.id + " fades.");
-                }
+        if (hit_effect.cooldown == 0) return;
 
-                for (auto jt = hit_effects_mh->begin(); jt != hit_effects_mh->end();)
-                {
-                    jt->name == buff.id ? jt = hit_effects_mh->erase(jt) : ++jt;
-                }
-                for (auto jt = hit_effects_oh->begin(); jt != hit_effects_oh->end();)
-                {
-                    jt->name == buff.id ? jt = hit_effects_oh->erase(jt) : ++jt;
-                }
-
-                reset_armor_reduction = true;
-                it = hit_gains.erase(it);
-            }
-            else
-            {
-                next_event = std::min(next_event, buff.duration_left);
-                ++it;
-            }
-        }
-    }
-
-    void increment_use_effects(double current_time, double& rage, double& global_cooldown, bool debug,
-                               std::vector<std::string>& debug_msg, double ap_multiplier)
-    {
-        // Try to use the use effect within one second of what was planned (compensate some for GCD's)
-        double margin = 0.0;
-        if (current_time > 0.0)
-        {
-            margin = 1.0;
-        }
-        if (!use_effect_order.empty() && current_time > use_effect_order.back().first - margin)
-        {
-            auto& use_effect = use_effect_order.back().second;
-            if (!use_effect.triggers_gcd || (global_cooldown < 0.0))
-            {
-                if (debug)
-                {
-                    debug_msg.emplace_back("Activating: " + use_effect.name);
-                }
-                if (ap_multiplier > 0)
-                {
-                    if (use_effect.name == "unleashed_rage")
-                    {
-                        use_effect.special_stats_boost.attack_power += use_effect.special_stats_boost.attack_power * (ap_multiplier - 0.1);
-                    }
-                    else
-                    {
-                        use_effect.special_stats_boost.attack_power += use_effect.special_stats_boost.attack_power * ap_multiplier;
-                    }
-                }
-                if (!use_effect.hit_effects.empty())
-                {
-                    add_hit_effect(use_effect.name, use_effect.hit_effects[0], use_effect.hit_effects[0].duration);
-                }
-                else if (!use_effect.over_time_effects.empty())
-                {
-                    add_over_time_effect(use_effect.over_time_effects[0], int(current_time + 1));
-                }
-                else
-                {
-                    add(use_effect.name, use_effect.get_special_stat_equivalent(*simulation_special_stats, ap_multiplier),
-                        use_effect.duration);
-                }
-                if (use_effect.rage_boost != 0.0)
-                {
-                    rage += use_effect.rage_boost;
-                    rage = std::min(100.0, rage);
-                    if (debug)
-                    {
-                        debug_msg.emplace_back("Current rage: " + std::to_string(int(rage)));
-                    }
-                }
-                if (use_effect.triggers_gcd)
-                {
-                    global_cooldown = 1.5;
-                }
-                use_effect_order.pop_back();
-            }
-        }
-    }
-
-    void increment_over_time_buffs(double current_time, double& rage, bool debug, std::vector<std::string>& debug_msg)
-    {
-        for (auto it = over_time_buffs.begin(); it != over_time_buffs.end();)
-        {
-            auto& buff = *it;
-            if ((int(current_time) - buff.init_time) / buff.interval >= buff.current_ticks)
-            {
-                rage += buff.rage_gain;
-                rage = std::min(100.0, rage);
-                (*simulation_special_stats) += buff.special_stats;
-                buff.current_ticks++;
-                if (buff.damage > 0.0)
-                {
-                    deep_wounds_damage += buff.damage;
-                    deep_wounds_timestamps.push_back(current_time);
-                }
-                if (debug)
-                {
-                    if (buff.rage_gain > 0)
-                    {
-                        debug_msg.emplace_back("Over time effect: " + buff.id +
-                                               " tick. Current rage: " + std::to_string(int(rage)));
-                    }
-                    else if (buff.damage > 0)
-                    {
-                        debug_msg.emplace_back("Over time effect: " + buff.id +
-                                               " tick. Damage: " + std::to_string(int(buff.damage)));
-                    }
-                    else
-                    {
-                        debug_msg.emplace_back("Over time effect: " + buff.id + " tick.");
-                    }
-                }
-            }
-            if (buff.current_ticks == buff.total_ticks)
-            {
-                if (debug)
-                {
-                    debug_msg.emplace_back("Over time effect: " + buff.id + " fades.");
-                }
-                it = over_time_buffs.erase(it);
-            }
-            else
-            {
-                ++it;
-            }
-        }
-
-        min_interval = 100000;
-        for (const auto& buff : over_time_buffs)
-        {
-            min_interval = std::min(buff.interval, min_interval);
-        }
-    }
-
-    void increment_icd(double dt) const
-    {
-        for (auto& hit_effect_mh : *hit_effects_mh)
-        {
-            hit_effect_mh.time_counter -= dt;
-        }
-        for (auto& hit_effect_oh : *hit_effects_oh)
-        {
-            hit_effect_oh.time_counter -= dt;
-        }
-    }
-
-    void reset_icd(const Hit_effect& hit_effect) const
-    {
         for (auto& hit_effect_mh : *hit_effects_mh)
         {
             if (hit_effect_mh.name == hit_effect.name)
             {
-                hit_effect_mh.time_counter = hit_effect.cooldown;
+                hit_effect_mh.time_counter = current_time + hit_effect.cooldown;
                 break;
             }
         }
@@ -374,136 +449,169 @@ public:
         {
             if (hit_effect_oh.name == hit_effect.name)
             {
-                hit_effect_oh.time_counter = hit_effect.cooldown;
+                hit_effect_oh.time_counter = current_time + hit_effect.cooldown;
                 break;
             }
         }
     }
 
-    void modify_arpen_stacks(Hit_effect& hit_effect, Socket weapon_hand, bool at_max_stacks = false)
+    void gain_stats(const Special_stats& ssb)
     {
-        Special_stats no_reduction = {};
-        Special_stats armor_reduction = {};
-        armor_reduction.gear_armor_pen = hit_effect.armor_reduction;
-
-        need_to_recompute_mitigation = true;
-        if (weapon_hand == Socket::main_hand)
-        {
-            for (auto& hit_effect_mh : *hit_effects_mh)
-            {
-                if (hit_effect_mh.name == hit_effect.name)
-                {
-                    add(hit_effect_mh.name, at_max_stacks ? no_reduction : armor_reduction, hit_effect_mh.duration, false, true);
-                    break;
-                }
-            }
-        }
-        else
-        {
-            for (auto& hit_effect_oh : *hit_effects_oh)
-            {
-                if (hit_effect_oh.name == hit_effect.name)
-                {
-                    armor_reduction.gear_armor_pen = hit_effect.armor_reduction;
-                    add(hit_effect_oh.name, at_max_stacks ? no_reduction : armor_reduction, hit_effect_oh.duration, false, true);
-                    break;
-                }
-            }
-        }
+        (*simulation_special_stats) += ssb;
+        need_to_recompute_hit_tables |= (ssb.hit > 0 || ssb.critical_strike > 0 || ssb.expertise > 0);
+        need_to_recompute_mitigation |= (ssb.gear_armor_pen > 0);
     }
 
-    void increment(double dt, double current_time, double& rage, double& rage_lost_stance, double& global_cooldown,
-                   bool debug, std::vector<std::string>& debug_msg, double ap_multiplier)
+    // Hit_effect's name is used as a Combat_buff name here, so each "stat boost" hit effect
+    //  has a corresponding buff.
+    // This allows to setup a hit_effect -> buff connection initially, which allows to cut
+    //  short buff iteration.
+    // however, min_combat_buff might not be updated correctly, so increment_combat_buff()
+    //  does more work
+
+    // instead of using hit_effects per weapon, and "sharing" them via combat_buff name,
+    //  hit_effects could also be registered "globally" (together with their respective combat_buff,
+    //  so each hit_effect would have a one-to-one connection to the corresponding buff),
+    //  and would simply apply with different percentages
+
+    // if stacks work correctly (i.e. stacks == 0 || stacks < max_stacks determines whether
+    //  it's a gain or a refresh), next_fade could be set to MAX_DOUBLE on buff fade
+    void add_combat_buff(Hit_effect& hit_effect, double current_time)
     {
-        next_event = 100000;
-        increment_icd(dt);
-        increment_stat_gains(current_time, dt, rage, rage_lost_stance, debug, debug_msg);
-        increment_hit_gains(current_time, dt, debug, debug_msg);
-        // increment_hit_stacks(current_time, dt, debug, debug_msg);
-        increment_use_effects(current_time, rage, global_cooldown, debug, debug_msg, ap_multiplier);
-        increment_over_time_buffs(current_time, rage, debug, debug_msg);
+        assert(hit_effect.max_stacks >= 1);
+        assert(hit_effect.max_charges >= 1);
+
+        // "registration", essentially - once per hit_effect, connects each hit_effect w/ a combat buff
+        if (hit_effect.combat_buff_idx == -1)
+        {
+            for (size_t i = 0; i < combat_buffs.size(); ++i)
+            {
+                if (combat_buffs[i].name == hit_effect.name)
+                {
+                    hit_effect.combat_buff_idx = static_cast<int>(i);
+                    return do_add_combat_buff(hit_effect, current_time);
+                }
+            }
+
+            auto& buff = combat_buffs.emplace_back(hit_effect, *simulation_special_stats, current_time);
+            gain_stats(buff.special_stats_boost);
+            if (buff.next_fade < min_combat_buff) min_combat_buff = buff.next_fade;
+            hit_effect.combat_buff_idx = static_cast<int>(combat_buffs.size()) - 1;
+            return;
+        }
+
+        do_add_combat_buff(hit_effect, current_time);
     }
 
-    void add(const std::string& name, const Special_stats& special_stats, double duration_left, bool is_independent_stacks = false, bool is_shared_stacks = false)
+    void do_add_combat_buff(Hit_effect& hit_effect, double current_time)
     {
-        // Insert the buff in stat gains vector. If it exists increase the duration of the buff
-        auto kv_pair = stat_gains.insert({name, {special_stats, duration_left, is_independent_stacks, is_shared_stacks}});
-        if (!kv_pair.second)
+        auto& buff = combat_buffs[hit_effect.combat_buff_idx];
+        if (buff.next_fade < current_time || buff.stacks < hit_effect.max_stacks)
         {
-            kv_pair.first->second.duration_left = duration_left;
-            if (!is_independent_stacks && !is_shared_stacks)
+            if (buff.next_fade < current_time) assert(buff.stacks == 0 && buff.charges == 0);
+            if (buff.stacks == 0) buff.last_gain = current_time;
+            gain_stats(buff.special_stats_boost);
+            buff.stacks += 1;
+        }
+        buff.next_fade = current_time + hit_effect.duration; // or keep unchanged for "temporary hit effects"
+        buff.charges = hit_effect.max_charges;
+        if (buff.next_fade < min_combat_buff) min_combat_buff = buff.next_fade;
+    }
+
+    void add_hit_aura(const std::string& name, Hit_effect& hit_effect, double duration_left, double current_time)
+    {
+        for (auto& hit_aura : hit_auras)
+        {
+            if (hit_aura.name == name)
             {
+                hit_aura.hit_effect_mh->time_counter = 0; // re-enable hit_effects, and queue fade
+                hit_aura.hit_effect_oh->time_counter = 0;
+                hit_aura.next_fade = current_time + duration_left;
+                if (hit_aura.next_fade < min_hit_aura) min_hit_aura = hit_aura.next_fade;
                 return;
             }
         }
-        (*simulation_special_stats) += special_stats;
-        if (special_stats.hit > 0 || special_stats.critical_strike > 0 || special_stats.expertise > 0)
-        {
-            need_to_recompute_hit_tables = true;
-        }
-        // if (special_stats.gear_armor_pen > 0)
-        // {
-        //     need_to_recompute_mitigation = true;
-        // }
-        if (duration_left < next_event)
-        {
-            next_event = duration_left;
-        }
+
+        auto& hit_aura = hit_auras.emplace_back(Hit_aura(name, current_time, duration_left));
+        hit_effect.sanitize();
+        hit_aura.hit_effect_mh = &hit_effects_mh->emplace_back(hit_effect);
+        hit_aura.hit_effect_oh = &hit_effects_oh->emplace_back(hit_effect);
+        if (hit_aura.next_fade < min_hit_aura) min_hit_aura = hit_aura.next_fade;
     }
 
-    void add_hit_effect(const std::string& name, const Hit_effect& hit_effect, double duration_left)
+    void add_over_time_buff(Over_time_effect& over_time_effect, double current_time)
     {
-        (*hit_effects_mh).emplace_back(hit_effect);
-        (*hit_effects_oh).emplace_back(hit_effect);
-        hit_gains.emplace_back(name, duration_left);
-    }
-
-    void add_over_time_effect(const Over_time_effect& over_time_effect, int init_time)
-    {
-        if (over_time_effect.name == "Deep_wounds")
+        if (over_time_effect.over_time_buff_idx == -1)
         {
-            for (auto& over_time_buff : over_time_buffs)
+            for (size_t i = 0; i < over_time_buffs.size(); ++i)
             {
-                if (over_time_buff.id == "Deep_wounds")
+                if (over_time_buffs[i].name == over_time_effect.name)
                 {
-                    over_time_buff.damage = over_time_effect.damage;
-                    over_time_buff.total_ticks =
-                        (over_time_effect.duration + init_time - over_time_buff.init_time) / over_time_buff.interval;
-                    return;
+                    over_time_effect.over_time_buff_idx = static_cast<int>(i);
+                    return do_add_over_time_buff(over_time_effect, current_time);
                 }
             }
+
+            auto& buff = over_time_buffs.emplace_back(Over_time_buff(over_time_effect, current_time));
+            if (buff.next_tick < min_over_time_buff) min_over_time_buff = buff.next_tick;
+            over_time_effect.over_time_buff_idx = static_cast<int>(over_time_buffs.size()) - 1;
+            return;
         }
-        min_interval = std::min(over_time_effect.interval, min_interval);
-        over_time_buffs.emplace_back(over_time_effect.name, over_time_effect.special_stats, init_time,
-                                     over_time_effect.rage_gain, over_time_effect.damage, over_time_effect.interval,
-                                     over_time_effect.duration);
+
+        do_add_over_time_buff(over_time_effect, current_time);
     }
 
-    bool can_do_overpower()
+    void do_add_over_time_buff(const Over_time_effect& over_time_effect, double current_time)
     {
-        auto it = stat_gains.find("overpower_aura");
-        return it != stat_gains.end();
+        auto& buff = over_time_buffs[over_time_effect.over_time_buff_idx];
+
+        if (buff.next_fade < current_time) {
+            buff.last_gain = current_time;
+        }
+
+        buff.damage = over_time_effect.damage; // nothing else ever changes
+
+        buff.next_tick = current_time + over_time_effect.interval;
+        buff.next_fade = current_time + over_time_effect.duration;
+        if (buff.next_tick < min_over_time_buff) min_over_time_buff = buff.next_tick;
     }
 
-    bool need_to_recompute_hit_tables{false};
-    bool reset_armor_reduction{false};
-    bool need_to_recompute_mitigation{false};
-    bool performance_mode{false};
-    Special_stats* simulation_special_stats;
-    std::map<std::string, Combat_buff> stat_gains;
-    std::vector<Hit_buff> hit_gains;
-    std::vector<Hit_buff> hit_stacks;
-    std::vector<Over_time_buff> over_time_buffs;
-    std::vector<Hit_effect>* hit_effects_mh;
-    std::vector<Hit_effect>* hit_effects_oh;
-    std::vector<std::pair<double, Use_effect>> use_effect_order;
-    double next_event = 100000;
-    int min_interval = 100000;
-    std::map<std::string, double> aura_uptime;
-    double deep_wounds_damage{};
-    double tactical_mastery_rage_{};
-    std::vector<double> deep_wounds_timestamps{};
-    int arpen_stacks_counter{0};
+    [[nodiscard]] std::unordered_map<std::string, double> get_aura_uptimes_map() const
+    {
+        auto m = std::unordered_map<std::string, double>();
+        for (const auto& buff : combat_buffs)
+        {
+            m[buff.name] = buff.uptime;
+        }
+        for (const auto& buff : over_time_buffs)
+        {
+            m[buff.name] = buff.uptime;
+        }
+        return m;
+    }
+
+
+    bool need_to_recompute_hit_tables{};
+    bool need_to_recompute_mitigation{};
+    Special_stats* simulation_special_stats{};
+    Damage_sources* simulation_damage_sources{};
+    Rage_manager* rage_manager{};
+
+    size_t use_effect_index{};
+    double min_use_effect{std::numeric_limits<double>::max()};
+
+    std::vector<Combat_buff> combat_buffs{};
+    double min_combat_buff{std::numeric_limits<double>::max()};
+
+    std::vector<Over_time_buff> over_time_buffs{};
+    double min_over_time_buff{std::numeric_limits<double>::max()};
+
+    std::vector<Hit_aura> hit_auras{};
+    double min_hit_aura{std::numeric_limits<double>::max()};
+
+    std::vector<Hit_effect>* hit_effects_mh{};
+    std::vector<Hit_effect>* hit_effects_oh{};
+    std::vector<std::pair<double, Use_effect>> use_effects{};
 };
 
 #endif // WOW_SIMULATOR_BUFF_MANAGER_HPP

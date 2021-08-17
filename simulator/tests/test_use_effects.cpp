@@ -5,16 +5,11 @@
 
 namespace
 {
-bool is_descending(const std::vector<std::pair<double, Use_effect>>& use_effects)
+bool is_ascending(const std::vector<std::pair<double, Use_effect>>& use_effects)
 {
-    double activate_time = 1000000.0;
-    bool is_descending{true};
-    for (const auto& effect : use_effects)
-    {
-        is_descending &= (effect.first <= activate_time);
-        activate_time = effect.first;
-    }
-    return is_descending;
+    return std::is_sorted(use_effects.begin(), use_effects.end(), [](const auto& a, const auto& b) {
+       return a.first < b.first;
+    });
 }
 } // namespace
 
@@ -60,78 +55,34 @@ TEST(TestSuite, test_use_effect_ordering)
     use_effect3.effect_socket = Use_effect::Effect_socket::shared;
 
     std::vector<Use_effect> use_effects{use_effect1, use_effect2, use_effect3};
-    auto order = Use_effects::compute_use_effect_order(use_effects, Special_stats{}, 580, 1500, 0, 0, 0);
+    auto order = Use_effects::compute_use_effect_order(use_effects, Special_stats{}, 580, 1500, 0, 0);
     for (const auto& effect : order)
     {
         EXPECT_TRUE(effect.second.name != "should_not_fit");
     }
 }
 
-TEST(TestSuite, test_use_effect_shuffle)
-{
-    Combat_simulator sim{};
-    std::vector<Use_effect> use_effects{};
-    use_effects.emplace_back(sim.deathwish);
-    use_effects.emplace_back(sim.bloodrage);
-    double sim_time = 20.0;
-    auto order_with_rage = Use_effects::compute_use_effect_order(use_effects, Special_stats{}, sim_time, 1500, 0, 0, 10);
-    auto order_without_rage = Use_effects::compute_use_effect_order(use_effects, Special_stats{}, sim_time, 1500, 0, 0, 0);
-
-    EXPECT_TRUE(order_with_rage[0].second.name == "Bloodrage");
-    EXPECT_TRUE(order_with_rage[1].second.name == "Death_wish");
-
-    EXPECT_TRUE(order_without_rage[0].second.name == "Death_wish");
-    EXPECT_TRUE(order_without_rage[1].second.name == "Bloodrage");
-
-    EXPECT_TRUE(is_descending(order_with_rage));
-    EXPECT_TRUE(is_descending(order_without_rage));
-
-    Armory armory;
-    //auto use1 = armory.find_armor(Socket::trinket, "diamond_flask");
-    use_effects.clear();
-    use_effects.emplace_back(sim.deathwish);
-    use_effects.emplace_back(sim.bloodrage);
-    use_effects.emplace_back(sim.recklessness);
-    //use_effects.emplace_back(use1.use_effects[0]);
-    order_with_rage = Use_effects::compute_use_effect_order(use_effects, Special_stats{}, sim_time, 1500, 0, 0, 10);
-    order_without_rage = Use_effects::compute_use_effect_order(use_effects, Special_stats{}, sim_time, 1500, 0, 0, 0);
-
-    EXPECT_TRUE(order_with_rage[0].second.name == "Bloodrage");
-    EXPECT_TRUE(order_with_rage[1].second.name == "Recklessness");
-    EXPECT_TRUE(order_with_rage[2].second.name == "Death_wish");
-    //EXPECT_TRUE(order_with_rage[3].second.name == "diamond_flask");
-
-    EXPECT_TRUE(order_without_rage[0].second.name == "Recklessness");
-    EXPECT_TRUE(order_without_rage[1].second.name == "Death_wish");
-    EXPECT_TRUE(order_without_rage[2].second.name == "Bloodrage");
-    //EXPECT_TRUE(order_without_rage[3].second.name == "diamond_flask");
-
-    EXPECT_TRUE(is_descending(order_with_rage));
-    EXPECT_TRUE(is_descending(order_without_rage));
-}
-
 TEST(TestSuite, test_use_effects)
 {
     Armory armory;
     auto use1 = armory.find_armor(Socket::trinket, "badge_of_the_swarmguard");
-    auto use2 = armory.find_armor(Socket::trinket, "icon_of_unyeilding_courage");
-    auto use3 = armory.find_armor(Socket::legs, "bulwark_of_kings");
+    auto use2 = armory.find_armor(Socket::trinket, "icon_of_unyielding_courage");
+    auto use3 = armory.find_armor(Socket::chest, "bulwark_of_kings");
     Combat_simulator sim{};
 
     std::vector<Use_effect> use_effects{};
-    use_effects.emplace_back(sim.deathwish);
+    use_effects.emplace_back(sim.death_wish);
     use_effects.emplace_back(sim.recklessness);
     use_effects.emplace_back(sim.bloodrage);
     use_effects.emplace_back(
-        Use_effect{"Blood_fury", Use_effect::Effect_socket::unique, {}, {0, 0, 300}, 0, 15, 120, true});
-    use_effects.emplace_back(Use_effect{"Berserking", Use_effect::Effect_socket::unique, {}, {}, 0, 10, 180, false});
+        Use_effect{"blood_fury", Use_effect::Effect_socket::unique, {}, {0, 0, 300}, 0, 15, 120, true});
+    use_effects.emplace_back(Use_effect{"berserking", Use_effect::Effect_socket::unique, {}, {}, 0, 10, 180, false});
     use_effects.emplace_back(use1.use_effects[0]);
     use_effects.emplace_back(use2.use_effects[0]);
     use_effects.emplace_back(use3.use_effects[0]);
     double sim_time = 320.0;
-    auto order = Use_effects::compute_use_effect_order(use_effects, Special_stats{}, sim_time, 1500, 0, 0, 0);
-    EXPECT_TRUE(is_descending(order));
-    int fg = 0;
+    auto order = Use_effects::compute_use_effect_order(use_effects, Special_stats{}, sim_time, 1500, 0, 0);
+    EXPECT_TRUE(is_ascending(order));
     int ic = 0;
     int bk = 0;
     int dw = 0;
@@ -141,29 +92,26 @@ TEST(TestSuite, test_use_effects)
     int bs = 0;
     for (const auto& effect : order)
     {
-        if (effect.second.name == "figurine_nightseye_panther")
-            fg++;
-        if (effect.second.name == "icon_of_unyeilding_courage")
+        if (effect.second.name == "icon_of_unyielding_courage")
             ic++;
         if (effect.second.name == "bulwark_of_kings")
             bk++;
-        if (effect.second.name == "Blood_fury")
+        if (effect.second.name == "blood_fury")
             bf++;
-        if (effect.second.name == "Berserking")
+        if (effect.second.name == "berserking")
             bs++;
-        if (effect.second.name == "Bloodrage")
+        if (effect.second.name == "bloodrage")
             br++;
-        if (effect.second.name == "Recklessness")
+        if (effect.second.name == "recklessness")
             rl++;
-        if (effect.second.name == "Death_wish")
+        if (effect.second.name == "death_wish")
             dw++;
     }
-    EXPECT_TRUE(fg == 1);
-    EXPECT_TRUE(ic == 3);
-    EXPECT_TRUE(bk == 1);
-    EXPECT_TRUE(dw == 2);
-    EXPECT_TRUE(rl == 1);
-    EXPECT_TRUE(br == 6);
-    EXPECT_TRUE(bf == 3);
-    EXPECT_TRUE(bs == 2);
+    EXPECT_EQ(ic, 3);
+    EXPECT_EQ(bk, 1);
+    EXPECT_EQ(dw, 2);
+    EXPECT_EQ(rl, 1);
+    EXPECT_EQ(br, 6);
+    EXPECT_EQ(bf, 3);
+    EXPECT_EQ(bs, 2);
 }

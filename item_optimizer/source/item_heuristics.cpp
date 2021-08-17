@@ -28,7 +28,7 @@ double get_character_ap_equivalent(const Special_stats& special_stats, const Wea
     {
         double use_effect_ap =
             Use_effects::get_use_effect_ap_equivalent(use_effect, special_stats, special_stats_ap, sim_time);
-        if (use_effect.effect_socket == Use_effect::Effect_socket ::shared)
+        if (use_effect.effect_socket == Use_effect::Effect_socket::shared)
         {
             if (use_effect_ap > use_effects_shared_ap)
             {

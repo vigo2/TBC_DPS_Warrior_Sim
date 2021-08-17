@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <utility>
+#include <iostream>
 
 class Distribution
 {
@@ -29,5 +30,7 @@ public:
     double min_;
     int n_samples_;
 };
+
+std::ostream& operator<<(std::ostream& os, const Distribution& d);
 
 #endif // WOW_SIMULATOR_DISTRIBUTION_HPP

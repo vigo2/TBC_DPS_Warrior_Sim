@@ -2,6 +2,7 @@
 #define WOW_SIMULATOR_COMBAT_SIMULATOR_HPP
 
 #include "Buff_manager.hpp"
+#include "Rage_manager.hpp"
 #include "Character.hpp"
 #include "Distribution.hpp"
 #include "damage_sources.hpp"
@@ -11,6 +12,7 @@
 #include "string_helpers.hpp"
 #include "time_keeper.hpp"
 #include "weapon_sim.hpp"
+#include "logger.hpp"
 
 #include <array>
 #include <cassert>
@@ -47,7 +49,6 @@ struct Combat_simulator_config
     {
         get_combat_simulator_config(input);
         seed = clock();
-        performance_mode = true;
     };
 
     template <typename T>
@@ -90,7 +91,6 @@ struct Combat_simulator_config
     bool enable_unleashed_rage{false};
 
     bool display_combat_debug{false};
-    bool performance_mode{false};
     int seed{};
 
     struct combat_t
@@ -186,13 +186,9 @@ struct Combat_simulator_config
     } set_bonus_effect;
 };
 
-class Combat_simulator
+class Combat_simulator : Rage_manager
 {
 public:
-    Combat_simulator() = default;
-
-    virtual ~Combat_simulator() = default;
-
     void set_config(const Combat_simulator_config& new_config);
 
     enum class Hit_result
@@ -207,13 +203,21 @@ public:
 
     enum class Hit_type
     {
-        white,
-        yellow
+        melee,
+        next_melee,
+        spell,
+    };
+
+    enum class Extra_attack_type
+    {
+        none, // may proc no extra attacks (Sword Spec, Windfury Totem)
+        self, // may proc itself (e.g. Blinkstrike on a melee/next melee hit)
+        all, // may proc anything (e.g. Blinkstrike on a spell hit)
     };
 
     struct Ability_queue_manager
     {
-        bool is_ability_queued() { return heroic_strike_queued || cleave_queued; }
+        [[nodiscard]] bool is_ability_queued() const { return heroic_strike_queued || cleave_queued; }
 
         void queue_heroic_strike()
         {
@@ -239,34 +243,34 @@ public:
 
     struct Slam_manager
     {
-        Slam_manager() = default;
+        explicit Slam_manager(double slam_cast_time) : slam_cast_time_(slam_cast_time) { }
 
-        void reset()
-        {
-            slam_casting_ = false;
-            slam_cast_time_stamp_ = 0.0;
-        };
+        [[nodiscard]] bool is_slam_casting() const { return is_casting_; }
 
-        bool is_slam_casting() { return slam_casting_; }
+        [[nodiscard]] double next_finish() const { return next_finish_; }
 
         void cast_slam(double time_stamp)
         {
-            slam_casting_ = true;
-            slam_cast_time_stamp_ = time_stamp;
+            is_casting_ = true;
+            next_finish_ = time_stamp + slam_cast_time_;
         }
 
-        void finish_slam() { slam_casting_ = false; }
-
-        double time_left(double current_time)
+        void finish_slam()
         {
-            return slam_casting_ ? slam_cast_time_ - (current_time - slam_cast_time_stamp_) : 100.0;
+            is_casting_ = false;
+            next_finish_ = std::numeric_limits<double>::max();
         }
 
-        double slam_cast_time_ = 0.0;
+        [[nodiscard]] bool ready(double current_time) const
+        {
+            return next_finish_ < current_time;
+        }
+
 
     private:
-        bool slam_casting_{false};
-        double slam_cast_time_stamp_ = 0.0;
+        double slam_cast_time_;
+        bool is_casting_{false};
+        double next_finish_{std::numeric_limits<double>::max()};
     };
 
     struct Hit_outcome
@@ -308,7 +312,7 @@ public:
         {
         }
 
-        Hit_table() = default;
+        Hit_table() : name_(), miss_(0), dodge_(0), glance_(0), crit_(0), dm_() {}
 
         [[nodiscard]] const std::string& name() const { return name_; }
 
@@ -325,11 +329,11 @@ public:
         [[nodiscard]] Hit_outcome generate_hit(double damage) const
         {
             auto roll = rand() * 100.0 / RAND_MAX;
-            if (roll < miss_) return Hit_outcome(0, Hit_result::miss);
-            if (roll < dodge_) return Hit_outcome(0, Hit_result::dodge, damage * dm_.hit());
-            if (roll < glance_) return Hit_outcome(damage * dm_.glance(), Hit_result::glancing);
-            if (roll < crit_) return Hit_outcome(damage * dm_.crit(), Hit_result::crit);
-            return Hit_outcome(damage * dm_.hit(), Hit_result::hit);
+            if (roll < miss_) return {0, Hit_result::miss};
+            if (roll < dodge_) return {0, Hit_result::dodge, damage * dm_.hit()};
+            if (roll < glance_) return {damage * dm_.glance(), Hit_result::glancing};
+            if (roll < crit_) return {damage * dm_.crit(), Hit_result::crit};
+            return {damage * dm_.hit(), Hit_result::hit};
         }
     private:
         std::string name_;
@@ -342,46 +346,81 @@ public:
         Damage_multipliers dm_;
     };
 
+    void gain_rage(double amount) final
+    {
+        rage_gained_ += amount;
+        rage += amount;
+        if (rage > 100)
+        {
+            rage_lost_capped_ += rage - 100;
+            rage = 100;
+        }
+    }
+
+    void spend_rage(double amount) final
+    {
+        assert(rage - amount >= 0);
+        rage_spent_ += amount;
+        rage -= amount;
+    }
+
+    void spend_all_rage() final
+    {
+        rage_spent_on_execute_ += rage;
+        rage = 0;
+    }
+
+    void swap_stance() final
+    {
+        if (rage > tactical_mastery_rage_)
+        {
+            rage_lost_stance_swap_ += rage - tactical_mastery_rage_;
+            rage = tactical_mastery_rage_;
+        }
+    }
+
+    [[nodiscard]] double get_rage() const final { return rage; }
+
     void maybe_gain_flurry(Hit_result hit_result, int& flurry_charges, Special_stats& special_stats) const;
     void maybe_remove_flurry(int& flurry_charges, Special_stats& special_stats) const;
 
     void maybe_add_rampage_stack(Hit_result hit_result, int& rampage_stacks, Special_stats& special_stats);
 
-    void unbridled_wrath(const Weapon_sim& weapon, double &rage);
+    void unbridled_wrath(const Weapon_sim& weapon);
 
-    void swing_weapon(Weapon_sim& weapon, Weapon_sim& main_hand_weapon, Special_stats& special_stats, double& rage,
-                      Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks, double attack_power_bonus = 0,
-                      bool is_extra_attack = false);
-   
-    void hit_effects(Hit_result hit_result, Weapon_sim& weapon, Weapon_sim& main_hand_weapon, Special_stats& special_stats, double& rage,
-                     Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks, bool is_extra_attack = false,
-                     bool is_instant = true);
+    void swing_weapon(Weapon_sim& weapon, Weapon_sim& main_hand_weapon, Special_stats& special_stats,
+                      Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks,
+                      Extra_attack_type extra_attack_type = Extra_attack_type::all);
 
-    void overpower(Weapon_sim& main_hand_weapon, Special_stats& special_stats, double& rage,
+    void hit_effects(Weapon_sim& weapon, Weapon_sim& main_hand_weapon, Special_stats& special_stats,
+                     Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks,
+                     Hit_type hit_type = Hit_type::spell, Extra_attack_type extra_attack_type = Extra_attack_type::all);
+
+    void overpower(Weapon_sim& main_hand_weapon, Special_stats& special_stats,
                    Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks);
 
-    bool start_cast_slam(bool mh_swing, double rage, double& swing_time_left);
+    bool start_cast_slam(bool mh_swing, const Weapon_sim& weapon);
 
-    void slam(Weapon_sim& main_hand_weapon, Special_stats& special_stats, double& rage, Damage_sources& damage_sources,
+    void slam(Weapon_sim& main_hand_weapon, Special_stats& special_stats, Damage_sources& damage_sources,
               int& flurry_charges, int& rampage_stacks);
 
-    void mortal_strike(Weapon_sim& main_hand_weapon, Special_stats& special_stats, double& rage,
+    void mortal_strike(Weapon_sim& main_hand_weapon, Special_stats& special_stats,
                        Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks);
 
-    void bloodthirst(Weapon_sim& main_hand_weapon, Special_stats& special_stats, double& rage,
+    void bloodthirst(Weapon_sim& main_hand_weapon, Special_stats& special_stats,
                      Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks);
 
-    void whirlwind(Weapon_sim& main_hand_weapon, Weapon_sim& off_hand_weapon, Special_stats& special_stats, double& rage,
+    void whirlwind(Weapon_sim& main_hand_weapon, Weapon_sim& off_hand_weapon, Special_stats& special_stats,
                    Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks, bool is_dw = false);
 
-    void execute(Weapon_sim& main_hand_weapon, Special_stats& special_stats, double& rage,
+    void execute(Weapon_sim& main_hand_weapon, Special_stats& special_stats,
                  Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks);
 
-    void hamstring(Weapon_sim& main_hand_weapon, Special_stats& special_stats, double& rage,
+    void hamstring(Weapon_sim& main_hand_weapon, Special_stats& special_stats,
                    Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks);
 
-    void simulate(const Character& character, size_t n_simulations, double init_mean, double init_variance,
-                  size_t init_simulations);
+    void simulate(const Character& character, int n_simulations, double init_mean, double init_variance,
+                  int init_simulations);
 
     void simulate(const Character& character, int init_iteration = 0, bool log_data = false, bool reset_dps = true);
 
@@ -412,43 +451,43 @@ public:
 
     [[nodiscard]] std::vector<std::string> get_aura_uptimes() const;
 
-    [[nodiscard]] std::map<std::string, double> get_aura_uptimes_map() const { return buff_manager_.aura_uptime; };
+    [[nodiscard]] std::unordered_map<std::string, double> get_aura_uptimes_map() const { return buff_manager_.get_aura_uptimes_map(); }
 
-    [[nodiscard]] std::map<std::string, int> get_proc_data() const { return proc_data_; };
+    [[nodiscard]] const std::unordered_map<std::string, int>& get_proc_data() const { return proc_data_; }
 
     [[nodiscard]] std::vector<std::string> get_proc_statistics() const;
 
     void reset_time_lapse();
 
-    [[nodiscard]] std::vector<std::vector<double>> get_damage_time_lapse() const;
+    [[nodiscard]] const std::vector<std::vector<double>>& get_damage_time_lapse() const { return damage_time_lapse_; };
 
     [[nodiscard]] std::string get_debug_topic() const;
 
-    Damage_sources get_damage_distribution() { return damage_distribution_; }
+    [[nodiscard]] const Damage_sources& get_damage_distribution() const { return damage_distribution_; }
 
-    [[nodiscard]] constexpr Distribution get_dps_distribution() const { return dps_distribution_; }
+    [[nodiscard]] const Distribution& get_dps_distribution() const { return dps_distribution_; }
 
-    [[nodiscard]] constexpr double get_dps_mean() const { return dps_distribution_.mean_; }
+    [[nodiscard]] double get_dps_mean() const { return dps_distribution_.mean_; }
 
-    [[nodiscard]] constexpr double get_dps_variance() const { return dps_distribution_.variance_; }
+    [[nodiscard]] double get_dps_variance() const { return dps_distribution_.variance_; }
 
-    [[nodiscard]] constexpr int get_n_simulations() const { return config.n_batches; }
+    [[nodiscard]] int get_n_simulations() const { return config.n_batches; }
 
-    [[nodiscard]] constexpr double get_rage_lost_stance() const { return rage_lost_stance_swap_; }
+    [[nodiscard]] double get_rage_lost_stance() const { return rage_lost_stance_swap_; }
 
-    [[nodiscard]] constexpr double get_rage_lost_capped() const { return rage_lost_capped_; }
+    [[nodiscard]] double get_rage_lost_capped() const { return rage_lost_capped_; }
 
-    [[nodiscard]] constexpr double get_avg_rage_spent_executing() const { return avg_rage_spent_executing_; }
+    [[nodiscard]] double get_avg_rage_spent_executing() const { return avg_rage_spent_executing_; }
 
-    std::vector<int>& get_hist_x() { return hist_x; }
+    [[nodiscard]] const std::vector<int>& get_hist_x() const { return hist_x; }
 
-    std::vector<int>& get_hist_y() { return hist_y; }
+    [[nodiscard]] const std::vector<int>& get_hist_y() const { return hist_y; }
 
-    [[nodiscard]] constexpr double get_flurry_uptime() const { return flurry_uptime_; }
+    [[nodiscard]] double get_flurry_uptime() const { return flurry_uptime_; }
 
-    [[nodiscard]] constexpr double get_hs_uptime() const { return heroic_strike_uptime_; }
+    [[nodiscard]] double get_hs_uptime() const { return oh_queued_uptime_; }
 
-    [[nodiscard]] constexpr double get_rampage_uptime() const { return rampage_uptime_; }
+    [[nodiscard]] double get_rampage_uptime() const { return rampage_uptime_; }
 
     void init_histogram();
 
@@ -456,40 +495,22 @@ public:
 
     void normalize_timelapse();
 
-    std::string hit_result_to_string(Combat_simulator::Hit_result hit_result);
-
-    void print_statement(const std::string& t) { debug_topic_ += t; }
-
-    void print_statement(int t) { debug_topic_ += std::to_string(t); }
-
-    void print_statement(double t) { debug_topic_ += std::to_string(t); }
-
-    template <typename... Args>
-    void simulator_cout(Args&&... args)
-    {
-        if (config.display_combat_debug)
-        {
-            //            s. Loop idx:" + std::to_string(                    time_keeper_.step_index) +=
-            debug_topic_ += "Time: " + std::to_string(time_keeper_.time) + "s. Event: ";
-            __attribute__((unused)) int dummy[] = {0, ((void)print_statement(std::forward<Args>(args)), 0)...};
-            debug_topic_ += "<br>";
-        }
-    }
+    static std::string hit_result_to_string(const Hit_result& hit_result);
 
     Combat_simulator_config config;
 
-    const Use_effect deathwish = {
-        "Death_wish", Use_effect::Effect_socket::unique, {}, {0, 0, 0, 0, 0, .20}, -10, 30, 180, true};
+    const Use_effect death_wish = {
+        "death_wish", Use_effect::Effect_socket::unique, {}, {0, 0, 0, 0, 0, .20}, -10, 30, 180, true};
 
     const Use_effect recklessness = {
-        "Recklessness", Use_effect::Effect_socket::unique, {}, {100, 0, 0}, 0, 15, 900, true};
+        "recklessness", Use_effect::Effect_socket::unique, {}, {100, 0, 0}, 0, 15, 900, true};
 
-    const Use_effect bloodrage = {"Bloodrage", Use_effect::Effect_socket::unique, {}, {}, 10, 10, 60, false,
+    const Use_effect bloodrage = {"bloodrage", Use_effect::Effect_socket::unique, {}, {}, 10, 10, 60, false,
                                   {},          {{"Bloodrage", {}, 1, 0, 1, 10}}};
 
-    const Over_time_effect essence_of_the_red = {"Essence of the Red", {}, 20, 0, 1, 600};
+    const Over_time_effect essence_of_the_red = {"essence_of_the_red", {}, 20, 0, 1, 600};
 
-    const Over_time_effect anger_management = {"Anger Management", {}, 1, 0, 3, 600};
+    const Over_time_effect anger_management = {"anger_management", {}, 1, 0, 3, 600};
 
 private:
     Hit_table hit_table_white_mh_;
@@ -498,57 +519,72 @@ private:
     Hit_table hit_table_yellow_oh_;
     Hit_table hit_table_overpower_;
     Hit_table hit_table_white_oh_queued_;
-    Damage_sources damage_distribution_{};
+
     Time_keeper time_keeper_{};
     Buff_manager buff_manager_{};
     Ability_queue_manager ability_queue_manager{};
-    Slam_manager slam_manager{};
-    std::vector<int> hist_x{};
-    std::vector<int> hist_y{};
-    std::string debug_topic_{};
+    Slam_manager slam_manager{1.5};
+    double rage{};
 
-    Distribution dps_distribution_{};
+    Logger logger_{};
+
+    // config related
     double armor_reduction_factor_{};
     double armor_reduction_factor_add{};
-    int current_armor_red_stacks_{};
-    int armor_penetration_badge_{};
     int armor_reduction_from_spells_{};
     int armor_reduction_delayed_{};
-    bool recompute_mitigation_{false};
+    bool recompute_mitigation_{};
     int number_of_extra_targets_{};
 
-    double flurry_uptime_{};
-    double heroic_strike_uptime_{};
-    double rampage_uptime_{};
-
     int execute_rage_cost_{};
-    int heroic_strike_rage_cost{};
+    int heroic_strike_rage_cost_{};
+    int whirlwind_rage_cost_{};
+    int mortal_strike_rage_cost_{};
+    int bloodthirst_rage_cost_{};
+    int tactical_mastery_rage_{};
 
     double cleave_bonus_damage_{};
-    double rage_spent_on_execute_{};
-    double avg_rage_spent_executing_{};
-    double rage_lost_stance_swap_{};
-    double rage_lost_capped_{};
-    double flurry_haste_factor_{};
+    Special_stats flurry_{};
 
-    double tactical_mastery_rage_{0};
-    bool deep_wounds_{false};
-    bool use_bloodthirst_{false};
-    bool use_rampage_{false};
-    bool use_mortal_strike_{false};
-    bool use_sweeping_strikes_{false};
-    int sweeping_strikes_charges_ = 0;
+    bool deep_wounds_{};
+    bool use_bloodthirst_{};
+    bool use_rampage_{};
+    bool use_mortal_strike_{};
+    bool use_sweeping_strikes_{};
+    int sweeping_strikes_charges_{};
 
-    std::vector<std::vector<double>> damage_time_lapse{};
-    std::map<std::string, int> proc_data_{};
     std::vector<Use_effect> use_effects_all_{};
     std::vector<Over_time_effect> over_time_effects_{};
-    std::map<Damage_source, int> source_map{
-        {Damage_source::white_mh, 0},         {Damage_source::white_oh, 1},          {Damage_source::bloodthirst, 2},
-        {Damage_source::execute, 3},          {Damage_source::heroic_strike, 4},     {Damage_source::cleave, 5},
-        {Damage_source::whirlwind, 6},        {Damage_source::hamstring, 7},         {Damage_source::deep_wounds, 8},
-        {Damage_source::item_hit_effects, 9}, {Damage_source::overpower, 10},        {Damage_source::slam, 11},
-        {Damage_source::mortal_strike, 12},   {Damage_source::sweeping_strikes, 13}};
+
+    Over_time_effect deep_wound_effect_{"deep_wound", {}, 0, 0, 3, 12};
+    Hit_effect battle_stance_{"battle_stance", Hit_effect::Type::stat_boost, {}, {-3.0, 0, 0}, 0, 1.5, 0, 0};
+    Hit_effect destroyer_2_set_{"destroyer_2_set", Hit_effect::Type::stat_boost, {}, {0, 0, 100}, 0, 5, 0, 0};
+    Hit_effect windfury_attack_{"windfury_attack", Hit_effect::Type::stat_boost, {}, {0, 0, 445}, 0, 1.5, 0, 0, 0, 2};
+
+    // statistics
+    Damage_sources damage_distribution_{false};
+    Distribution dps_distribution_{};
+
+    double flurry_uptime_{};
+    double oh_queued_uptime_{};
+    double rampage_uptime_{};
+
+    double rage_gained_{};
+    double rage_spent_{};
+    double rage_spent_on_execute_{};
+    double rage_lost_stance_swap_{};
+    double rage_lost_capped_{};
+
+    double avg_rage_spent_executing_{};
+
+    std::unordered_map<std::string, int> proc_data_{};
+
+    static constexpr double time_lapse_resolution = 0.5;
+    static constexpr double hist_resolution = 20;
+
+    std::vector<std::vector<double>> damage_time_lapse_{};
+    std::vector<int> hist_x{};
+    std::vector<int> hist_y{};
 };
 
 #include "Combat_simulator.tcc"

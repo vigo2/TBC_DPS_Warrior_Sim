@@ -38,7 +38,7 @@ double get_next_available_time(const std::vector<std::pair<double, Use_effect>>&
 std::vector<std::pair<double, Use_effect>> compute_use_effect_order(std::vector<Use_effect>& use_effects,
                                                                     const Special_stats& special_stats, double sim_time,
                                                                     double total_ap, int number_of_targets,
-                                                                    double extra_target_duration, double init_rage)
+                                                                    double extra_target_duration)
 {
     std::vector<std::pair<double, Use_effect>> use_effect_timers;
     std::vector<Use_effect> shared_effects{};
@@ -92,63 +92,24 @@ std::vector<std::pair<double, Use_effect>> compute_use_effect_order(std::vector<
             }
         }
     }
-    sort_use_effect_order(use_effect_timers, sim_time);
-    shuffle_bloodrage(use_effect_timers, init_rage);
-    return use_effect_timers;
-}
 
-void shuffle_bloodrage(std::vector<std::pair<double, Use_effect>>& use_effect_timers, double init_rage)
-{
-    double projected_rage = init_rage;
-    bool done{false};
-    for (auto reverse_it = use_effect_timers.rbegin(); reverse_it != use_effect_timers.rend(); ++reverse_it)
-    {
-        if (reverse_it->first < 0.0)
-        {
-            projected_rage += reverse_it->second.rage_boost;
-            if (projected_rage < 0.0)
-            {
-                // Reshuffle bloodrage since there is no rage
-                auto bloodrage_reverse_it =
-                    std::find_if(use_effect_timers.rbegin(), use_effect_timers.rend(),
-                                 [](const std::pair<double, Use_effect>& ue) { return ue.second.name == "Bloodrage"; });
-                if (bloodrage_reverse_it != use_effect_timers.rend())
-                {
-                    auto forward_it = --(reverse_it.base());
-                    auto bloodrage_forward_it = --(bloodrage_reverse_it.base());
-                    bloodrage_forward_it->first = reverse_it->first - 1.0;
-                    std::rotate(bloodrage_forward_it, bloodrage_forward_it + 1, forward_it + 1);
-                    done = true;
-                }
-            }
-        }
-        else
-        {
-            done = true;
-        }
-        if (done)
-        {
-            break;
-        }
-    }
-}
-
-void sort_use_effect_order(std::vector<std::pair<double, Use_effect>>& use_effect_order, double sim_time)
-{
-    for (auto& use_effect : use_effect_order)
+    for (auto& use_effect : use_effect_timers)
     {
         use_effect.first = sim_time - use_effect.first - use_effect.second.duration;
     }
-    std::sort(use_effect_order.begin(), use_effect_order.end(),
-              [](const std::pair<double, Use_effect>& a, const std::pair<double, Use_effect>& b) {
-                  return a.first > b.first;
-              });
+
+    std::sort(use_effect_timers.begin(), use_effect_timers.end(),[](const auto& a, const auto& b) {
+      return a.first < b.first;
+    });
+
+    return use_effect_timers;
 }
 
-double get_active_use_effect_ap_equivalent(const Use_effect& use_effect, const Special_stats& special_stats,
+// TODO(vigo) this should use pre-defined or -calculated stat values, and consider uptime
+double estimate_power(const Use_effect& use_effect, const Special_stats& special_stats,
                                            double total_ap)
 {
-    double use_effect_ap_boost = use_effect.get_special_stat_equivalent(special_stats).attack_power;
+    double use_effect_ap_boost = use_effect.to_special_stats(special_stats).attack_power;
 
     double use_effect_haste_boost = total_ap * use_effect.special_stats_boost.haste;
 
@@ -164,28 +125,16 @@ double get_active_use_effect_ap_equivalent(const Use_effect& use_effect, const S
 std::vector<Use_effect> sort_use_effects_by_power_ascending(std::vector<Use_effect>& shared_effects,
                                                             const Special_stats& special_stats, double total_ap)
 {
-    std::vector<std::pair<double, Use_effect>> use_effect_pairs;
-    for (auto& use_effect : shared_effects)
-    {
-        double est_ap = get_active_use_effect_ap_equivalent(use_effect, special_stats, total_ap);
-        use_effect_pairs.emplace_back(est_ap, use_effect);
-    }
-    std::sort(use_effect_pairs.begin(), use_effect_pairs.end(),
-              [](const std::pair<double, Use_effect>& a, const std::pair<double, Use_effect>& b) {
-                  return a.first > b.first;
-              });
-    std::vector<Use_effect> sorted_ascending_use_effects;
-    for (auto& use_effect : use_effect_pairs)
-    {
-        sorted_ascending_use_effects.push_back(use_effect.second);
-    }
-    return sorted_ascending_use_effects;
+    std::sort(shared_effects.begin(), shared_effects.end(), [special_stats,total_ap](const auto& a, const auto& b) {
+        return estimate_power(a, special_stats, total_ap) > estimate_power(b, special_stats, total_ap);
+    });
+    return shared_effects;
 }
 
 double get_use_effect_ap_equivalent(const Use_effect& use_effect, const Special_stats& special_stats, double total_ap,
                                     double sim_time)
 {
-    double ap_during_active = get_active_use_effect_ap_equivalent(use_effect, special_stats, total_ap);
+    double ap_during_active = estimate_power(use_effect, special_stats, total_ap);
     return ap_during_active * std::min(use_effect.duration / sim_time, 1.0);
 }
 

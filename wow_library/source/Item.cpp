@@ -134,3 +134,38 @@ std::string operator+(std::string& string, const Weapon_socket& socket)
     }
     return string;
 }
+
+std::ostream& operator<<(std::ostream& os, const Hit_effect::Type& t)
+{
+    switch (t)
+    {
+    case Hit_effect::Type::none:
+        return os << "none";
+    case Hit_effect::Type::extra_hit:
+        return os << "extra_hit";
+    case Hit_effect::Type::windfury_hit:
+        return os << "windfury_hit";
+    case Hit_effect::Type::sword_spec:
+        return os << "sword_spec";
+    case Hit_effect::Type::stat_boost:
+        return os << "stat_boost";
+    case Hit_effect::Type::damage_physical:
+        return os << "damage_physical";
+    case Hit_effect::Type::damage_magic:
+        return os << "damage_magic";
+    case Hit_effect::Type::reduce_armor:
+        return os << "reduce_armor";
+    case Hit_effect::Type::rage_boost:
+        return os << "rage_boost";
+    default:
+        return os;
+    }
+}
+
+std::ostream& operator<<(std::ostream& os, const Hit_effect& he)
+{
+    os << he.name << " " << he.type << " affects_both_weapons = " << std::boolalpha << he.affects_both_weapons
+    << ", attack_power_boost = " << he.attack_power_boost << ", max_charges = " << he.max_charges
+       << ", armor_reduction = " << he.armor_reduction << ", max_stacks = " << he.max_stacks;
+    return os;
+}
