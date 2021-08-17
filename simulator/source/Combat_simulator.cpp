@@ -436,15 +436,15 @@ bool Combat_simulator::start_cast_slam(bool mh_swing, const Weapon_sim& weapon)
     }
 
     if (mh_swing || weapon.next_swing - time_keeper_.time > config.combat.slam_spam_max_time)
-    {
-        if ((mh_swing && rage > config.combat.slam_rage_dd) || rage > config.combat.slam_spam_rage)
         {
+            if ((mh_swing && rage > config.combat.slam_rage_dd) || rage > config.combat.slam_spam_rage)
+            {
             logger_.print("Starting to cast slam.", " Latency: ", config.combat.slam_latency, "s");
-            slam_manager.cast_slam(time_keeper_.time + config.combat.slam_latency);
+                slam_manager.cast_slam(time_keeper_.time + config.combat.slam_latency);
             time_keeper_.global_cast(1.5 + config.combat.slam_latency);
-            return true;
+                return true;
+            }
         }
-    }
     return false;
 }
 
@@ -726,8 +726,8 @@ void Combat_simulator::hit_effects(Weapon_sim& weapon, Weapon_sim& main_hand_wea
 
         //logger_.print("Proc PPM: ", hit_effect.ppm, " Proc chance: ", probability, "Proc ICD: ");
         buff_manager_.start_cooldown(hit_effect, time_keeper_.time);
-        switch (hit_effect.type)
-        {
+            switch (hit_effect.type)
+                {
         case Hit_effect::Type::windfury_hit: { // only triggered by melee or next_melee; can _not_ proc itself or (presumably) other extra attacks
             if (hit_type == Hit_type::spell || extra_attack_type != Extra_attack_type::all) break;
 
@@ -767,42 +767,42 @@ void Combat_simulator::hit_effects(Weapon_sim& weapon, Weapon_sim& main_hand_wea
             hit_effect.procs++;
             logger_.print("PROC: ", hit_effect.name, ". Current rage: ", int(rage));
             gain_rage(hit_effect.damage);
-            break;
-        }
-        case Hit_effect::Type::damage_magic: {
-            hit_effect.procs++;
-            // * 0.83 Assumes a static 17% chance to resist.
-            // (100 + special_stats.spell_crit / 2) / 100 is the average damage gained from a x1.5 spell crit
-            double effect_damage = hit_effect.damage * 0.83 * (100 + special_stats.spell_crit / 2) / 100 *
-                                   (1 + special_stats.damage_mod_spell);
-            damage_sources.add_damage(Damage_source::item_hit_effects, effect_damage, time_keeper_.time);
-            logger_.print("PROC: ", hit_effect.name, " does ", effect_damage, " magic damage.");
-            break;
-        }
-        case Hit_effect::Type::damage_physical: {
-            hit_effect.procs++;
-            auto hit = generate_hit(main_hand_weapon, hit_effect.damage, main_hand_weapon, hit_table_yellow_mh_,
-                                    special_stats, damage_sources);
-            damage_sources.add_damage(Damage_source::item_hit_effects, hit.damage, time_keeper_.time);
-            if (config.display_combat_debug)
-            {
-                logger_.print("PROC: ", hit_effect.name, hit_result_to_string(hit.hit_result), " does ",
-                              int(hit.damage), " physical damage");
+                break;
             }
-            if (hit.hit_result != Hit_result::miss && hit.hit_result != Hit_result::dodge)
-            {
+            case Hit_effect::Type::damage_magic: {
+            hit_effect.procs++;
+                // * 0.83 Assumes a static 17% chance to resist.
+                // (100 + special_stats.spell_crit / 2) / 100 is the average damage gained from a x1.5 spell crit
+                double effect_damage = hit_effect.damage * 0.83 * (100 + special_stats.spell_crit / 2) / 100 *
+                                       (1 + special_stats.damage_mod_spell);
+                damage_sources.add_damage(Damage_source::item_hit_effects, effect_damage, time_keeper_.time);
+            logger_.print("PROC: ", hit_effect.name, " does ", effect_damage, " magic damage.");
+                break;
+            }
+            case Hit_effect::Type::damage_physical: {
+            hit_effect.procs++;
+                auto hit = generate_hit(main_hand_weapon, hit_effect.damage, main_hand_weapon, hit_table_yellow_mh_,
+                                        special_stats, damage_sources);
+                damage_sources.add_damage(Damage_source::item_hit_effects, hit.damage, time_keeper_.time);
+                if (config.display_combat_debug)
+                {
+                logger_.print("PROC: ", hit_effect.name, hit_result_to_string(hit.hit_result), " does ",
+                                   int(hit.damage), " physical damage");
+                }
+                if (hit.hit_result != Hit_result::miss && hit.hit_result != Hit_result::dodge)
+                {
                 hit_effects(main_hand_weapon, main_hand_weapon, special_stats, damage_sources, flurry_charges,
                             rampage_stacks);
+                }
+                break;
             }
-            break;
-        }
-        default:
+            default:
             logger_.print("PROC: ", hit_effect.name, " has unknown type ", static_cast<int>(hit_effect.type));
             assert(false);
-            break;
+                break;
+            }
         }
     }
-}
 
 double Combat_simulator::rage_generation(const Hit_outcome& hit_outcome, const Weapon_sim& weapon) const
 {
@@ -1102,7 +1102,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
 
         // Check if the simulator should use any use effects before the fight
         for (const auto& ue : use_effect_order)
-        {
+                {
             if (ue.first >= 0) break;
 
             // set everything up so it works ;)
@@ -1187,7 +1187,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
                     armor_reduction_factor_add = armor_reduction_factor(extra_target_armor);
 
                     logger_.print("Extra targets armor: ", extra_target_armor,
-                                  ". Mitigation factor: ", 1 - armor_reduction_factor_add, "%.");
+                                   ". Mitigation factor: ", 1 - armor_reduction_factor_add, "%.");
                 }
                 recompute_mitigation_ = false;
             }
@@ -1274,9 +1274,9 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
                     {
                         if (start_cast_slam(mh_swing, weapons[0]))
                         {
-                            continue;
-                        }
+                        continue;
                     }
+                }
                 }
                 if (use_mortal_strike_ && config.combat.use_ms_in_exec_phase)
                 {
@@ -1349,7 +1349,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
                     }
                     else
                     {
-                        if (rage > config.combat.heroic_strike_rage_thresh && !ability_queue_manager.heroic_strike_queued &&
+                        if (rage > config.combat.hs_rage_thresh_exec_phase && !ability_queue_manager.heroic_strike_queued &&
                             rage >= heroic_strike_rage_cost_)
                         {
                             ability_queue_manager.queue_heroic_strike();
@@ -1366,9 +1366,9 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
                     {
                         if (start_cast_slam(mh_swing, weapons[0]))
                         {
-                            continue;
-                        }
+                        continue;
                     }
+                }
                 }
 
                 if (use_rampage_)
@@ -1508,17 +1508,17 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
                 // Heroic strike or Cleave
                 if (config.combat.use_heroic_strike)
                 {
-                    if (number_of_extra_targets_ > 0 && config.combat.cleave_if_adds)
-                    {
+                if (number_of_extra_targets_ > 0 && config.combat.cleave_if_adds)
+                {
                         if (rage > config.combat.cleave_rage_thresh && !ability_queue_manager.cleave_queued && rage >= 20)
-                        {
-                            ability_queue_manager.queue_cleave();
-                            logger_.print("Cleave activated");
-                        }
-                    }
-                    else
                     {
-                        if (rage > config.combat.heroic_strike_rage_thresh && !ability_queue_manager.heroic_strike_queued &&
+                        ability_queue_manager.queue_cleave();
+                            logger_.print("Cleave activated");
+                    }
+                }
+                else
+                {
+                    if (rage > config.combat.heroic_strike_rage_thresh && !ability_queue_manager.heroic_strike_queued &&
                             rage >= heroic_strike_rage_cost_)
                         {
                             ability_queue_manager.queue_heroic_strike();

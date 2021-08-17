@@ -14,7 +14,7 @@ class Find_values
 public:
     Find_values(const std::vector<std::string>& string_vec, const std::vector<T>& value_vec);
 
-    T find(const std::string& name);
+    T find(const std::string& name, const T dflt = {});
 
 private:
     const std::vector<std::string>& string_vec;

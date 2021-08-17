@@ -44,6 +44,7 @@ std::vector<std::string> get_simulator_options()
 std::vector<std::string> get_float_options_string()
 {
     return {"heroic_strike_rage_thresh_dd",
+            "hs_rage_thresh_exec_phase_dd",
             "cleave_rage_thresh_dd",
             "whirlwind_rage_thresh_dd",
             "hamstring_cd_thresh_dd",
