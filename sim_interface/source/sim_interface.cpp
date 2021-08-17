@@ -633,6 +633,7 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
             double avg_bt_casts = static_cast<double>(dmg_dist.bloodthirst_count) / n_simulations_base;
             if (avg_bt_casts >= 1.0)
             {
+                double bloodthirst_rage = 30 - 5 * character.set_bonus_effect.destroyer_4_set;
                 config.dpr_settings.compute_dpr_bt_ = true;
                 Combat_simulator simulator_dpr{};
                 simulator_dpr.set_config(config);
@@ -640,10 +641,10 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
                 double delta_dps = dps_mean - simulator_dpr.get_dps_mean();
                 double dmg_tot = delta_dps * config.sim_time;
                 double dmg_per_hit = dmg_tot / avg_bt_casts;
-                double dmg_per_rage = dmg_per_hit / (30 - 5 * character.set_bonus_effect.warbringer_2_set);
+                double dmg_per_rage = dmg_per_hit / bloodthirst_rage;
                 dpr_info += "<b>Bloodthirst</b>: <br>Damage per cast: <b>" +
                             String_helpers::string_with_precision(dmg_per_hit, 4) + "</b><br>Average rage cost: <b>" +
-                            String_helpers::string_with_precision(30.0, 3) + "</b><br>DPR: <b>" +
+                            String_helpers::string_with_precision(bloodthirst_rage, 3) + "</b><br>DPR: <b>" +
                             String_helpers::string_with_precision(dmg_per_rage, 4) + "</b><br>";
                 config.dpr_settings.compute_dpr_bt_ = false;
             }
@@ -653,6 +654,7 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
             double avg_ms_casts = static_cast<double>(dmg_dist.mortal_strike_count) / n_simulations_base;
             if (avg_ms_casts >= 1.0)
             {
+                double mortal_strike_rage = 30 - 5 * character.set_bonus_effect.destroyer_4_set;
                 config.dpr_settings.compute_dpr_ms_ = true;
                 Combat_simulator simulator_dpr{};
                 simulator_dpr.set_config(config);
@@ -660,9 +662,10 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
                 double delta_dps = dps_mean - simulator_dpr.get_dps_mean();
                 double dmg_tot = delta_dps * config.sim_time;
                 double dmg_per_hit = dmg_tot / avg_ms_casts;
-                double dmg_per_rage = dmg_per_hit / (30 - 5 * character.set_bonus_effect.warbringer_2_set);
-                dpr_info += "<b>Mortal Strike</b>: <br>Damage per cast: <b>" + String_helpers::string_with_precision(dmg_per_hit, 4) +
-                            "</b><br>Average rage cost: <b>" + String_helpers::string_with_precision(30.0, 3) + "</b><br>DPR: <b>" +
+                double dmg_per_rage = dmg_per_hit / mortal_strike_rage;
+                dpr_info += "<b>Mortal Strike</b>: <br>Damage per cast: <b>" +
+                            String_helpers::string_with_precision(dmg_per_hit, 4) + "</b><br>Average rage cost: <b>" +
+                            String_helpers::string_with_precision(mortal_strike_rage, 3) + "</b><br>DPR: <b>" +
                             String_helpers::string_with_precision(dmg_per_rage, 4) + "</b><br>";
                 config.dpr_settings.compute_dpr_ms_ = false;
             }
@@ -672,6 +675,7 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
             double avg_ww_casts = static_cast<double>(dmg_dist.whirlwind_count) / n_simulations_base;
             if (avg_ww_casts >= 1.0)
             {
+                double whirlwind_rage = 25 - 5 * character.set_bonus_effect.warbringer_2_set;
                 config.dpr_settings.compute_dpr_ww_ = true;
                 Combat_simulator simulator_dpr{};
                 simulator_dpr.set_config(config);
@@ -679,10 +683,10 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
                 double delta_dps = dps_mean - simulator_dpr.get_dps_mean();
                 double dmg_tot = delta_dps * config.sim_time;
                 double dmg_per_hit = dmg_tot / avg_ww_casts;
-                double dmg_per_rage = dmg_per_hit / (25.0 - double(5.0 * character.set_bonus_effect.warbringer_2_set));
+                double dmg_per_rage = dmg_per_hit / whirlwind_rage;
                 dpr_info += "<b>Whirlwind</b>: <br>Damage per cast: <b>" +
                             String_helpers::string_with_precision(dmg_per_hit, 4) + "</b><br>Average rage cost: <b>" +
-                            String_helpers::string_with_precision(25.0 - double(5.0 * character.set_bonus_effect.warbringer_2_set), 3) + "</b><br>DPR: <b>" +
+                            String_helpers::string_with_precision(whirlwind_rage, 3) + "</b><br>DPR: <b>" +
                             String_helpers::string_with_precision(dmg_per_rage, 4) + "</b><br>";
                 config.dpr_settings.compute_dpr_ww_ = false;
             }
@@ -716,6 +720,7 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
             double avg_hs_casts = static_cast<double>(dmg_dist.heroic_strike_count) / n_simulations_base;
             if (avg_hs_casts >= 1.0)
             {
+                double heroic_strike_rage = 15 - config.talents.improved_heroic_strike;
                 config.dpr_settings.compute_dpr_hs_ = true;
                 Combat_simulator simulator_dpr{};
                 simulator_dpr.set_config(config);
@@ -726,10 +731,10 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
                 double avg_mh_dmg =
                     static_cast<double>(dmg_dist.white_mh_damage) / static_cast<double>(dmg_dist.white_mh_count);
                 double avg_mh_rage_lost = avg_mh_dmg * 3.75 / 274.7 + (3.5 * character.weapons[0].swing_speed / 2);
-                double dmg_per_rage = dmg_per_hs / (13 + avg_mh_rage_lost);
+                double dmg_per_rage = dmg_per_hs / (heroic_strike_rage + avg_mh_rage_lost);
                 dpr_info += "<b>Heroic Strike</b>: <br>Damage per cast: <b>" +
                             String_helpers::string_with_precision(dmg_per_hs, 4) + "</b><br>Average rage cost: <b>" +
-                            String_helpers::string_with_precision((13 + avg_mh_rage_lost), 3) + "</b><br>DPR: <b>" +
+                            String_helpers::string_with_precision((heroic_strike_rage + avg_mh_rage_lost), 3) + "</b><br>DPR: <b>" +
                             String_helpers::string_with_precision(dmg_per_rage, 4) + "</b><br>";
                 config.dpr_settings.compute_dpr_hs_ = false;
             }
