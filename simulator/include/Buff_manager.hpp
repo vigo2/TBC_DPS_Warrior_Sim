@@ -123,7 +123,6 @@ public:
         for (auto& buff : over_time_buffs)
         {
             buff.next_tick = Over_time_buff::inactive;
-            buff.next_fade = -1; // this is used for determining whether a buff is active or not
         }
         min_over_time_buff = std::numeric_limits<double>::max();
 
@@ -282,7 +281,7 @@ public:
                 continue;
             }
 
-            assert(current_time - buff.next_tick < 1.01e-5);
+            assert(current_time - (buff.next_tick > 0 ? buff.next_tick : 0) < 1.01e-5);
 
             // this used to support everything at once, but no over_time_buff actually granted rage, dealt damage, and added stats.
             //  nothing does the latter, afaik
@@ -565,7 +564,7 @@ public:
     {
         auto& buff = over_time_buffs[over_time_effect.over_time_buff_idx];
 
-        if (buff.next_fade < current_time) {
+        if (buff.next_tick == Over_time_buff::inactive) {
             buff.last_gain = current_time;
         }
 
