@@ -368,6 +368,9 @@ void Combat_simulator::compute_hit_tables(const Special_stats& special_stats, co
 
     if (weapon.socket == Socket::main_hand)
     {
+        int axe_crit = (weapon.weapon_type == Weapon_type::axe) ? config.talents.poleaxe_specialization : 0;
+        crit += axe_crit;
+        
         auto white_dm = Damage_multipliers((100 - glance_dr) / 100, 2 * (1 + special_stats.crit_multiplier), 1);
 
         hit_table_white_mh_ = Hit_table("white (mh)", miss, dodge, glance, crit, white_dm);
@@ -382,6 +385,9 @@ void Combat_simulator::compute_hit_tables(const Special_stats& special_stats, co
     }
     else
     {
+        int axe_crit = (weapon.weapon_type == Weapon_type::axe) ? config.talents.poleaxe_specialization : 0;
+        crit += axe_crit;
+
         auto oh_factor = 0.5 * (1 + 0.05 * config.talents.dual_wield_specialization);
         auto white_dm = Damage_multipliers(oh_factor * (100 - glance_dr) / 100, oh_factor * 2 * (1 + special_stats.crit_multiplier), oh_factor);
 
@@ -1508,16 +1514,16 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
                 // Heroic strike or Cleave
                 if (config.combat.use_heroic_strike)
                 {
-                if (number_of_extra_targets_ > 0 && config.combat.cleave_if_adds)
-                {
-                        if (rage > config.combat.cleave_rage_thresh && !ability_queue_manager.cleave_queued && rage >= 20)
+                    if (number_of_extra_targets_ > 0 && config.combat.cleave_if_adds)
                     {
-                        ability_queue_manager.queue_cleave();
+                        if (rage > config.combat.cleave_rage_thresh && !ability_queue_manager.cleave_queued && rage >= 20)
+                        {
+                            ability_queue_manager.queue_cleave();
                             logger_.print("Cleave activated");
+                        }
                     }
-                }
-                else
-                {
+                    else
+                    {
                     if (rage > config.combat.heroic_strike_rage_thresh && !ability_queue_manager.heroic_strike_queued &&
                             rage >= heroic_strike_rage_cost_)
                         {

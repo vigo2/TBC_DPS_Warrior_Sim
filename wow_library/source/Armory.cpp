@@ -1483,14 +1483,6 @@ void Armory::add_talents_to_character(Character& character, const std::vector<st
             character.talent_special_stats += ss;
         }
     }
-    val = fv.find("poleaxe_specialization_talent");
-    if (val > 0)
-    {
-        if (character.weapons[0].type == Weapon_type::axe)
-        {
-            character.talent_special_stats.critical_strike += val;
-        }
-    }
     val = fv.find("booming_voice_talent");
     if (val > 0)
     {

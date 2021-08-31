@@ -158,6 +158,7 @@ struct Combat_simulator_config
         int flurry = 0;
         int unbridled_wrath = 0;
         int mace_specialization = 0;
+        int poleaxe_specialization = 0;
         int impale = 0;
         int overpower = 0;
         int improved_execute = 0;
