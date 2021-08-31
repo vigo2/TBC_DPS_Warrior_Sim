@@ -1514,16 +1514,16 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
                 // Heroic strike or Cleave
                 if (config.combat.use_heroic_strike)
                 {
-                if (number_of_extra_targets_ > 0 && config.combat.cleave_if_adds)
-                {
-                        if (rage > config.combat.cleave_rage_thresh && !ability_queue_manager.cleave_queued && rage >= 20)
+                    if (number_of_extra_targets_ > 0 && config.combat.cleave_if_adds)
                     {
-                        ability_queue_manager.queue_cleave();
+                        if (rage > config.combat.cleave_rage_thresh && !ability_queue_manager.cleave_queued && rage >= 20)
+                        {
+                            ability_queue_manager.queue_cleave();
                             logger_.print("Cleave activated");
+                        }
                     }
-                }
-                else
-                {
+                    else
+                    {
                     if (rage > config.combat.heroic_strike_rage_thresh && !ability_queue_manager.heroic_strike_queued &&
                             rage >= heroic_strike_rage_cost_)
                         {
