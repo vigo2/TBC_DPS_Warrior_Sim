@@ -448,6 +448,7 @@ bool Combat_simulator::start_cast_slam(bool mh_swing, const Weapon_sim& weapon)
             logger_.print("Starting to cast slam.", " Latency: ", config.combat.slam_latency, "s");
             slam_manager.cast_slam(time_keeper_.time + config.combat.slam_latency);
             time_keeper_.global_cast(1.5 + config.combat.slam_latency);
+            spend_rage(15); // "reserve" slam cost
             return true;
         }
     }
@@ -1212,6 +1213,7 @@ void Combat_simulator::simulate(const Character& character, int init_iteration, 
                     continue;
                 }
 
+                gain_rage(15); // "unreserve slam-cost"
                 slam(weapons[0], special_stats, damage_sources, flurry_charges, rampage_stacks);
                 slam_manager.finish_slam();
 
