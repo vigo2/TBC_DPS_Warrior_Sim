@@ -625,8 +625,8 @@ struct Armory
                 // Phase 1
                 {"lionheart_champion", Attributes{49.0, 44.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.0}, 3.6, 341, 513, Weapon_socket::two_hand, Weapon_type::sword, {{"lionheart_champion", Hit_effect::Type::stat_boost, {100, 0}, {}, 0, 10, 0, 3.6 / 60}}},
                 {"gladiators_greatsword", Attributes{32.0, 0.0}, Special_stats{1.585144927536232, 1.2682308180088777, 0.0, 0, 0.0}, 3.6, 341, 513, Weapon_socket::two_hand, Weapon_type::sword}, 
-                {"khorium_champion", Attributes{50.0, 0.0}, Special_stats{0.0, 2.346227013316424, 0.0, 0, 0.0}, 3.3, 286, 430, Weapon_socket::two_hand, Weapon_type::sword, {{"khorium_champion", Hit_effect::Type::stat_boost, {120, 0}, {}, 0, 30, 0, 3.3 / 60}}},
-                {"despair", Attributes{52.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.0}, 3.5, 319, 479, Weapon_socket::two_hand, Weapon_type::sword, {{"despair", Hit_effect::Type::damage_physical, {}, {}, 600, 0, 0, 3.5 / 60}}}, 
+                {"khorium_champion", Attributes{50.0, 0.0}, Special_stats{0.0, 2.346227013316424, 0.0, 0, 0.0}, 3.3, 286, 430, Weapon_socket::two_hand, Weapon_type::sword, {{"khorium_champion", Hit_effect::Type::stat_boost, {120, 0}, {}, 0, 30, 0, 0.024}}},
+                {"despair", Attributes{52.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.0}, 3.5, 319, 479, Weapon_socket::two_hand, Weapon_type::sword, {{"despair", Hit_effect::Type::damage_physical, {}, {}, 600, 0, 0, 0.027}}}, 
                 {"lionheart_blade", Attributes{47.0, 42.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.0}, 3.6, 315, 474, Weapon_socket::two_hand, Weapon_type::sword}, 
                 {"quantum_blade", Attributes{0.0, 0.0}, Special_stats{1.358695652173913, 0.0, 102.0, 0, 0.0}, 3.5, 304, 456, Weapon_socket::two_hand, Weapon_type::sword}, 
                 {"endbringer", Attributes{29.0, 0.0}, Special_stats{2.0380434782608696, 0.0, 0.0, 0, 0.0}, 3.4, 253, 381, Weapon_socket::two_hand, Weapon_type::sword}, 
