@@ -105,8 +105,8 @@ double get_hit_effect_ap_equivalent(const Hit_effect& hit_effect, double total_a
     }
     else if (hit_effect.type == Hit_effect::Type::extra_hit)
     {
-        // Estimate extra hit as 75% the value of crit, since abilities might reset swing to early
-        hit_effects_ap += 100.0 * hit_effect.probability * swing_speed * crit_w * factor * 0.75;
+        // Estimate extra hit as crit
+        hit_effects_ap += 100.0 * hit_effect.probability * swing_speed * crit_w * factor;
     }
     else if (hit_effect.type == Hit_effect::Type::stat_boost)
     {
