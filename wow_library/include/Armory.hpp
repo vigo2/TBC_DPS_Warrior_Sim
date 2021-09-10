@@ -611,6 +611,7 @@ struct Armory
                 {"kings_defender", Attributes{0.0, 0.0}, Special_stats{0.0, 1.077996195307546, 0.0, 0, 0.0}, 1.6, 98, 182, Weapon_socket::one_hand, Weapon_type::sword}, 
                 {"gladiators_quickblade", Attributes{0.0, 0.0}, Special_stats{0.6793478260869565, 0.570703868103995, 28.0, 0, 0.0}, 1.5, 95, 178, Weapon_socket::one_hand, Weapon_type::sword}, 
                 {"blazeguard", Attributes{0.0, 17.0}, Special_stats{0.0, 1.077996195, 0.0, 0, 0.0}, 1.6, 102, 190, Weapon_socket::one_hand, Weapon_type::sword},
+                {"blazefury", Attributes{0.0, 19.0}, Special_stats{0.0, 1.141407736, 0.0, 0, 0.0}, 1.6, 109, 203, Weapon_socket::one_hand, Weapon_type::sword},
 
                 // Phase 2
                 // main_hand / one_hand
