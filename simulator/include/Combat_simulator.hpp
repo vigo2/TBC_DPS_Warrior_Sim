@@ -393,7 +393,7 @@ public:
                       Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks,
                       Extra_attack_type extra_attack_type = Extra_attack_type::all);
 
-    void hit_effects(Weapon_sim& weapon, Weapon_sim& main_hand_weapon, Special_stats& special_stats,
+    void hit_effects(Hit_result hit_result, Weapon_sim& weapon, Weapon_sim& main_hand_weapon, Special_stats& special_stats,
                      Damage_sources& damage_sources, int& flurry_charges, int& rampage_stacks,
                      Hit_type hit_type = Hit_type::spell, Extra_attack_type extra_attack_type = Extra_attack_type::all);
 

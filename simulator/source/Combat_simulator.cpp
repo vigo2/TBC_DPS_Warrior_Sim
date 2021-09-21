@@ -480,7 +480,7 @@ void Combat_simulator::slam(Weapon_sim& main_hand_weapon, Special_stats& special
     {
         spend_rage(15);
         maybe_gain_flurry(hit_outcome.hit_result, flurry_charges, special_stats);
-        hit_effects(main_hand_weapon, main_hand_weapon, special_stats, damage_sources, flurry_charges, rampage_stacks);
+        hit_effects(hit_outcome.hit_result, main_hand_weapon, main_hand_weapon, special_stats, damage_sources, flurry_charges, rampage_stacks);
     }
     damage_sources.add_damage(Damage_source::slam, hit_outcome.damage, time_keeper_.time);
     logger_.print("Current rage: ", int(rage));
@@ -512,7 +512,7 @@ void Combat_simulator::mortal_strike(Weapon_sim& main_hand_weapon, Special_stats
     {
         spend_rage(mortal_strike_rage_cost_);
         maybe_gain_flurry(hit_outcome.hit_result, flurry_charges, special_stats);
-        hit_effects(main_hand_weapon, main_hand_weapon, special_stats, damage_sources, flurry_charges, rampage_stacks);
+        hit_effects(hit_outcome.hit_result, main_hand_weapon, main_hand_weapon, special_stats, damage_sources, flurry_charges, rampage_stacks);
     }
     time_keeper_.mortal_strike_cast(6.0 - config.talents.improved_mortal_strike * 0.2);
     time_keeper_.global_cast(1.5);
@@ -547,7 +547,7 @@ void Combat_simulator::bloodthirst(Weapon_sim& main_hand_weapon, Special_stats& 
     {
         spend_rage(bloodthirst_rage_cost_);
         maybe_gain_flurry(hit_outcome.hit_result, flurry_charges, special_stats);
-        hit_effects(main_hand_weapon, main_hand_weapon, special_stats, damage_sources, flurry_charges, rampage_stacks);
+        hit_effects(hit_outcome.hit_result, main_hand_weapon, main_hand_weapon, special_stats, damage_sources, flurry_charges, rampage_stacks);
     }
     time_keeper_.blood_thirst_cast(6.0);
     time_keeper_.global_cast(1.5);
@@ -578,7 +578,7 @@ void Combat_simulator::overpower(Weapon_sim& main_hand_weapon, Special_stats& sp
     if (hit_outcome.hit_result != Hit_result::miss && hit_outcome.hit_result != Hit_result::dodge)
     {
         maybe_gain_flurry(hit_outcome.hit_result, flurry_charges, special_stats);
-        hit_effects(main_hand_weapon, main_hand_weapon, special_stats, damage_sources, flurry_charges, rampage_stacks);
+        hit_effects(hit_outcome.hit_result, main_hand_weapon, main_hand_weapon, special_stats, damage_sources, flurry_charges, rampage_stacks);
     }
     if (config.set_bonus_effect.destroyer_2_set)
     {
@@ -614,7 +614,7 @@ void Combat_simulator::whirlwind(Weapon_sim& main_hand_weapon, Weapon_sim& off_h
         if (mh_outcome.hit_result != Hit_result::miss && mh_outcome.hit_result != Hit_result::dodge)
         {
             maybe_gain_flurry(mh_outcome.hit_result, flurry_charges, special_stats);
-            hit_effects(main_hand_weapon, main_hand_weapon, special_stats, damage_sources, flurry_charges, rampage_stacks);
+            hit_effects(mh_outcome.hit_result, main_hand_weapon, main_hand_weapon, special_stats, damage_sources, flurry_charges, rampage_stacks);
         }
         else if (mh_outcome.hit_result == Hit_result::dodge)
         {
@@ -629,7 +629,7 @@ void Combat_simulator::whirlwind(Weapon_sim& main_hand_weapon, Weapon_sim& off_h
             {
                 maybe_gain_flurry(oh_outcome.hit_result, flurry_charges, special_stats);
                 // most likely doesn't proc any non-weapon-specific hit effect
-                hit_effects(off_hand_weapon, main_hand_weapon, special_stats, damage_sources, flurry_charges, rampage_stacks);
+                hit_effects(oh_outcome.hit_result, off_hand_weapon, main_hand_weapon, special_stats, damage_sources, flurry_charges, rampage_stacks);
             }
         }
     }
@@ -668,7 +668,7 @@ void Combat_simulator::execute(Weapon_sim& main_hand_weapon, Special_stats& spec
     }
     spend_all_rage();
     maybe_gain_flurry(hit_outcome.hit_result, flurry_charges, special_stats);
-    hit_effects(main_hand_weapon, main_hand_weapon, special_stats, damage_sources, flurry_charges, rampage_stacks);
+    hit_effects(hit_outcome.hit_result, main_hand_weapon, main_hand_weapon, special_stats, damage_sources, flurry_charges, rampage_stacks);
     damage_sources.add_damage(Damage_source::execute, hit_outcome.damage, time_keeper_.time);
     logger_.print("Current rage: ", int(rage));
 }
@@ -699,13 +699,13 @@ void Combat_simulator::hamstring(Weapon_sim& main_hand_weapon, Special_stats& sp
     {
         spend_rage(10);
         maybe_gain_flurry(hit_outcome.hit_result, flurry_charges, special_stats);
-        hit_effects(main_hand_weapon, main_hand_weapon, special_stats, damage_sources, flurry_charges, rampage_stacks);
+        hit_effects(hit_outcome.hit_result, main_hand_weapon, main_hand_weapon, special_stats, damage_sources, flurry_charges, rampage_stacks);
     }
     damage_sources.add_damage(Damage_source::hamstring, hit_outcome.damage, time_keeper_.time);
     logger_.print("Current rage: ", int(rage));
 }
 
-void Combat_simulator::hit_effects(Weapon_sim& weapon, Weapon_sim& main_hand_weapon, Special_stats& special_stats,
+void Combat_simulator::hit_effects(Hit_result hit_result, Weapon_sim& weapon, Weapon_sim& main_hand_weapon, Special_stats& special_stats,
                                    Damage_sources& damage_sources, int& flurry_charges,
                                    int& rampage_stacks, Hit_type hit_type, Extra_attack_type extra_attack_type)
 {
@@ -765,6 +765,10 @@ void Combat_simulator::hit_effects(Weapon_sim& weapon, Weapon_sim& main_hand_wea
             break;
         }
         case Hit_effect::Type::stat_boost: {
+            if ((hit_effect.name == "tsunami_talisman" || hit_effect.name == "hourglass_of_the_unraveller") && hit_result != Hit_result::crit)
+            {
+                break;
+            }
             hit_effect.procs++;
             logger_.print("PROC: ", hit_effect.name, " stats increased for ", hit_effect.duration, "s");
             buff_manager_.add_combat_buff(hit_effect, time_keeper_.time);
@@ -798,7 +802,7 @@ void Combat_simulator::hit_effects(Weapon_sim& weapon, Weapon_sim& main_hand_wea
                 }
                 if (hit.hit_result != Hit_result::miss && hit.hit_result != Hit_result::dodge)
                 {
-                hit_effects(main_hand_weapon, main_hand_weapon, special_stats, damage_sources, flurry_charges,
+                hit_effects(hit.hit_result, main_hand_weapon, main_hand_weapon, special_stats, damage_sources, flurry_charges,
                             rampage_stacks);
                 }
                 break;
@@ -854,7 +858,7 @@ void Combat_simulator::swing_weapon(Weapon_sim& weapon, Weapon_sim& main_hand_we
                 spend_rage(heroic_strike_rage_cost_);
                 maybe_gain_flurry(hit_outcome.hit_result, flurry_charges, special_stats);
                 unbridled_wrath(weapon);
-                hit_effects(weapon, main_hand_weapon, special_stats, damage_sources, flurry_charges,
+                hit_effects(hit_outcome.hit_result, weapon, main_hand_weapon, special_stats, damage_sources, flurry_charges,
                             rampage_stacks, Hit_type::next_melee, extra_attack_type);
             }
             damage_sources.add_damage(Damage_source::heroic_strike, hit_outcome.damage, time_keeper_.time);
@@ -891,7 +895,7 @@ void Combat_simulator::swing_weapon(Weapon_sim& weapon, Weapon_sim& main_hand_we
                 {
                     maybe_gain_flurry(hit_outcome.hit_result, flurry_charges, special_stats);
                     unbridled_wrath(weapon);
-                    hit_effects(weapon, main_hand_weapon, special_stats, damage_sources, flurry_charges,
+                    hit_effects(hit_outcome.hit_result, weapon, main_hand_weapon, special_stats, damage_sources, flurry_charges,
                                 rampage_stacks, Hit_type::next_melee, extra_attack_type);
                 }
                 else if (hit_outcome.hit_result == Hit_result::dodge)
@@ -922,7 +926,7 @@ void Combat_simulator::swing_weapon(Weapon_sim& weapon, Weapon_sim& main_hand_we
             gain_rage(rage_generation(hit_outcome, weapon));
             maybe_gain_flurry(hit_outcome.hit_result, flurry_charges, special_stats);
             unbridled_wrath(weapon);
-            hit_effects(weapon, main_hand_weapon, special_stats, damage_sources, flurry_charges, rampage_stacks,
+            hit_effects(hit_outcome.hit_result, weapon, main_hand_weapon, special_stats, damage_sources, flurry_charges, rampage_stacks,
                         Hit_type::melee, extra_attack_type);
         }
         else if (hit_outcome.hit_result == Hit_result::dodge)
