@@ -1,6 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
-<style>
+
+<head>
+    <title>TBC DPS Warrior Sim</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
+    <script src="emscripten/website/wasm_interface.js"></script>
+    <script src="js/talents.js"></script>
+    <script src="js/load_presets.js"></script>
+    <script src="js/gems.js"></script>
+    <meta name="site_description" content="WoW TBC simulator for DPS Warriors">
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-NN4PFR8SWH"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-NN4PFR8SWH');
+    </script>
+
+    <style>
     body {
         font-family: Arial;
     }
@@ -289,38 +309,17 @@
         transition: border-color .2s ease-in;
     }
 </style>
-
-<head>
-    <title>TBC DPS Warrior Sim</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="emscripten/website/wasm_interface.js"></script>
-    <script src="js/talents.js"></script>
-    <script src="js/load_presets.js"></script>
-    <script src="js/gems.js"></script>
-    <meta name="site_description" content="WoW TBC simulator for DPS Warriors">
-
-    <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-NN4PFR8SWH"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-
-        gtag('config', 'G-NN4PFR8SWH');
-    </script>
-
 </head>
-
-<h1>TBC DPS Warrior Sim</h1>
-<h4>Ported from Kateparry's WoW Fury Sim</h4>
-<h4>GroxEmpire | Grahand - BloodsailBuccaneers</h4>
 
 <body style="background-color:#bfbfbf;"
       onload="openTab('event', 'Simulator');open_armor();show_div('cleave_if_adds', 'cleave_div');
       show_div('use_hamstring', 'hamstring_div');show_div('multi_target_mode', 'multi_target_div');
       show_div('periodic_damage', 'periodic_damage_div');show_div('ability_queue', 'ability_queue_div');
       show_div('dual_wield_mode', 'dual_wield_div');show_div('use_hs_in_exec_phase', 'hs_exec_div');displayTalentBootup();calcTotalTalents();load_talent_dual_wield_fury();">
+
+<h1>TBC DPS Warrior Sim</h1>
+<h4>Ported from Kateparry's WoW Fury Sim</h4>
+<h4>GroxEmpire | Grahand - BloodsailBuccaneers</h4>
 
 <div class="tab">
     <button class="tablinks" onclick="openTab(event, 'Simulator')">Simulator</button>
@@ -471,6 +470,7 @@
                 <option value="necklace_of_trophies"> Necklace of Trophies</option>
                 <option value="pendant_of_the_perilous"> Pendant of the Perilous</option>
                 <option value="saberclaw_talisman"> Saberclaw Talisman</option>
+                <option value="braided_eternium_chain"> Braided Eternium Chain</option>
                 <option value="stormrages_talisman_of_seething"> Stormrages Talisman of Seething</option>
                 <option value="telonicuss_pendant_of_mayhem"> Telonicuss Pendant of Mayhem</option>
                 <option value="the_savages_choker"> The Savages Choker</option>
@@ -4136,6 +4136,9 @@
             <input type="checkbox" id="heroic_presence">
             <label for="heroic_presence" style="color: #003d99"> Heroic Presence</label><br>
 
+            <input type="checkbox" id="braided_eternium_chain">
+            <label for="braided_eternium_chain" style="color: #003d99"> Braided Eternium Chain</label><br>
+
             <input type="checkbox" id="improved_faerie_fire">
             <label for="improved_faerie_fire"> Improved Faerie Fire</label><br>
 
@@ -4620,8 +4623,8 @@
         <input type="checkbox" id="use_slam" onclick="show_div('use_slam', 'slam_div')">
         <label for="use_slam"><b> Use slam</b></label><br>
         <div class="description" id="slam_div">
-            <label for="slam_rage_dd">Cast slam after a melee hit if rage is above:</label>
-            <input type="number" id="slam_rage_dd" name="quantity" min="15" max="100" value="15"><br>
+            <label for="slam_rage_thresh_dd">Cast slam after a melee hit if rage is above:</label>
+            <input type="number" id="slam_rage_thresh_dd" name="quantity" min="0" max="100" value="0"><br>
             <label for="slam_spam_rage_dd">Spam slam when rage is above:</label>
             <input type="number" id="slam_spam_rage_dd" name="quantity" min="15" max="100" value="100"><br>
             <label for="slam_spam_max_time_dd">Never cast slam when weapon swing timer is less than:</label>
@@ -4670,8 +4673,8 @@
         <div class="description" id="hamstring_div">
             <label for="hamstring_cd_thresh_dd">Hamstring when bloodthirst/Whirlwind CD is above:</label>
             <input type="number" id="hamstring_cd_thresh_dd" name="quantity" min="0" max="6" value="2.0" step="0.1"><br>
-            <label for="hamstring_thresh_dd">Hamstring when rage is above:</label>
-            <input type="number" id="hamstring_thresh_dd" name="quantity" min="0" max="100" value="70"><br>
+            <label for="hamstring_rage_thresh_dd">Hamstring when rage is above:</label>
+            <input type="number" id="hamstring_rage_thresh_dd" name="quantity" min="0" max="100" value="70"><br>
         </div>
 
         <input type="checkbox" id="ability_queue" onclick="show_div('ability_queue', 'ability_queue_div')">
@@ -4718,8 +4721,8 @@
             <input type="number" id="extra_target_armor_dd" name="quantity" min="0" max="10000" value="7000"><br>
             <label for="extra_target_level_dd">Extra targets level (70-73):</label>
             <input type="number" id="extra_target_level_dd" name="quantity" min="70" max="73" value="70"><br>
-            <label for="extra_target_duration_dd">Extra targets die at (% of fight):</label>
-            <input type="number" id="extra_target_duration_dd" name="quantity" min="1" max="100" value="100"><br>
+            <label for="extra_target_percentage_dd">Extra targets die at (% of fight):</label>
+            <input type="number" id="extra_target_percentage_dd" name="quantity" min="1" max="100" value="100"><br>
         </div>
         <br>
 
@@ -4857,6 +4860,7 @@
     </div>
 
     <canvas id="line-chart-hist"></canvas>
+    <p id="output5"></p>
 
     <p></p>
     <canvas id="line-chart-fight"></canvas>
@@ -4938,7 +4942,7 @@
 
     let buffs = ["battle_shout", "blessing_of_kings", "blessing_of_might", "gift_of_the_wild", "leader_of_the_pack", "trueshot_aura",
         "windfury_totem", "strength_of_earth_totem", "grace_of_air_totem", "improved_seal_of_the_crusader", "blood_frenzy", "improved_sanctity_aura",
-        "heroic_presence", "improved_faerie_fire", "trueshot_aura"];
+        "heroic_presence", "braided_eternium_chain", "improved_faerie_fire", "trueshot_aura"];
     let buffs_input = [];
 
     let consumables = ["elixir_mongoose", "blessed_sunfruit", "roasted_clefthoof", "juju_power",
@@ -4979,12 +4983,12 @@
         "opponent_level_dd", "boss_armor_dd", "fight_time_dd",
         "sunder_armor_dd", "heroic_strike_rage_thresh_dd", "hs_rage_thresh_exec_phase_dd", "cleave_rage_thresh_dd", "whirlwind_rage_thresh_dd", "bt_whirlwind_cooldown_thresh_dd",
         "whirlwind_bt_cooldown_thresh_dd", "overpower_rage_thresh_dd", "overpower_bt_cooldown_thresh_dd",
-        "overpower_ww_cooldown_thresh_dd", "hamstring_cd_thresh_dd", "initial_rage_dd", "hamstring_thresh_dd",
+        "overpower_ww_cooldown_thresh_dd", "hamstring_cd_thresh_dd", "initial_rage_dd", "hamstring_rage_thresh_dd",
         "max_optimize_time_dd", "number_of_extra_targets_dd", "extra_target_armor_dd", "extra_target_level_dd",
         "periodic_damage_interval_dd", "periodic_damage_amount_dd", "execute_phase_percentage_dd",
         "re_queue_abilities_dd",
-        "slam_spam_max_time_dd", "slam_latency_dd", "slam_spam_rage_dd", "slam_rage_dd", "berserking_haste_dd",
-        "full_polarity_dd", "extra_target_duration_dd", "battle_squawk_dd", "rampage_use_thresh_dd", "ferocious_inspiration_dd", "unleashed_rage_dd"];
+        "slam_spam_max_time_dd", "slam_latency_dd", "slam_spam_rage_dd", "slam_rage_thresh_dd", "berserking_haste_dd",
+        "full_polarity_dd", "extra_target_percentage_dd", "battle_squawk_dd", "rampage_use_thresh_dd", "ferocious_inspiration_dd", "unleashed_rage_dd"];
 
     let sim_options = ["faerie_fire", "exposed_armor", "curse_of_recklessness", "death_wish", "enable_blood_fury",
         "enable_berserking", "enable_unleashed_rage", "recklessness", "mighty_rage_potion", "debug_on", "use_bt_in_exec_phase", "use_ww_in_exec_phase", "use_hs_in_exec_phase",
@@ -5241,36 +5245,32 @@
     let bar_chart_cooldowns;
 
     function clean_charts() {
-        try {
-            bar_chart_auras.destroy();
-            bar_chart_proc.destroy();
-            bar_chart_damage.destroy();
-            line_chart_hist.destroy();
-            line_chart_fight.destroy();
-            line_chart_fight_cum.destroy();
-            bar_chart_cooldowns.destroy();
-        } catch (error) {
-            console.log(error)
-        }
+        if (!bar_chart_auras) return; // before first run_sim()
+
+        bar_chart_auras.destroy();
+        bar_chart_proc.destroy();
+        bar_chart_damage.destroy();
+        line_chart_hist.destroy();
+        line_chart_fight.destroy();
+        line_chart_fight_cum.destroy();
+        bar_chart_cooldowns.destroy();
     }
 
     function show_loader() {
-        $("#loader").addClass("loader");
+        document.getElementById("loader").className = "loader";
     }
 
     function hide_loader() {
-        $("#loader").removeClass("loader");
+        document.getElementById("loader").className = "";
     }
 
-    async function run_sim(event) {
+    async function run_sim() {
         show_loader();
         setTimeout(setup_simulation_context, 100);
         setTimeout(hide_loader, 100);
-        event.preventDefault();
     }
 
     function setup_simulation_context() {
-
         clean_charts();
         read_inputs();
 
@@ -5367,9 +5367,6 @@
                 console.log("NaN value when reading talents.");
                 val = 0;
             }
-            if (val > 0) {
-                console.log(element, val);
-            }
             val = Math.min(Math.max(val, 0), max_val);
             talent_string.push_back(talent);
             talent_val.push_back(val);
@@ -5388,7 +5385,6 @@
         let stat_weight_vec = new Module.StringList();
         for (let stat_weight of stat_weigths) {
             if (document.getElementById(stat_weight).checked) {
-                console.log(stat_weight.slice(12, stat_weight.length));
                 stat_weight_vec.push_back(stat_weight.slice(12, stat_weight.length));
                 total_simulations += n_simulations_stat;
             }
@@ -5419,6 +5415,7 @@
             }
             document.getElementById("output3").innerHTML = "";
             document.getElementById("output4").innerHTML = "";
+            document.getElementById("output5").innerHTML = "";
 
         } else {
             let wow_input = {
@@ -5439,7 +5436,10 @@
                 mult_armor: mult_armor_vec,
             };
 
+            let t0 = performance.now();
             let result = obj.simulate(wow_input);
+            let t1 = performance.now();
+            console.log("took " + (t1 - t0) + " ms");
 
             obj.delete();
 
@@ -5452,12 +5452,12 @@
 
             let n_sim_status = "";
             if (mean_dps.length === 1) {
-                let conf_interval = 1.96 * std_dps[0];
+                let conf_interval = parseFloat(std_dps[0]);
                 n_sim_status += 'DPS: <b>' + mean_dps[0] + ' &plusmn ' + conf_interval.toPrecision(3) + '</b> (95% confidence interval)<br>';
             } else {
                 for (let i = 0; i < mean_dps.length; i++) {
                     let j = i + 1;
-                    let conf_interval = 1.96 * std_dps[i];
+                    let conf_interval = parseFloat(std_dps[i]);
                     n_sim_status += 'DPS setup' + j + ': <b>' + mean_dps[i] + ' &plusmn ' +
                         conf_interval.toPrecision(3) + '</b> (95% confidence interval)<br>';
                 }
@@ -5481,7 +5481,7 @@
                 stat_weights.push({
                     name: sw[0],
                     mean: parseFloat(sw[1]),
-                    ci95: 1.96 * parseFloat(sw[2]),
+                    ci95: parseFloat(sw[2]),
                 });
             }
 
@@ -5497,6 +5497,9 @@
 
             // Crit cap details:
             document.getElementById("output4").innerHTML = result['extra_stats'].get(0);
+
+            // DPS histogram details:
+            document.getElementById("output5").innerHTML = result['histogram_details'];
 
             if (document.getElementById("debug_on").checked) {
                 document.getElementById("combat_debug").style.display = "block";
@@ -5605,7 +5608,7 @@
                         borderColor: colors[i],
                         backgroundColor: colors[i],
                         pointRadius: 0.1,
-                        fill: origin
+                        fill: "origin"
                     }
                 )
             }
@@ -5620,156 +5623,96 @@
                         borderColor: colors[i],
                         backgroundColor: colors[i],
                         pointRadius: 0.1,
-                        fill: origin
+                        fill: "origin"
                     }
                 )
             }
 
-            let use_effect_data = [];
-            for (let i = result['use_effect_order_string'].size() - 1; i >= 0; i--) {
-                let aura_string = result['use_effect_order_string'].get(i);
-                let split_string = aura_string.split(" ");
-                let use_effect_name = split_string[0];
-                let start_time = parseFloat(split_string[1]);
-                let duration = parseFloat(split_string[2]);
-                let found_effect = false;
-                for (let use_effect of use_effect_data) {
-                    if (use_effect['name'] === use_effect_name) {
-                        let sum_times = 0.0;
-                        for (let previous_start_time of use_effect['start_time']) {
-                            if (previous_start_time + duration >= 0.0) {
-                                sum_times += previous_start_time + duration;
-                            }
-                        }
-                        // use_effect['start_time'].push(delta_start_time);
-                        use_effect['start_time'].push(start_time - sum_times);
-                        found_effect = true;
-                    }
-                }
-                if (!found_effect) {
-                    use_effect_data.push(
-                        {
-                            'name': use_effect_name,
-                            'start_time': [start_time],
-                            'duration': duration,
-                        }
-                    );
-                }
+            let byName = new Map();
+            for (let i = 0; i < result["use_effect_order_string"].size(); i++) {
+                let [ name, start, duration ] = result["use_effect_order_string"].get(i).split(" ");
+                start = parseFloat(start);
+                duration = parseFloat(duration);
+                if (!byName.has(name)) byName.set(name, []);
+                byName.get(name).push([start > 0 ? start : 0, start+duration]); // "floating-bars" w/ [start, end], see https://www.chartjs.org/docs/2.9.4/charts/bar.html#data-structure
             }
-            let longest_data_set = 0;
-            let n_data_set = use_effect_data.length;
-            for (let use_effect of use_effect_data) {
-                if (use_effect['start_time'].length > longest_data_set) {
-                    longest_data_set = use_effect['start_time'].length;
-                }
-            }
-            let use_effect_plot = [];
-            let use_effect_colors = [];
+
             let use_effect_labels = [];
-            for (let i = 0; i < 2 * longest_data_set; ++i) {
-                use_effect_plot.push([]);
-                use_effect_colors.push([]);
-            }
-            for (let i = 0; i < n_data_set; ++i) {
-                use_effect_labels.push(use_effect_data[i]['name']);
-                let j = 0;
-                let duration = use_effect_data[i]['duration'];
-                for (let start_time of use_effect_data[i]['start_time']) {
-                    if (start_time < 0.0) {
-                        if (duration + start_time < 0.0) {
-                            use_effect_plot[j].push(start_time + duration);
-                            use_effect_plot[j + 1].push(-duration);
-                            use_effect_colors[j].push("rgba(255,255,250,0)");
-                            use_effect_colors[j + 1].push(colors[i]);
-                        } else {
-                            use_effect_plot[j].push(start_time);
-                            use_effect_plot[j + 1].push(duration + start_time);
-                            use_effect_colors[j].push(colors[i]);
-                            use_effect_colors[j + 1].push(colors[i]);
-                        }
-                    } else {
-                        use_effect_plot[j].push(start_time);
-                        use_effect_plot[j + 1].push(duration);
-                        use_effect_colors[j].push("rgba(255,255,250,0)");
-                        use_effect_colors[j + 1].push(colors[i]);
-                    }
-                    j += 2;
-                }
-                while (j < 2 * longest_data_set) {
-                    use_effect_plot[j].push(0);
-                    use_effect_plot[j + 1].push(0);
-                    use_effect_colors[j].push("rgba(255,255,250,0)");
-                    use_effect_colors[j + 1].push("rgba(255,255,250,0)");
-                    j += 2;
-                }
+            let maxLength = 0;
+            for (let [k, v] of byName.entries()) {
+                use_effect_labels.push(k);
+                if (v.length > maxLength) maxLength = v.length;
             }
 
             let use_effect_datasets = [];
-            for (let i = 0; i < use_effect_plot.length; i++) {
-                use_effect_datasets.push(
-                    {
-                        'data': use_effect_plot[i],
-                        'backgroundColor': use_effect_colors[i]
-                    }
-                )
+            const use_effect_colors = colors.slice(0, byName.size);
+            for (let i = 0; i < maxLength; ++i) {
+                let ds = { data: [], backgroundColor: use_effect_colors };
+                for (let v of byName.values()) {
+                    ds.data.push(i < v.length ? v[i] : []);
+                }
+                use_effect_datasets.push(ds);
             }
 
+            Chart.defaults.global.defaultFontFamily = "Arial, Helvetica, sans-serif";
+            Chart.defaults.global.defaultFontStyle = "bold";
+            Chart.defaults.global.defaultFontColor = "black";
             Chart.defaults.global.defaultFontSize = 36;
-            Chart.defaults.global.defaultFontStyle = 'Bold';
-            Chart.defaults.scale.gridLines.color = "black";
+            Chart.defaults.global.title.fontSize = 64;
+            Chart.defaults.global.title.display = true;
+            Chart.defaults.scale.gridLines.color = "rgba(0, 0, 0, 0.5)";
+            Chart.defaults.scale.gridLines.display = false;
+            Chart.defaults.scale.scaleLabel.display = true;
+
+            let total = hist_y.reduce((a, v) => a + v);
+
+            let sum = 0;
+            let colorFunc = function(ctx) {
+                if (ctx.dataIndex === undefined) return;
+                if (ctx.dataset === undefined) return;
+
+                if (ctx.dataIndex === 0) sum = 0;
+
+                let oldSum = sum;
+                sum += ctx.dataset.data[ctx.dataIndex];
+                if (sum < 0.25 * total || oldSum > 0.75 * total) {
+                    return "#3e95cd";
+                }
+                return "#64aad7";
+            };
 
             line_chart_hist = new Chart(document.getElementById("line-chart-hist"), {
-                type: 'line',
+                type: "bar",
                 data: {
                     labels: hist_x,
                     datasets: [{
                         data: hist_y,
                         label: "Simulator results",
-                        borderWidth: 10,
-                        borderColor: "#3e95cd",
-                        fill: origin,
-                        backgroundColor: "#3e95cd"
+                        backgroundColor: colorFunc
                     }]
                 },
                 options: {
-                    legend: {
-                        labels: {
-                            fontColor: "black",
-                        }
-                    },
                     title: {
-                        fontSize: 60,
-                        fontColor: "black",
-                        display: true,
-                        text: 'Damage histogram'
+                        text: "Damage histogram"
                     },
                     scales: {
                         yAxes: [{
                             gridLines: {
-                                color: "rgba(0, 0, 0, 0.5)",
-                            },
-                            ticks: {
-                                fontColor: "black",
+                                display: true
                             },
                             scaleLabel: {
-                                display: true,
-                                labelString: 'Frequency',
-                                fontColor: "black",
+                                labelString: "Frequency",
                             }
                         }],
                         xAxes: [{
                             gridLines: {
-                                color: "rgba(0, 0, 0, 0.5)",
+                                display: true
                             },
                             ticks: {
-                                fontColor: "black",
-                                maxTicksLimit: 30,
-                                maxRotation: 0
+                                maxRotation: 0,
                             },
                             scaleLabel: {
-                                fontColor: "black",
-                                display: true,
-                                labelString: 'DPS'
+                                labelString: "DPS"
                             }
                         }]
                     }
@@ -5778,58 +5721,34 @@
 
             let canvas = document.getElementById("line-chart-hist");
             canvas.maintainAspectRatio = true;
-            canvas.style.height = '450px';
-            canvas.style.width = '675px';
+            canvas.style.height = "450px";
+            canvas.style.width = "675px";
 
             line_chart_fight = new Chart(document.getElementById("line-chart-fight"), {
-                type: 'line',
+                type: "line",
                 data: {
                     labels: time_stamps,
                     datasets: data_damage_time_lapse
                 },
                 options: {
-                    legend: {
-                        labels: {
-                            fontColor: "black",
-                        }
-                    },
                     bezierCurve: false,
                     title: {
-                        fontSize: 60,
-                        fontColor: "black",
-                        display: true,
-                        text: 'Fight time lapse (DPS)'
+                        text: "Fight time lapse (DPS)"
                     },
                     scales: {
                         yAxes: [{
-                            gridLines: {
-                                color: "rgba(0, 0, 0, 0)",
-                            },
-                            ticks: {
-                                fontColor: "black",
-                            },
                             scaleLabel: {
-                                fontColor: "black",
-                                display: true,
-                                labelString: 'Average damage'
+                                labelString: "Average damage"
                             }
                         }],
                         xAxes: [{
-                            gridLines: {
-                                color: "rgba(0, 0, 0, 0)",
-                            },
                             ticks: {
-                                autoSkip: true,
-                                maxTicksLimit: 30,
                                 maxRotation: 0,
-                                fontColor: "black",
                             },
                             scaleLabel: {
-                                fontColor: "black",
-                                display: true,
-                                labelString: 'Time'
+                                labelString: "Time"
                             }
-                        }],
+                        }]
                     }
                 }
             });
@@ -5837,54 +5756,31 @@
             canvas = document.getElementById("line-chart-fight");
             canvas.maintainAspectRatio = true;
             canvas.responsive = false;
-            canvas.style.height = '450px';
-            canvas.style.width = '675px';
+            canvas.style.height = "450px";
+            canvas.style.width = "675px";
 
             line_chart_fight_cum = new Chart(document.getElementById("line-chart-fight-cumulative"), {
-                type: 'line',
+                type: "line",
                 data: {
                     labels: time_stamps,
                     datasets: data_damage_time_lapse_cum
                 },
                 options: {
-                    legend: {
-                        labels: {
-                            fontColor: "black",
-                        }
-                    },
                     title: {
-                        fontSize: 60,
-                        fontColor: "black",
-                        display: true,
-                        text: 'Fight time lapse'
+                        text: "Fight time lapse"
                     },
                     scales: {
                         yAxes: [{
-                            gridLines: {
-                                color: "rgba(0, 0, 0, 0)",
-                            },
                             scaleLabel: {
-                                fontColor: "black",
-                                display: true,
-                                labelString: 'Cumulative damage'
-                            },
-                            ticks: {
-                                fontColor: "black",
+                                labelString: "Cumulative damage"
                             },
                         }],
                         xAxes: [{
-                            gridLines: {
-                                color: "rgba(0, 0, 0, 0)",
-                            },
                             ticks: {
-                                fontColor: "black",
-                                maxTicksLimit: 30,
-                                maxRotation: 0
+                                maxRotation: 0,
                             },
                             scaleLabel: {
-                                fontColor: "black",
-                                display: true,
-                                labelString: 'Time'
+                                labelString: "Time"
                             }
                         }]
                     }
@@ -5893,59 +5789,48 @@
 
             canvas = document.getElementById("line-chart-fight-cumulative");
             canvas.maintainAspectRatio = true;
-            canvas.style.height = '450px';
-            canvas.style.width = '675px';
+            canvas.style.height = "450px";
+            canvas.style.width = "675px";
 
-            bar_chart_cooldowns = new Chart(document.getElementById("bar-chart-cooldowns").getContext("2d"), {
-                type: 'horizontalBar',
+            bar_chart_cooldowns = new Chart(document.getElementById("bar-chart-cooldowns"), {
+                type: "horizontalBar",
                 data: {
                     labels: use_effect_labels,
                     datasets: use_effect_datasets
                 },
                 options: {
-                    legend: {display: false},
+                    legend: {
+                        display: false
+                    },
                     title: {
-                        fontSize: 60,
-                        fontColor: "black",
-                        display: true,
-                        text: 'Use Effect Schedule'
+                        text: "Use Effect Schedule"
+                    },
+                    tooltips: {
+                        mode: "point",
+                        callbacks: {
+                            label: function(tti, data) {
+                                const d = data.datasets[tti.datasetIndex].data[tti.index];
+                                return d[0] + ".." + d[1];
+                            }
+                        }
                     },
                     scales: {
                         yAxes: [{
                             stacked: true,
-                            fontColor: "black",
-                            gridLines: {
-                                color: "rgba(0, 0, 0, 0)",
-                            },
                             scaleLabel: {
-                                fontColor: "black",
-                                display: true,
-                                labelString: 'Use Effect'
+                                labelString: "Use Effect"
                             },
-                            ticks:
-                                {
-                                    fontColor: "black",
-                                    beginAtZero: true,
-                                    suggestedMin: 0,
-                                }
                         }],
                         xAxes: [{
-                            stacked: true,
-                            fontColor: "black",
                             gridLines: {
-                                color: "rgba(0, 0, 0, 0)",
+                                display: true
                             },
                             scaleLabel: {
-                                fontColor: "black",
-                                display: true,
-                                labelString: 'Time'
+                                labelString: "Time"
                             },
-                            ticks:
-                                {
-                                    fontColor: "black",
-                                    beginAtZero: true,
-                                    suggestedMin: 0,
-                                }
+                            ticks: {
+                                stepSize: 20
+                            }
                         }]
                     }
                 }
@@ -5954,12 +5839,12 @@
             canvas = document.getElementById("bar-chart-cooldowns");
             canvas.maintainAspectRatio = true;
             canvas.responsive = false;
-            canvas.style.height = '450px';
-            canvas.style.width = '675px';
+            canvas.style.height = "450px";
+            canvas.style.width = "675px";
 
             // Bar chart
             bar_chart_damage = new Chart(document.getElementById("bar-chart-damage"), {
-                type: 'bar',
+                type: "bar",
                 data: {
                     labels: damage_name,
                     datasets: [
@@ -5972,44 +5857,26 @@
                 options: {
                     legend: {display: false},
                     title: {
-                        fontSize: 60,
-                        fontColor: "black",
-                        display: true,
-                        text: 'DPS from different sources'
+                        text: "DPS from different sources"
                     },
                     scales: {
                         yAxes: [{
-                            fontColor: "black",
-                            gridLines: {
-                                color: "rgba(0, 0, 0, 0)",
-                            },
                             scaleLabel: {
-                                fontColor: "black",
-                                display: true,
-                                labelString: 'DPS'
+                                labelString: "DPS"
                             },
-                            ticks:
-                                {
-                                    fontColor: "black",
-                                    beginAtZero: true,
-                                    suggestedMin: 0,
-                                }
+                            ticks: {
+                                beginAtZero: true,
+                                suggestedMin: 0,
+                            }
                         }],
                         xAxes: [{
-                            fontColor: "black",
-                            gridLines: {
-                                color: "rgba(0, 0, 0, 0)",
-                            },
                             scaleLabel: {
-                                fontColor: "black",
                                 display: false,
                             },
-                            ticks:
-                                {
-                                    fontColor: "black",
-                                    beginAtZero: true,
-                                    suggestedMin: 0,
-                                }
+                            ticks: {
+                                beginAtZero: true,
+                                suggestedMin: 0,
+                            }
                         }]
                     }
                 }
@@ -6017,12 +5884,12 @@
 
             canvas = document.getElementById("bar-chart-damage");
             canvas.maintainAspectRatio = true;
-            canvas.style.height = '450px';
-            canvas.style.width = '675px';
+            canvas.style.height = "450px";
+            canvas.style.width = "675px";
 
             // Bar chart
             bar_chart_auras = new Chart(document.getElementById("bar-chart-auras"), {
-                type: 'bar',
+                type: "bar",
                 data: {
                     labels: aura_name,
                     datasets: [
@@ -6035,37 +5902,25 @@
                 options: {
                     legend: {display: false},
                     title: {
-                        fontColor: "black",
-                        fontSize: 60,
-                        display: true,
-                        text: 'Aura uptime'
+                        text: "Aura uptime"
                     },
                     scales: {
                         yAxes: [{
-                            gridLines: {
-                                color: "rgba(0, 0, 0, 0)",
-                            },
                             scaleLabel: {
-                                fontColor: "black",
-                                display: true,
-                                labelString: '%',
+                                labelString: "%",
                             },
-                            ticks:
-                                {
-                                    fontColor: "black",
-                                    beginAtZero: true,
-                                    suggestedMin: 0,
-                                }
+                            ticks: {
+                                beginAtZero: true,
+                                suggestedMin: 0,
+                            }
                         }],
                         xAxes: [{
-                            gridLines: {
-                                color: "rgba(0, 0, 0, 0)",
+                            scaleLabel: {
+                                display: false
                             },
-                            ticks:
-                                {
-                                    fontColor: "black",
-                                    beginAtZero: true,
-                                }
+                            ticks: {
+                                beginAtZero: true,
+                            }
                         }],
                     }
                 }
@@ -6073,12 +5928,12 @@
 
             canvas = document.getElementById("bar-chart-auras");
             canvas.maintainAspectRatio = true;
-            canvas.style.height = '450px';
-            canvas.style.width = '675px';
+            canvas.style.height = "450px";
+            canvas.style.width = "675px";
 
             // Bar chart
             bar_chart_proc = new Chart(document.getElementById("bar-chart-proc"), {
-                type: 'bar',
+                type: "bar",
                 data: {
                     labels: proc_name,
                     datasets: [
@@ -6091,36 +5946,24 @@
                 options: {
                     legend: {display: false},
                     title: {
-                        fontColor: "black",
-                        fontSize: 60,
-                        display: true,
-                        text: 'Average # of procs'
+                        text: "Average # of procs"
                     },
                     scales: {
                         yAxes: [{
-                            gridLines: {
-                                color: "rgba(0, 0, 0, 0)",
-                            },
                             scaleLabel: {
-                                fontColor: "black",
-                                display: true,
+                                display: false,
                             },
-                            ticks:
-                                {
-                                    fontColor: "black",
-                                    beginAtZero: true,
-                                }
+                            ticks: {
+                                beginAtZero: true,
+                            }
                         }],
                         xAxes: [{
-                            gridLines: {
-                                fontColor: "black",
-                                color: "rgba(0, 0, 0, 0)",
+                            scaleLabel: {
+                                display: false,
                             },
-                            ticks:
-                                {
-                                    fontColor: "black",
-                                    beginAtZero: true,
-                                }
+                            ticks: {
+                                beginAtZero: true,
+                            }
                         }],
                     }
                 }
@@ -6129,8 +5972,8 @@
             canvas = document.getElementById("bar-chart-proc");
             canvas.maintainAspectRatio = true;
             canvas.responsive = false;
-            canvas.style.height = '450px';
-            canvas.style.width = '675px';
+            canvas.style.height = "450px";
+            canvas.style.width = "675px";
         }
     }
 </script>
