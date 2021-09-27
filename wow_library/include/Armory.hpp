@@ -716,6 +716,9 @@ struct Armory
                 {"retainers_blade", Attributes{0.0, 22.0}, Special_stats{0.0, 0.0, 0.0}, 1.5, 97, 146, Weapon_socket::one_hand, Weapon_type::dagger},
                 {"guile_of_khoraazi", Attributes{0.0, 19.0}, Special_stats{0.0, 0.0, 38.0}, 1.6, 104, 156, Weapon_socket::one_hand, Weapon_type::dagger},
                 {"feltooth_eviscerator", Attributes{0.0, 0.0}, Special_stats{0.9963768116, 0.0, 34.0}, 1.4, 83, 156, Weapon_socket::one_hand, Weapon_type::dagger},
+                {"blade_of_the_unrequited", Attributes{0.0, 0.0}, Special_stats{0.4076086957, 0.0, 18.0}, 1.6, 112, 168, Weapon_socket::one_hand, Weapon_type::dagger},
+
+                // Phase 2
                 {"fang_of_vashj", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 56.0, 0, 0, 0, 0, 0, 0, 0, 0, 5.326569436}, 1.8, 144, 217, Weapon_socket::one_hand, Weapon_type::dagger},
             };
 
