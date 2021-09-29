@@ -144,7 +144,8 @@ void item_upgrades_wep(std::string& item_strengths_string, Character character_n
     ius.reserve(items.size());
     for (const auto& item : items)
     {
-        if (item.name == current_weapon.name) continue;
+        // Restrict Kael'thas Legendary weapons to be suggested
+        if (item.name == current_weapon.name || item.name == "devastation" || item.name == "warp_slicer" || item.name == "infinity_blade") continue;
         Armory::change_weapon(character_new.weapons, item, socket);
         armory.compute_total_stats(character_new);
         ius.emplace_back(compute_item_upgrade(character_new, simulator, base_dps, item.name));

@@ -619,6 +619,9 @@ struct Armory
                 {"merciless_gladiators_slicer", Attributes{0.0, 0.0}, Special_stats{0.8605072463768116, 0.6341154090044389, 30.0, 0, 0.0}, 2.6, 203, 305, Weapon_socket::one_hand, Weapon_type::sword}, 
                 {"talon_of_azshara", Attributes{0.0, 15.0}, Special_stats{0.0, 1.2682308180088777, 40.0, 0, 0.0}, 2.7, 182, 339, Weapon_socket::one_hand, Weapon_type::sword}, 
                 {"merciless_gladiators_quickblade", Attributes{0.0, 0.0}, Special_stats{0.8605072463768116, 0.6341154090044389, 30, 0, 0.0}, 1.5, 102, 191, Weapon_socket::one_hand, Weapon_type::sword}, 
+
+                //Kael'thas Legendaries
+                {"warp_slicer", Attributes{0.0, 0.0}, Special_stats{1.132246377, 0.0, 70.0, 0, 0.0}, 2.9, 248, 461, Weapon_socket::one_hand, Weapon_type::sword, {{"warp_slicer", Hit_effect::Type::stat_boost, {}, {0, 0, 0, 0, .2}, 0, 10, 0, 0.5}}},
            };
 
 
@@ -669,6 +672,9 @@ struct Armory
                 // Phase 2
                 {"bloodmoon", Attributes{0.0, 0.0}, Special_stats{2.536231884057971, 0.0, 112.0, 0, 0.0}, 3.7, 375, 564, Weapon_socket::two_hand, Weapon_type::axe},
                 {"merciless_gladiators_decapitator", Attributes{0.0, 0.0}, Special_stats{1.9021739130434785, 1.14140773620799, 84.0, 0, 0.0}, 3.6, 365, 549, Weapon_socket::two_hand, Weapon_type::axe},
+
+                // Kael'thas Legendaries
+                {"devastation", Attributes{0.0, 0.0}, Special_stats{2.264492754, 0.0, 150.0, 0, 0.0}, 3.9, 496, 744, Weapon_socket::two_hand, Weapon_type::axe, {{"devastation", Hit_effect::Type::stat_boost, {}, {0, 0, 0, 0, .2}, 0, 10, 0, 0.5}}},
             };
 
     std::vector<Weapon> two_handed_maces_t
@@ -720,6 +726,9 @@ struct Armory
 
                 // Phase 2
                 {"fang_of_vashj", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 56.0, 0, 0, 0, 0, 0, 0, 0, 0, 5.326569436}, 1.8, 144, 217, Weapon_socket::one_hand, Weapon_type::dagger},
+
+                // Kael'thas Legendaries
+                {"infinity_blade", Attributes{0.0, 0.0}, Special_stats{1.132246377, 0.0, 70.0, 0, 0.0}, 2, 171, 318, Weapon_socket::one_hand, Weapon_type::dagger},
             };
 
     std::vector<Weapon> maces_t
