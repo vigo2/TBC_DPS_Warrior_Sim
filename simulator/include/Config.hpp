@@ -52,7 +52,7 @@ struct Combat_simulator_config
     double execute_phase_percentage_{};
 
     double initial_rage{};
-    bool first_global_sunder_{};
+    int sunder_armor_globals_{};
 
     bool enable_bloodrage{};
     bool enable_recklessness{};
@@ -109,6 +109,10 @@ struct Combat_simulator_config
         double hamstring_rage_thresh{};
         int hamstring_cd_thresh{};
         bool dont_use_hm_when_ss{};
+
+        bool use_sunder_armor{};
+        double sunder_armor_rage_thresh{};
+        int sunder_armor_cd_thresh{};
     } combat;
 
     struct dpr_t

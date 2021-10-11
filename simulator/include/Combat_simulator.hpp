@@ -235,6 +235,8 @@ public:
 
     void hamstring(Sim_state& state);
 
+    void sunder_armor(Sim_state& state);
+
     void simulate(const Character& character, int n_simulations, const Distribution& init_distribution);
 
     void simulate(const Character& character, const std::function<bool(const Distribution&)>& target, bool log_data = false, bool reset_dps = true);
@@ -359,6 +361,7 @@ private:
     double armor_reduction_factor_add{};
     int armor_reduction_from_spells_{};
     int armor_reduction_delayed_{};
+    bool apply_delayed_armor_reduction{};
     bool recompute_mitigation_{};
     int number_of_extra_targets_{};
 
@@ -380,6 +383,7 @@ private:
     bool have_flurry_{};
 
     int sweeping_strikes_charges_{};
+    int sunder_armor_stacks_{};
 
     std::vector<Use_effect> use_effects_{};
     std::vector<Over_time_effect> over_time_effects_{};

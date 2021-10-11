@@ -34,7 +34,7 @@ Combat_simulator_config get_config_with_everything_deactivated()
     //    config.multi_target_mode_ = true;
     //    config.essence_of_the_red_ = true;
     //    config.can_trigger_enrage_ = true;
-    //    config.first_global_sunder_ = true;
+    //    config.sunder_armor_globals_ = true;
     //    config.take_periodic_damage_ = true;
     //    config.ability_queue_ = true;
 
