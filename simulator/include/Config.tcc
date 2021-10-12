@@ -32,7 +32,7 @@ void Combat_simulator_config::parse_combat_simulator_config(const T& input)
     execute_phase_percentage_ = fv.find("execute_phase_percentage_dd");
 
     initial_rage = fv.find("initial_rage_dd");
-    first_global_sunder_ = String_helpers::find_string(input.options, "first_global_sunder");
+    sunder_armor_globals_ = fv.find("sunder_armor_globals_dd", 0);
 
     enable_bloodrage = true;
     enable_recklessness = String_helpers::find_string(input.options, "recklessness");
@@ -86,4 +86,8 @@ void Combat_simulator_config::parse_combat_simulator_config(const T& input)
     combat.hamstring_rage_thresh = fv.find("hamstring_rage_thresh_dd", 70); // renamed from hamstring_thresh
     combat.hamstring_cd_thresh = to_millis(fv.find("hamstring_cd_thresh_dd"));
     combat.dont_use_hm_when_ss = String_helpers::find_string(input.options, "dont_use_hm_when_ss");
+
+    combat.use_sunder_armor = String_helpers::find_string(input.options, "use_sunder_armor");
+    combat.sunder_armor_rage_thresh = fv.find("sunder_armor_rage_thresh_dd", 0);
+    combat.sunder_armor_cd_thresh = to_millis(fv.find("sunder_armor_cd_thresh_dd"));
 }

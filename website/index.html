@@ -313,9 +313,10 @@
 
 <body style="background-color:#bfbfbf;"
       onload="openTab('event', 'Simulator');open_armor();show_div('cleave_if_adds', 'cleave_div');
-      show_div('use_hamstring', 'hamstring_div');show_div('multi_target_mode', 'multi_target_div');
-      show_div('periodic_damage', 'periodic_damage_div');show_div('ability_queue', 'ability_queue_div');
-      show_div('dual_wield_mode', 'dual_wield_div');show_div('use_hs_in_exec_phase', 'hs_exec_div');displayTalentBootup();calcTotalTalents();load_talent_dual_wield_fury();">
+      show_div('use_hamstring', 'hamstring_div');show_div('use_sunder_armor', 'sunder_armor_div');
+      show_div('multi_target_mode', 'multi_target_div');show_div('periodic_damage', 'periodic_damage_div');
+      show_div('ability_queue', 'ability_queue_div');show_div('dual_wield_mode', 'dual_wield_div');
+      show_div('use_hs_in_exec_phase', 'hs_exec_div');displayTalentBootup();calcTotalTalents();load_talent_dual_wield_fury();">
 
 <h1>TBC DPS Warrior Sim</h1>
 <h4>Ported from Kateparry's WoW Fury Sim</h4>
@@ -4586,7 +4587,7 @@
             <label for="use_bloodthirst"><b> Use bloodthirst</b></label><br>
             <div class="description" id="bloodthirst_div">
                 <label for="whirlwind_bt_cooldown_thresh_dd">Bloodthirst when whirlwind CD is above:</label>
-                <input type="number" id="bt_whirlwind_cooldown_thresh_dd" name="quantity" min="0" max="10" value="0.0"
+                <input type="number" id="bt_whirlwind_cooldown_thresh_dd" name="quantity" min="-0.1" max="10" value="0.0"
                    step="0.1"><br>
                 <input type="checkbox" id="use_bt_in_exec_phase">
                 <label for="use_bt_in_exec_phase"> Use bloodthirst in execute phase</label><br>
@@ -4611,7 +4612,7 @@
             <div class="description" id="mortal_strike_div">
                 <label for="whirlwind_bt_cooldown_thresh_dd">Mortal strike when whirlwind CD is above:</label>
                 <!-- ms_whirlwind_cooldown_thresh_dd is probably not even implemented ;) -->
-                <input type="number" id="ms_whirlwind_cooldown_thresh_dd" name="quantity" min="0" max="10" value="0.0"
+                <input type="number" id="ms_whirlwind_cooldown_thresh_dd" name="quantity" min="-0.1" max="10" value="0.0"
                    step="0.1"><br>
                 <input type="checkbox" id="use_ms_in_exec_phase">
                 <label for="use_ms_in_exec_phase"> Use mortal strike in execute phase</label><br>
@@ -4635,7 +4636,7 @@
             <label for="whirlwind_rage_thresh_dd">Whirlwind when rage is above:</label>
             <input type="number" id="whirlwind_rage_thresh_dd" name="quantity" min="0" max="100" value="0"><br>
             <label for="whirlwind_bt_cooldown_thresh_dd">Whirlwind when bloodthirst / mortal strike CD is above:</label>
-            <input type="number" id="whirlwind_bt_cooldown_thresh_dd" name="quantity" min="0" max="6" value="0.0"
+            <input type="number" id="whirlwind_bt_cooldown_thresh_dd" name="quantity" min="-0.1" max="6" value="0.0"
                    step="0.1"><br>
             <input type="checkbox" id="use_ww_in_exec_phase">
             <label for="use_ww_in_exec_phase"> Use whirlwind in execute phase</label><br>
@@ -4662,10 +4663,10 @@
             <label for="overpower_rage_thresh_dd">Overpower when rage is below:</label>
             <input type="number" id="overpower_rage_thresh_dd" name="quantity" min="0" max="100" value="50"><br>
             <label for="overpower_bt_cooldown_thresh_dd">Overpower when bloodthirst CD is above:</label>
-            <input type="number" id="overpower_bt_cooldown_thresh_dd" name="quantity" min="0" max="6" value="3.0"
+            <input type="number" id="overpower_bt_cooldown_thresh_dd" name="quantity" min="-0.1" max="6" value="3.0"
                    step="0.1"><br>
             <label for="overpower_ww_cooldown_thresh_dd">Overpower when whirlwind CD is above:</label>
-            <input type="number" id="overpower_ww_cooldown_thresh_dd" name="quantity" min="0" max="10" value="3.0"
+            <input type="number" id="overpower_ww_cooldown_thresh_dd" name="quantity" min="-0.1" max="10" value="3.0"
                    step="0.1"><br>
         </div>
 
@@ -4693,10 +4694,20 @@
         <label for="use_hamstring"><b> Use hamstring</b></label><br>
         <div class="description" id="hamstring_div">
             <label for="hamstring_cd_thresh_dd">Hamstring when bloodthirst/Whirlwind CD is above:</label>
-            <input type="number" id="hamstring_cd_thresh_dd" name="quantity" min="0" max="6" value="2.0" step="0.1"><br>
+            <input type="number" id="hamstring_cd_thresh_dd" name="quantity" min="-0.1" max="6" value="2.0" step="0.1"><br>
             <label for="hamstring_rage_thresh_dd">Hamstring when rage is above:</label>
             <input type="number" id="hamstring_rage_thresh_dd" name="quantity" min="0" max="100" value="70"><br>
         </div>
+
+        <input type="checkbox" id="use_sunder_armor" onclick="show_div('use_sunder_armor', 'sunder_armor_div')">
+        <label for="use_sunder_armor"><b> Use sunder armor</b></label><br>
+        <div class="description" id="sunder_armor_div">
+            <label for="sunder_armor_cd_thresh_dd">Sunder when bloodthirst/Whirlwind CD is above:</label>
+            <input type="number" id="sunder_armor_cd_thresh_dd" name="quantity" min="-0.1" max="6" value="0.0" step="0.1"><br>
+            <label for="sunder_armor_rage_thresh_dd">Sunder when rage is above:</label>
+            <input type="number" id="sunder_armor_rage_thresh_dd" name="quantity" min="0" max="100" value="0"><br>
+        </div>
+
 
         <input type="checkbox" id="ability_queue" onclick="show_div('ability_queue', 'ability_queue_div')">
         <label for="ability_queue"><b> Ability queue</b></label><br>
@@ -4708,8 +4719,8 @@
         </div>
         <br>
         <b>Other: </b><br>
-        <input type="checkbox" id="first_global_sunder" checked>
-        <label for="first_global_sunder"> Sunder armor the first GCD.</label><br>
+        <label for="sunder_armor_globals_dd"> Number of first global for sunders:</label>
+        <input type="number" id="sunder_armor_globals_dd" name="quantity" min="0" max="5" value="0"><br>
 
         <input type="checkbox" id="first_hit_heroic_strike">
         <label for="first_hit_heroic_strike"> Queue Heroic strike on the first melee hit.</label><br>
@@ -4748,7 +4759,7 @@
         <br>
 
         <b>Armor reduction:</b><br>
-        <label for="sunder_armor_dd">Sunder armor stacks: (0-5):</label>
+        <label for="sunder_armor_dd">Sunder armor stacks at the beginning of the fight: (0-5):</label>
         <input type="number" id="sunder_armor_dd" name="quantity" min="0" max="5" value="5"><br>
         <input type="checkbox" id="exposed_armor">
         <label for="exposed_armor"> Improved exposed armor applied after 6-7 seconds (replaces sunder armor)</label><br>
@@ -5004,18 +5015,18 @@
         "opponent_level_dd", "boss_armor_dd", "fight_time_dd",
         "sunder_armor_dd", "heroic_strike_rage_thresh_dd", "hs_rage_thresh_exec_phase_dd", "cleave_rage_thresh_dd", "whirlwind_rage_thresh_dd", "bt_whirlwind_cooldown_thresh_dd",
         "whirlwind_bt_cooldown_thresh_dd", "overpower_rage_thresh_dd", "overpower_bt_cooldown_thresh_dd",
-        "overpower_ww_cooldown_thresh_dd", "hamstring_cd_thresh_dd", "initial_rage_dd", "hamstring_rage_thresh_dd",
+        "overpower_ww_cooldown_thresh_dd", "hamstring_cd_thresh_dd", "initial_rage_dd", "hamstring_rage_thresh_dd", "sunder_armor_rage_thresh_dd",
         "max_optimize_time_dd", "number_of_extra_targets_dd", "extra_target_armor_dd", "extra_target_level_dd",
         "periodic_damage_interval_dd", "periodic_damage_amount_dd", "execute_phase_percentage_dd",
-        "re_queue_abilities_dd",
+        "re_queue_abilities_dd", "sunder_armor_globals_dd",
         "slam_spam_max_time_dd", "slam_latency_dd", "slam_spam_rage_dd", "slam_rage_thresh_dd", "berserking_haste_dd",
         "full_polarity_dd", "extra_target_percentage_dd", "battle_squawk_dd", "rampage_use_thresh_dd", "ferocious_inspiration_dd", "unleashed_rage_dd"];
 
     let sim_options = ["faerie_fire", "exposed_armor", "curse_of_recklessness", "death_wish", "enable_blood_fury",
         "enable_berserking", "enable_unleashed_rage", "recklessness", "mighty_rage_potion", "debug_on", "use_bt_in_exec_phase", "use_ww_in_exec_phase", "use_hs_in_exec_phase",
-        "cleave_if_adds", "use_hamstring", "use_rampage", "use_bloodthirst", "use_whirlwind", "use_overpower", "use_heroic_strike",
+        "cleave_if_adds", "use_hamstring", "use_sunder_armor", "use_rampage", "use_bloodthirst", "use_whirlwind", "use_overpower", "use_heroic_strike",
         "item_strengths", "wep_strengths", "deep_wounds", "compute_dpr", "talents_stat_weights",
-        "multi_target_mode", "essence_of_the_red", "periodic_damage", "can_trigger_enrage", "first_global_sunder",
+        "multi_target_mode", "essence_of_the_red", "periodic_damage", "can_trigger_enrage",
         "ability_queue", "first_hit_heroic_strike", "use_slam", "use_sl_in_exec_phase", "use_ms_in_exec_phase", "use_mortal_strike",
         "use_sweeping_strikes", "dont_use_hm_when_ss", "fungal_bloom", "full_polarity", "battle_squawk", "ferocious_inspiration",
         "drums_of_battle", "haste_potion", "bloodlust", "insane_strength_potion", "heroic_potion"];

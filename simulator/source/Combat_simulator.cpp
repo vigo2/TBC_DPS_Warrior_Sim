@@ -153,14 +153,12 @@ void Combat_simulator::compute_hit_tables(const Character& character, const Spec
 void Combat_simulator::set_config(const Combat_simulator_config& new_config)
 {
     config = new_config;
-
     armor_reduction_from_spells_ = 0;
-    armor_reduction_from_spells_ += 520 * config.n_sunder_armor_stacks;
     armor_reduction_from_spells_ += 800 * config.curse_of_recklessness_active;
     armor_reduction_from_spells_ += 610 * config.faerie_fire_feral_active;
     if (config.exposed_armor)
     {
-        armor_reduction_delayed_ = 3075 - 520 * config.n_sunder_armor_stacks;
+        armor_reduction_delayed_ = 3075;
     }
 }
 
@@ -651,6 +649,30 @@ void Combat_simulator::hamstring(Sim_state& state)
     logger_.print("Current rage: ", int(rage));
 }
 
+void Combat_simulator::sunder_armor(Sim_state& state)
+{
+    logger_.print("Sunder Armor!");
+    auto hit_outcome = hit_table_yellow_mh_.generate_hit(0);
+    time_keeper_.global_cast(1500);
+    if (hit_outcome.hit_result == Hit_result::miss || hit_outcome.hit_result == Hit_result::dodge)
+    {
+        spend_rage(2);
+        if (hit_outcome.hit_result == Hit_result::dodge && has_warbringer_4_set_)
+        {
+            gain_rage(2);
+        }
+    }
+    else
+    {
+        spend_rage(15);
+        hit_effects(state, hit_outcome.hit_result, state.main_hand_weapon);
+        sunder_armor_stacks_++;
+        logger_.print("Current Sunder Armor stacks: ", sunder_armor_stacks_);
+        recompute_mitigation_ = true;
+    }
+    logger_.print("Current rage: ", int(rage));
+}
+
 void Combat_simulator::hit_effects(Sim_state& state, Hit_result hit_result, Weapon_sim& weapon, Hit_type hit_type,
                                    Extra_attack_type extra_attack_type)
 {
@@ -1031,6 +1053,7 @@ void Combat_simulator::simulate(const Character& character, const std::function<
         logger_.reset();
         slam_manager = Slam_manager(1500 - 500 * character.talents.improved_slam);
         rage = config.initial_rage;
+        sunder_armor_stacks_ = config.n_sunder_armor_stacks;
 
         Sim_state state(
             weapons[0],
@@ -1046,7 +1069,7 @@ void Combat_simulator::simulate(const Character& character, const std::function<
 
         rage_spent_on_execute_ = 0;
 
-        bool apply_delayed_armor_reduction = false;
+        apply_delayed_armor_reduction = false;
         bool in_execute_phase = false;
 
         double flurry_uptime = 0.0;
@@ -1089,7 +1112,7 @@ void Combat_simulator::simulate(const Character& character, const std::function<
         }
 
         // First global sunder
-        bool first_global_sunder = config.first_global_sunder_;
+        int sunder_armor_globals = config.sunder_armor_globals_;
 
         if (config.combat.first_hit_heroic_strike && rage >= heroic_strike_rage_cost_)
         {
@@ -1139,10 +1162,10 @@ void Combat_simulator::simulate(const Character& character, const std::function<
             if (recompute_mitigation_)
             {
                 int target_armor =
-                    config.main_target_initial_armor_ - armor_reduction_from_spells_ - state.special_stats.gear_armor_pen;
+                    config.main_target_initial_armor_ - armor_reduction_from_spells_ - state.special_stats.gear_armor_pen - 520 * sunder_armor_stacks_;
                 if (apply_delayed_armor_reduction)
                 {
-                    target_armor -= armor_reduction_delayed_;
+                    target_armor -= armor_reduction_delayed_ - 520 * sunder_armor_stacks_;
                 }
                 target_armor = std::max(target_armor, 0);
                 armor_reduction_factor_ = armor_reduction_factor(target_armor);
@@ -1229,14 +1252,16 @@ void Combat_simulator::simulate(const Character& character, const std::function<
                 }
             }
 
-            if (first_global_sunder)
+            if (sunder_armor_globals > 0)
             {
-                if (time_keeper_.global_ready() && rage >= 15)
+                if (sunder_armor_stacks_ >= 5 || apply_delayed_armor_reduction)
                 {
-                    logger_.print("Sunder Armor!");
-                    time_keeper_.global_cast(1500);
-                    spend_rage(15);
-                    first_global_sunder = false;
+                    sunder_armor_globals = 0;
+                }
+                else if (time_keeper_.global_ready() && rage >= 15)
+                {
+                    sunder_armor(state);
+                    sunder_armor_globals--;
                 }
             }
 
@@ -1440,6 +1465,32 @@ void Combat_simulator::normal_phase(Sim_state& state, bool mh_swing)
             }
         }
     }
+    
+    if (config.combat.use_sunder_armor)
+    {
+        bool use_sa = true;
+        if (sunder_armor_stacks_ >= 5 || apply_delayed_armor_reduction)
+        {
+            use_sa = false;
+        }
+        if (use_bloodthirst_)
+        {
+            use_sa &= time_keeper_.blood_thirst_cd() > config.combat.sunder_armor_cd_thresh;
+        }
+        if (use_mortal_strike_)
+        {
+            use_sa &= time_keeper_.mortal_strike_cd() > config.combat.sunder_armor_cd_thresh;
+        }
+        if (config.combat.use_whirlwind)
+        {
+            use_sa &= time_keeper_.whirlwind_cd() > config.combat.sunder_armor_cd_thresh;
+        }
+        if (rage > config.combat.sunder_armor_rage_thresh && rage >= 15 && use_sa)
+        {
+            sunder_armor(state);
+            return;
+        }
+    }
 
     if (use_bloodthirst_)
     {
@@ -1486,7 +1537,6 @@ void Combat_simulator::normal_phase(Sim_state& state, bool mh_swing)
             return;
         }
     }
-
     if (config.combat.use_overpower)
     {
         bool use_op = true;
