@@ -137,7 +137,7 @@ Special_stats Armory::get_enchant_special_stats(Socket socket, Enchant::Type typ
         case Enchant::Type::haste:
             return {0, 0, 0, 0, .0063};
         case Enchant::Type::ferocity:
-            return {0, 1.01, 34};
+            return {0, 1.014584654, 34};
         default:
             return {0, 0, 0};
         }
@@ -185,7 +185,7 @@ Special_stats Armory::get_enchant_special_stats(Socket socket, Enchant::Type typ
         switch (type)
         {
         case Enchant::Type::hit:
-            return {0, 0.63, 0};
+            return {0, 0.634115409, 0};
         default:
             return {0, 0, 0};
         }
