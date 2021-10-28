@@ -484,7 +484,7 @@ void Combat_simulator::bloodthirst(Sim_state& state)
     }
     logger_.print("Bloodthirst!");
     // logger_.print("(DEBUG) AP: ", special_stats.attack_power);
-    double damage = state.special_stats.attack_power * 0.45;
+    double damage = state.special_stats.attack_power * 0.45 + state.special_stats.bonus_damage;
     auto hit_outcome = generate_hit(state, state.main_hand_weapon, hit_table_yellow_mh_, damage);
     if (hit_outcome.hit_result == Hit_result::miss || hit_outcome.hit_result == Hit_result::dodge)
     {
@@ -599,7 +599,7 @@ void Combat_simulator::execute(Sim_state& state)
         return;
     }
     logger_.print("Execute!");
-    double damage = 925 + (rage - execute_rage_cost_) * 21;
+    double damage = 925 + (rage - execute_rage_cost_) * 21 + state.special_stats.bonus_damage;
     auto hit_outcome = generate_hit(state, state.main_hand_weapon, hit_table_yellow_mh_, damage);
     spend_rage(execute_rage_cost_);
     time_keeper_.global_cast(1500);
@@ -628,7 +628,7 @@ void Combat_simulator::hamstring(Sim_state& state)
         return;
     }
     logger_.print("Hamstring!");
-    double damage = 63;
+    double damage = 63 + state.special_stats.bonus_damage;
     auto hit_outcome = generate_hit(state, state.main_hand_weapon, hit_table_yellow_mh_, damage);
     time_keeper_.global_cast(1500);
     if (hit_outcome.hit_result == Hit_result::miss || hit_outcome.hit_result == Hit_result::dodge)
