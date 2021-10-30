@@ -127,6 +127,7 @@ struct Armory
 {
     std::vector<Armor> helmet_t
             {
+                {"empty_head", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0}, Socket::head},
                 // Phase 1
                 {"mask_of_the_deceiver", Attributes{0.0, 32.0}, Special_stats{0.0, 1.0145846544071022, 64.0, 0, 0.0}, Socket::head}, 
                 {"cowl_of_beastly_rage", Attributes{29.0, 26.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.0}, Socket::head}, 
@@ -174,6 +175,7 @@ struct Armory
 
     std::vector<Armor> neck_t
             {
+                {"empty_neck", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0}, Socket::neck},
                 // Phase 1
                 {"choker_of_vile_intent", Attributes{0.0, 20.0}, Special_stats{0.0, 1.14140773620799, 42.0, 0, 0.0}, Socket::neck}, 
                 {"worgen_claw_necklace", Attributes{0.0, 20.0}, Special_stats{0.0, 1.077996195307546, 42.0, 0, 0.0}, Socket::neck}, 
@@ -200,6 +202,7 @@ struct Armory
 
     std::vector<Armor> shoulder_t
             {
+                {"empty_shoulder", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0}, Socket::shoulder},
                 // Phase 1
                 {"ripfiend_shoulderplates", Attributes{39.0, 0.0}, Special_stats{0.996376811594203, 0.8243500317057705, 0.0, 0, 0.0}, Socket::shoulder}, 
                 {"ragesteel_shoulders", Attributes{32.0, 0.0}, Special_stats{0.7699275362318841, 0.570703868103995, 0.0, 0, 0.0}, Socket::shoulder, Set::ragesteel}, 
@@ -225,6 +228,7 @@ struct Armory
 
     std::vector<Armor> back_t
             {
+                {"empty_back", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0}, Socket::back},
                 // Phase 1
                 {"black_iron_battlecloak", Attributes{0.0, 0.0}, Special_stats{1.358695652173913, 0.0, 60.0, 0, 0.0}, Socket::back}, 
                 {"vengeance_wrap", Attributes{0.0, 0.0}, Special_stats{1.0416666666666667, 0.0, 52.0, 0, 0.0}, Socket::back}, 
@@ -258,6 +262,7 @@ struct Armory
 
     std::vector<Armor> chest_t
             {
+                {"empty_chest", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0}, Socket::chest},
                 // Phase 1
                 {"bulwark_of_kings", Attributes{35.0, 0.0}, Special_stats{1.6757246376811596, 1.4584654407102093, 0.0, 0, 0.0}, Socket::chest, Set::none, {}, {{"bulwark_of_kings", Use_effect::Effect_socket::unique, {150, 0}, {}, 0, 15, 900, false}}},
                 {"bulwark_of_kings_no_cd", Attributes{35.0, 0.0}, Special_stats{1.6757246376811596, 1.4584654407102093, 0.0, 0, 0.0}, Socket::chest}, 
@@ -301,6 +306,7 @@ struct Armory
 
     std::vector<Armor> wrists_t
             {
+                {"empty_wrist", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0}, Socket::wrist},
                 // Phase 1
                 {"bladespire_warbands", Attributes{20.0, 0.0}, Special_stats{1.0869565217391306, 0.0, 0.0, 0, 0.0}, Socket::wrist}, 
                 {"black_felsteel_bracers", Attributes{26.0, 0.0}, Special_stats{0.996376811594203, 0.0, 0.0, 0, 0.0}, Socket::wrist}, 
@@ -335,6 +341,7 @@ struct Armory
 
     std::vector<Armor> hands_t
             {
+                {"empty_hands", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0}, Socket::hands},
                 // Phase 1
                 {"gauntlets_of_martial_perfection", Attributes{36.0, 0.0}, Special_stats{1.0416666666666667, 0.0, 0.0, 0, 0.0}, Socket::hands}, 
                 {"liars_tongue_gloves", Attributes{0.0, 0.0}, Special_stats{1.177536231884058, 0.0, 72.0, 0, 0.0}, Socket::hands}, 
@@ -376,6 +383,7 @@ struct Armory
 
     std::vector<Armor> belt_t
             {
+                {"empty_belt", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0}, Socket::belt},
                 // Phase 1
                 {"girdle_of_the_endless_pit", Attributes{34.0, 0.0}, Special_stats{1.2681159420289856, 0.0, 0.0, 0, 0.0}, Socket::belt}, 
                 {"gronn_stitched_girdle", Attributes{0.0, 0.0}, Special_stats{1.1322463768115942, 0.0, 72.0, 0, 0.0}, Socket::belt}, 
@@ -417,6 +425,7 @@ struct Armory
 
     std::vector<Armor> legs_t
             {
+                {"empty_legs", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0}, Socket::legs},
                 // Phase 1
                 {"scaled_greaves_of_the_marksman", Attributes{0.0, 37.0}, Special_stats{0.0, 1.0145846544071022, 76.0, 0, 0.0}, Socket::legs}, 
                 {"skulkers_greaves", Attributes{0.0, 32.0}, Special_stats{0.0, 1.7755231452124287, 64.0, 0, 0.0}, Socket::legs}, 
@@ -460,6 +469,7 @@ struct Armory
 
     std::vector<Armor> boots_t
             {
+                {"empty_boots", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0}, Socket::boots},
                 // Phase 1
                 {"fel_leather_boots", Attributes{0.0, 0.0}, Special_stats{0.7699275362318841, 1.585288522511097, 36.0, 0, 0.0}, Socket::boots}, 
                 {"edgewalker_longboots", Attributes{0.0, 29.0}, Special_stats{0.0, 0.8243500317057705, 44.0, 0, 0.0}, Socket::boots}, 
@@ -494,6 +504,7 @@ struct Armory
 
     std::vector<Armor> ring_t
             {
+                {"empty_ring", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0}, Socket::ring},
                 // Phase 1
                 {"ring_of_reciprocity", Attributes{0.0, 0.0}, Special_stats{0.8605072463768116, 0.9511731135066582, 62.0, 0, 0.0}, Socket::ring}, 
                 {"ring_of_a_thousand_marks", Attributes{0.0, 0.0}, Special_stats{1.0416666666666667, 1.2048192771084338, 44.0, 0, 0.0}, Socket::ring}, 
@@ -533,6 +544,7 @@ struct Armory
 
     std::vector<Armor> trinket_t
             {
+                {"empty_trinket", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0}, Socket::trinket},
                 // Phase 1
                 {"dragonspine_trophy", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 40.0, 0, 0.0}, Socket::trinket, Set::none, {{"dragonspine_trophy", Hit_effect::Type::stat_boost, {}, {0, 0, 0, 0, .206}, 0, 10, 20, 0, 0, 1, 0, 0, 1}}}, 
                 {"bloodlust_brooch", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 72.0, 0, 0.0}, Socket::trinket, Set::none, {}, {{"bloodlust_brooch", Use_effect::Effect_socket::shared, {0,  0}, {0, 0, 278}, 0, 20, 120, true}}}, 
@@ -564,6 +576,7 @@ struct Armory
 
     std::vector<Armor> ranged_t
             {
+                {"empty_ranged", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0}, Socket::ranged},
                 // Phase 1
                 {"barrel_blade_longrifle", Attributes{0.0, 16.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.0}, Socket::ranged}, 
                 {"sunfury_bow_of_the_phoenix", Attributes{0.0, 19.0}, Special_stats{0.0, 0.0, 34.0, 0, 0.0}, Socket::ranged}, 
@@ -629,6 +642,7 @@ struct Armory
 
     std::vector<Weapon> two_handed_swords_t
             {
+                {"empty_weapon_2h", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0}, 1.0, 1, 2, Weapon_socket::two_hand, Weapon_type::unarmed},
                 // Phase 1
                 {"lionheart_champion", Attributes{49.0, 44.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.0}, 3.6, 341, 513, Weapon_socket::two_hand, Weapon_type::sword, {{"lionheart_champion", Hit_effect::Type::stat_boost, {100, 0}, {}, 0, 10, 0, 3.6 / 60}}},
                 {"gladiators_greatsword", Attributes{32.0, 0.0}, Special_stats{1.585144927536232, 1.2682308180088777, 0.0, 0, 0.0}, 3.6, 341, 513, Weapon_socket::two_hand, Weapon_type::sword}, 
@@ -755,6 +769,7 @@ struct Armory
 
     std::vector<Weapon> fists_t
             {
+                {"empty_weapon", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0}, 1.0, 1, 2, Weapon_socket::one_hand, Weapon_type::unarmed},
                 // Phase 1
                 // main_hand / one_hand
                 {"big_bad_wolfs_paw", Attributes{0.0, 17.0}, Special_stats{0.9057971014492754, 0.0, 0.0, 0, 0.0}, 2.5, 153, 285, Weapon_socket::main_hand, Weapon_type::unarmed}, 
