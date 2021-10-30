@@ -81,8 +81,8 @@ struct Buffs
     Weapon_buff windfury_totem{"windfury_totem", {}, {}, 0, {"windfury_totem", Hit_effect::Type::windfury_hit, {}, {0, 0, 445}, 0, 0, 0, 0.2}};
     Weapon_buff flametongue_totem{"flametongue_totem", {}, {}, 0, {"flametongue_totem", Hit_effect::Type::damage_magic, {}, {}, 59.7, 0, 0, 1}};
     Weapon_buff dense_stone{"dense_stone", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0, 0, 0, 8}};
-    Weapon_buff adamantite_stone{"adamantite_stone", Attributes{0.0, 0.0}, Special_stats{0.63, 0.0, 0.0, 0, 0, 0, 0, 12}};
-    Weapon_buff elemental_stone{"elemental_stone", Attributes{0.0, 0.0}, Special_stats{1.26, 0.0, 0.0}};
+    Weapon_buff adamantite_stone{"adamantite_stone", Attributes{0.0, 0.0}, Special_stats{0.6341, 0.0, 0.0, 0, 0, 0, 0, 12}};
+    Weapon_buff elemental_stone{"elemental_stone", Attributes{0.0, 0.0}, Special_stats{1.2683, 0.0, 0.0}};
     Weapon_buff consecrated_stone{"consecrated_stone", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 100.0}};
 };
 
@@ -259,7 +259,7 @@ struct Armory
     std::vector<Armor> chest_t
             {
                 // Phase 1
-                {"bulwark_of_kings", Attributes{35.0, 0.0}, Special_stats{1.6757246376811596, 1.4584654407102093, 0.0, 0, 0.0}, Socket::chest, Set::none, {}, {{"bulwark_of_kings", Use_effect::Effect_socket::shared, {150, 0}, {}, 0, 15, 900, true}}},
+                {"bulwark_of_kings", Attributes{35.0, 0.0}, Special_stats{1.6757246376811596, 1.4584654407102093, 0.0, 0, 0.0}, Socket::chest, Set::none, {}, {{"bulwark_of_kings", Use_effect::Effect_socket::unique, {150, 0}, {}, 0, 15, 900, false}}},
                 {"bulwark_of_kings_no_cd", Attributes{35.0, 0.0}, Special_stats{1.6757246376811596, 1.4584654407102093, 0.0, 0, 0.0}, Socket::chest}, 
                 {"terrorweave_tunic", Attributes{0.0, 0.0}, Special_stats{1.1322463768115942, 1.3316423589093216, 96.0, 0, 0.0}, Socket::chest}, 
                 {"breastplate_of_kings", Attributes{31.0, 0.0}, Special_stats{1.403985507246377, 1.2682308180088777, 0.0, 0, 0.0}, Socket::chest}, 
@@ -289,7 +289,7 @@ struct Armory
                 {"chestguard_of_no_remorse", Attributes{0.0, 0.0}, Special_stats{0.9510869565, 0.0, 92.0, 0, 0.0}, Socket::chest},
 
                 // Phase 2
-                {"bulwark_of_ancient_kings", Attributes{40.0, 0.0}, Special_stats{1.8568840579710146, 1.585288522511097, 0.0, 0, 0.0}, Socket::chest, Set::none, {}, {{"bulwark_of_ancient_kings", Use_effect::Effect_socket::shared, {150, 0}, {}, 0, 15, 900, true}}},
+                {"bulwark_of_ancient_kings", Attributes{40.0, 0.0}, Special_stats{1.8568840579710146, 1.585288522511097, 0.0, 0, 0.0}, Socket::chest, Set::none, {}, {{"bulwark_of_ancient_kings", Use_effect::Effect_socket::unique, {150, 0}, {}, 0, 15, 900, false}}},
                 {"bulwark_of_ancient_kings_no_cd", Attributes{40.0, 0.0}, Special_stats{1.8568840579710146, 1.585288522511097, 0.0, 0, 0.0}, Socket::chest}, 
                 {"bloodsea_brigand_s_vest", Attributes{0.0, 0.0}, Special_stats{1.6304347826086958, 1.7121116043119848, 92.0, 0, 0.0}, Socket::chest}, 
                 {"destroyer_breastplate", Attributes{50.0, 0.0}, Special_stats{1.4945652173913044, 0.9511731135066582, 0.0, 0, 0.0}, Socket::chest, Set::destroyer}, 
@@ -542,8 +542,7 @@ struct Armory
                 {"bladefists_breadth", Attributes{0.0, 0.0}, Special_stats{1.18, 0.0, 0.0, 0, 0.0}, Socket::trinket, Set::none, {}, {{"bladefists_breadth", Use_effect::Effect_socket::shared, {0,  0}, {0, 0, 200}, 0, 15, 90, true}}}, 
                 {"core_of_arkelos", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 52.0, 0, 0.0}, Socket::trinket, Set::none, {}, {{"core_of_arkelos", Use_effect::Effect_socket::shared, {0,  0}, {0, 0, 200}, 0, 20, 120, true}}}, 
                 {"drake_fang_talisman", Attributes{0.0, 0.0}, Special_stats{0.0, 1.2682308180088777, 56.0, 0, 0.0}, Socket::trinket}, 
-                {"icon_of_unyielding_courage", Attributes{0.0, 0.0}, Special_stats{0.0, 1.9023462270133165, 0.0, 0, 0.0}, Socket::trinket, Set::none, {}, {{"icon_of_unyielding_courage", Use_effect::Effect_socket::shared, {0,  0},
-                                                                                                                                                            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 600}, 0, 20, 120, true}}}, 
+                {"icon_of_unyielding_courage", Attributes{0.0, 0.0}, Special_stats{0.0, 1.9023462270133165, 0.0, 0, 0.0}, Socket::trinket, Set::none, {}, {{"icon_of_unyielding_courage", Use_effect::Effect_socket::shared, {0,  0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 600}, 0, 20, 120, true}}},
                 {"ancient_draenei_war_talisman", Attributes{0.0, 0.0}, Special_stats{0.9510869565217392, 0.0, 0.0, 0, 0.0}, Socket::trinket, Set::none, {}, {{"ancient_draenei_war_talisman", Use_effect::Effect_socket::shared, {0,  0}, {0, 0, 200}, 0, 15, 90, true}}}, 
                 {"figurine_nightseye_panther", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 54.0, 0, 0.0}, Socket::trinket, Set::none, {}, {{"figurine_nightseye_panther", Use_effect::Effect_socket::shared, {0,  0}, {0, 0, 320}, 0, 12, 180, true}}},  
                 {"ogre_maulers_badge", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 48.0, 0, 0.0}, Socket::trinket, Set::none, {}, {{"ogre_maulers_badge", Use_effect::Effect_socket::shared, {0,  0}, {0, 0, 185}, 0, 15, 120, true}}}, 
@@ -551,16 +550,13 @@ struct Armory
                 {"fetish_of_the_fallen", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 56.0, 0, 0.0}, Socket::trinket}, 
                 {"terokkar_tablet_of_precision", Attributes{0.0, 0.0}, Special_stats{0.0, 1.3950538998097655, 0.0, 0, 0.0}, Socket::trinket, Set::none, {}, {{"terokkar_tablet_of_precision", Use_effect::Effect_socket::shared, {0,  0}, {0, 0, 140}, 0, 15, 90, true}}},
                 {"romulos_poison_vial", Attributes{0.0, 0.0}, Special_stats{0.0, 2.219, 0.0, 0, 0.0}, Socket::trinket, Set::none, {{"romulos_poison_vial", Hit_effect::Type::damage_magic, {}, {}, 277, 0, 0, 0, 0, 1, 0, 0, 1}}},
-                {"badge_of_the_swarmguard",   Attributes{0, 0}, Special_stats{0, 0,
-                                                                                  0},        Socket::trinket, Set::none, {}, {{"badge_of_the_swarmguard", Use_effect::Effect_socket::unique, {},      {},          0, 30, 180, false, {{"badge_of_the_swarmguard", Hit_effect::Type::reduce_armor, {}, {}, 0, 30, 0, 0, 0, 1, 200, 6, 10}}}}},
-                {"kiss_of_the_spider",               Attributes{0, 0}, Special_stats{0.63, 0.63,
-                                                                                  0},        Socket::trinket, Set::none, {}, {{"kiss_of_the_spider",             Use_effect::Effect_socket::shared, {0,  0}, {0, 0, 0, 0, .126}, 0, 15, 120, true}}},
-                {"mark_of_the_champion",       Attributes{0, 0}, Special_stats{0, 0, 150}, Socket::trinket},
-                {"slayers_crest",              Attributes{0, 0}, Special_stats{0, 0,
-                                                                                  64},        Socket::trinket, Set::none, {}, {{"slayers_crest",             Use_effect::Effect_socket::shared, {0,  0}, {0, 0, 260}, 0, 20, 120, true}}},
+                {"badge_of_the_swarmguard", Attributes{0, 0}, Special_stats{0, 0, 0}, Socket::trinket, Set::none, {}, {{"badge_of_the_swarmguard", Use_effect::Effect_socket::unique, {}, {}, 0, 30, 180, false, {{"badge_of_the_swarmguard", Hit_effect::Type::reduce_armor, {}, {}, 0, 30, 0, 0, 0, 1, 200, 6, 10}}}}},
+                {"kiss_of_the_spider", Attributes{0, 0}, Special_stats{0.63, 0.63, 0}, Socket::trinket, Set::none, {}, {{"kiss_of_the_spider", Use_effect::Effect_socket::shared, {0,  0}, {0, 0, 0, 0, .126}, 0, 15, 120, true}}},
+                {"mark_of_the_champion", Attributes{0, 0}, Special_stats{0, 0, 150}, Socket::trinket},
+                {"slayers_crest", Attributes{0, 0}, Special_stats{0, 0, 64}, Socket::trinket, Set::none, {}, {{"slayers_crest", Use_effect::Effect_socket::shared, {0,  0}, {0, 0, 260}, 0, 20, 120, true}}},
                 
                 // Phase 2
-                {"solarians_sapphire", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.0}, Socket::trinket, Set::none},
+                {"solarians_sapphire", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.0}, Socket::trinket},
                 {"tsunami_talisman", Attributes{0.0, 0.0}, Special_stats{1.7210144927536233, 0.6341154090044389, 0.0, 0, 0.0}, Socket::trinket, Set::none, {{"tsunami_talisman", Hit_effect::Type::stat_boost, {}, {0.0, 0.0, 340}, 0, 10, 45, .1, Hit_effect::Proc_type::crits}}},
                 {"crystalforged_trinket", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0, 0, 0.0, 0, 0, 7}, Socket::trinket, Set::none, {}, {{"crystalforged_trinket", Use_effect::Effect_socket::shared, {0,  0}, {0, 0, 216}, 0, 10, 60, true}}},
                 {"darkmoon_card_crusade", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0}, Socket::trinket, Set::none, {{"darkmoon_card_crusade", Hit_effect::Type::stat_boost, {}, {0, 0, 6}, 0, 10, 0, 1, 0, 1, 0, 20}}, {}},
@@ -793,9 +789,9 @@ struct Armory
     [[nodiscard]] std::unordered_map<std::string, const Armor*> build_armor_index() const;
     [[nodiscard]] std::unordered_map<std::string, const Weapon*> build_weapons_index() const;
 
-    [[nodiscard]] Armor find_armor(Socket socket, const std::string &name) const;
+    [[nodiscard]] Armor find_armor(Socket socket, const std::string& name) const;
 
-    [[nodiscard]] Weapon find_weapon(Weapon_socket weapon_socket, const std::string &name) const;
+    [[nodiscard]] Weapon find_weapon(Weapon_socket weapon_socket, const std::string& name) const;
 
     [[nodiscard]] static Attributes get_enchant_attributes(Socket socket, Enchant::Type type);
 
@@ -803,15 +799,15 @@ struct Armory
 
     [[nodiscard]] static Hit_effect enchant_hit_effect(Weapon &weapon, Enchant::Type type);
 
-    static void clean_weapon(Weapon &weapon);
+    void clean_weapon(Weapon& weapon) const;
 
-    void compute_total_stats(Character &character) const;
+    void compute_total_stats(Character& character) const;
 
-    [[nodiscard]] static bool check_if_armor_valid(const std::vector<Armor> &armor);
+    [[nodiscard]] static bool check_if_armor_valid(const std::vector<Armor>& armor);
 
-    [[nodiscard]] static bool check_if_weapons_valid(std::vector<Weapon> & ws);
+    [[nodiscard]] static bool check_if_weapons_valid(std::vector<Weapon>& ws);
 
-    static void change_weapon(std::vector<Weapon> &current_weapons, const Weapon &equip_weapon, const Socket &socket);
+    static void change_weapon(std::vector<Weapon>& current_weapons, const Weapon& equip_weapon, const Socket& socket);
 
     static void change_armor(std::vector<Armor> &armor_vec, const Armor &armor, bool first_misc_slot = true);
 
