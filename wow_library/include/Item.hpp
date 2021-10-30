@@ -66,7 +66,6 @@ enum class Set
     none
 };
 
-
 struct Gem
 {
     enum class Type
@@ -417,7 +416,10 @@ struct Armor
     std::vector<Hit_effect> hit_effects{};
     std::vector<Use_effect> use_effects{};
 
-    static const Armor none;
+    static Armor empty(Socket socket)
+    {
+        return Armor{"", {}, {}, socket};
+    }
 };
 
 struct Weapon
@@ -453,7 +455,10 @@ struct Weapon
     Enchant enchant;
     Weapon_buff buff; // TODO(vigo) - temporary weapon enhancements; they should at least add bonus damage
 
-    static const Weapon none;
+    static Weapon empty(Weapon_socket weapon_socket)
+    {
+        return Weapon{"", {}, {}, 1000, 0, 0, weapon_socket, Weapon_type::unarmed};
+    }
 };
 
 std::ostream& operator<<(std::ostream& os, const Socket& socket);

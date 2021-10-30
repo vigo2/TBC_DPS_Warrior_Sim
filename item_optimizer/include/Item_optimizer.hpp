@@ -6,6 +6,7 @@
 #include "item_heuristics.hpp"
 #include "string_helpers.hpp"
 
+#include <Distribution.hpp>
 #include <algorithm>
 #include <ctime>
 #include <iostream>
@@ -18,15 +19,17 @@ public:
     {
         Sim_result_t() = default;
 
-        Sim_result_t(size_t index, double mean_dps, double variance, double ap_equivalent)
-            : index{index}, mean_dps{mean_dps}, variance{variance}, ap_equivalent{ap_equivalent}
+        Sim_result_t(size_t index, double ap_equivalent)
+            : index(index), ap_equivalent(ap_equivalent), distribution()
         {
         }
 
+        [[nodiscard]] double mean() const { return distribution.mean(); }
+        [[nodiscard]] double std_of_the_mean() const { return distribution.samples() > 0 ? distribution.std_of_the_mean() : 0; }
+
         size_t index{};
-        double mean_dps{};
-        double variance{};
         double ap_equivalent{};
+        Distribution distribution{};
     };
 
     void compute_weapon_combinations();
@@ -47,12 +50,15 @@ public:
 
     Character construct(size_t index);
 
-    std::vector<Weapon> remove_weaker_weapons(Weapon_socket weapon_socket, const std::vector<Weapon>& weapon_vec,
-                                              const Special_stats& special_stats, std::string& debug_message,
-                                              int keep_n_stronger_items);
+    static bool no_weapons(const Weapon&) { return true; }
+    static bool no_armors(const Armor&) { return true; }
 
-    std::vector<Armor> remove_weaker_items(const std::vector<Armor>& armors, const Special_stats& special_stats,
-                                           std::string& debug_message, int keep_n_stronger_items);
+    static std::vector<Weapon> remove_weaker_weapons(Weapon_socket weapon_socket, const std::vector<Weapon>& weapon_vec,
+                                              const Special_stats& special_stats, std::string& debug_message,
+                                              int keep_n_stronger_items, const std::function<bool(const Weapon&)>& filter = no_weapons);
+
+    static std::vector<Armor> remove_weaker_items(const std::vector<Armor>& armors, const Special_stats& special_stats,
+                                           std::string& debug_message, int keep_n_stronger_items, const std::function<bool(const Armor&)>& filter = no_armors);
 
     void filter_weaker_items(const Special_stats& special_stats, std::string& debug_message, int min_removal);
 
