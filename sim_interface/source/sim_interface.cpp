@@ -215,14 +215,16 @@ std::vector<double> get_damage_sources(const Damage_sources& damage_sources_vect
     };
 }
 
-std::string print_stat(const std::string& stat_name, double amount)
+std::string print_stat(const std::string& stat_name, double amount, double bonus_amount = -1)
 {
     std::ostringstream stream;
-    stream << stat_name << std::setprecision(4) << "<b>" << amount << "</b><br>";
+    stream << stat_name << std::setprecision(4) << "<b>" << amount;
+    if (bonus_amount > 0) stream << " + " << std::setprecision(4) << bonus_amount;
+    stream << "</b><br>";
     return stream.str();
 }
 
-std::string print_stat(const std::string& stat_name, double amount1, double amount2)
+std::string print_cmp_stat(const std::string& stat_name, double amount1, double amount2)
 {
     std::ostringstream stream;
     stream << stat_name << std::setprecision(4) << "<b>" << amount1 << " &#8594 " << amount2 << "</b><br>";
@@ -231,13 +233,19 @@ std::string print_stat(const std::string& stat_name, double amount1, double amou
 
 std::string get_character_stat(const Character& char1, const Character& char2)
 {
+    const auto& attr1 = char1.total_attributes;
+    const auto& ss1 = char1.total_special_stats;
+
+    const auto& attr2 = char2.total_attributes;
+    const auto& ss2 = char2.total_special_stats;
+
     std::string out_string = "<b>Setup 1 &#8594 Setup 2</b> <br>";
-    out_string += print_stat("Strength: ", char1.total_attributes.strength, char2.total_attributes.strength);
-    out_string += print_stat("Agility: ", char1.total_attributes.agility, char2.total_attributes.agility);
-    out_string += print_stat("Hit: ", char1.total_special_stats.hit, char2.total_special_stats.hit);
-    out_string += print_stat("Crit (spellbook):", char1.total_special_stats.critical_strike, char2.total_special_stats.critical_strike);
-    out_string += print_stat("Attack Power: ", char1.total_special_stats.attack_power, char2.total_special_stats.attack_power);
-    out_string += print_stat("Haste factor: ", 1 + char1.total_special_stats.haste, 1 + char2.total_special_stats.haste);
+    out_string += print_cmp_stat("Strength: ", attr1.strength, attr2.strength);
+    out_string += print_cmp_stat("Agility: ", attr1.agility, attr2.agility);
+    out_string += print_cmp_stat("Hit: ", ss1.hit, ss2.hit);
+    out_string += print_cmp_stat("Crit (spellbook):", ss1.critical_strike, ss2.critical_strike);
+    out_string += print_cmp_stat("Attack Power: ", ss1.attack_power, ss2.attack_power);
+    out_string += print_cmp_stat("Haste factor: ", 1 + ss1.haste, 1 + ss2.haste);
 
     out_string += "<br><b>Armor:</b><br>";
     for (size_t i = 0; i < char1.armor.size(); i++)
@@ -288,7 +296,7 @@ std::string get_character_stat(const Character& character)
     out_string += print_stat("Hit: ", character.total_special_stats.hit);
     out_string += print_stat("Expertise (before rounding down): ", character.total_special_stats.expertise);
     out_string += print_stat("Crit (spellbook): ", character.total_special_stats.critical_strike);
-    out_string += print_stat("Attack Power: ", character.total_special_stats.attack_power);
+    out_string += print_stat("Attack Power: ", character.total_special_stats.attack_power, character.total_special_stats.bonus_attack_power);
     out_string += print_stat("Haste factor: ", 1 + character.total_special_stats.haste);
     if (character.is_dual_wield())
     {

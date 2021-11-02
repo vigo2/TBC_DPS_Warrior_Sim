@@ -794,7 +794,7 @@ struct Armory
         {Set::warbringer, 2, "warbringer-2pc (2t4)"},
         {Set::warbringer, 4, "warbringer-4pc (4t4)"},
         {Set::destroyer, 2, "destroyer-2pc (2t5)"},
-        {Set::destroyer, 4, "destroyer-2pc (4t5)"},
+        {Set::destroyer, 4, "destroyer-4pc (4t5)"},
     };
 
     [[nodiscard]] const std::vector<Armor>& get_items_in_socket(Socket socket) const;
