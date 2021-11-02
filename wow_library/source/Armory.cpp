@@ -349,7 +349,7 @@ void Armory::compute_total_stats(Character& character) const
     talent_special_stats.hit = character.talents.precision;
     talent_special_stats.expertise = character.talents.defiance * 2;
     talent_special_stats.ap_multiplier = character.talents.improved_berserker_stance * 0.02;
-    talent_special_stats.str_multiplier = character.talents.vitality * .02;
+    talent_special_stats.str_multiplier = character.talents.vitality * 0.02;
     if (character.is_dual_wield())
     {
         talent_special_stats.damage_mod_physical = character.talents.one_handed_weapon_specialization * 0.02;

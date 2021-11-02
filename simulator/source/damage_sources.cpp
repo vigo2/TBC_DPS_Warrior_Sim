@@ -3,7 +3,7 @@
 std::ostream& operator<<(std::ostream& os, Damage_source damage_source)
 {
     static std::string m[] = {"white_mh", "white_oh", "bloodthirst", "execute", "heroic_strike", "cleave",
-                              "whirlwind", "hamstring", "deep_wound", "item_hit_effects", "overpower", "slam", "mortal_strike", "sweeping_strikes","devastate"};
+                              "whirlwind", "hamstring", "deep_wound", "item_hit_effects", "overpower", "slam", "mortal_strike", "sweeping_strikes", "devastate"};
     return os << m[static_cast<size_t>(damage_source)];
 }
 

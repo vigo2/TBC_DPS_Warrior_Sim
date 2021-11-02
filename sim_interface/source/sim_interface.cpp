@@ -873,7 +873,7 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
     std::vector<std::string> damage_names = {"White MH",      "White OH",         "Bloodthirst", "Execute",
                                              "Heroic Strike", "Cleave",           "Whirlwind",   "Hamstring",
                                              "Deep Wounds",   "Item Hit Effects", "Overpower",   "Slam",
-                                             "Mortal Strike", "Sweeping Strikes", "Devastate", "Sword Specialization"};//sword specialization isnt listed as a damage_source
+                                             "Mortal Strike", "Sweeping Strikes", "Devastate"};
     for (size_t i = 0; i < damage_time_lapse_raw.size(); i++)
     {
         double total_damage = 0;

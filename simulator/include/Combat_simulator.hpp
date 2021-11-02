@@ -368,6 +368,8 @@ private:
     int mortal_strike_rage_cost_{};
     int bloodthirst_rage_cost_{};
     int devastate_rage_cost_{};
+    int sunder_armor_rage_cost_{};
+    int hamstring_rage_cost_{};
     int tactical_mastery_rage_{};
 
     Special_stats flurry_{};
