@@ -265,6 +265,49 @@ void Combat_simulator::cout_damage_parse(const Weapon_sim& weapon, const Hit_tab
     }
 }
 
+struct Spell {
+    const std::string name;
+    const Damage_source damage_source;
+    const bool has_gcd;
+    const int cooldown;
+    // maybe more - e.g. can_sweep, damage_func(), refund()
+    // this could also keep the per-spell/ability damage and other stats
+    // e.g. min-max-avg-count, plus hit_results (miss/dodge/glance/crit/hit),
+    // plus rage-stats (rage spend/rage gained)
+};
+
+Combat_simulator::Hit_outcome Combat_simulator::generate_hit_plus(Sim_state& state, const Weapon_sim& weapon, const Hit_table& hit_table,
+                                                             double damage, bool boss_target, bool can_sweep)
+{
+    // ~add a struct Spell for simplified parameterization
+
+    // ~some spells have "special outcomes"
+    //  - sunder_armor -> sunder_armor_stacks_++
+    //  - cleave & whirlwind won't have cumulated damage anymore, which is fine
+    //  - main_hand/offhand have "remove_charge", and gain_rage() as special effects
+
+
+    time_keeper_.blood_thirst_cast(6000);
+    time_keeper_.global_cast(1500);
+
+    Damage_source damage_source = Damage_source::bloodthirst;
+
+    const auto& hit_outcome = generate_hit(state, weapon, hit_table, damage, boss_target, can_sweep);
+
+    // spend_rage(hit_outcome.isDodgeOrMiss() ? <cost> - <refund> : <cost>)
+
+    // spend_rage(<cost>)
+    // if (<refund> > 0 && hit_outcome.isDodgeOrMiss()) gain_rage(<refund>);
+
+    // warbringer_4 rage_boost on dodge, maybe special case WW offhand w/ Hit_type
+    // maybe_gain_flurry(hit_outcome.hit_result, state.flurry_charges, state.special_stats);
+    // unbridled_wrath ~ Hit_type needed for hit_effects
+    hit_effects(state, hit_outcome.hit_result, state.main_hand_weapon);
+    state.add_damage(damage_source, hit_outcome.damage, time_keeper_.time);
+    logger_.print("Current rage: ", int(rage));
+}
+
+
 Combat_simulator::Hit_outcome Combat_simulator::generate_hit(Sim_state& state, const Weapon_sim& weapon, const Hit_table& hit_table,
                                            double damage, bool boss_target, bool can_sweep)
 {
@@ -629,7 +672,7 @@ void Combat_simulator::hamstring(Sim_state& state)
 void Combat_simulator::sunder_armor(Sim_state& state)
 {
     logger_.print("Sunder Armor!");
-    auto hit_outcome = hit_table_yellow_mh_.generate_hit(0);
+    const auto& hit_outcome = hit_table_yellow_mh_.generate_hit(0);
     time_keeper_.global_cast(1500);
     if (hit_outcome.hit_result == Hit_result::miss || hit_outcome.hit_result == Hit_result::dodge)
     {

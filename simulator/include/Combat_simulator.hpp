@@ -256,6 +256,9 @@ public:
 
     void cout_damage_parse(const Weapon_sim& weapon, const Hit_table& hit_table, const Hit_outcome& hit_outcome);
 
+    Hit_outcome generate_hit_plus(Sim_state& state, const Weapon_sim& weapon, const Hit_table& hit_table, double damage,
+                             bool boss_target = true, bool can_sweep = true);
+
     Hit_outcome generate_hit(Sim_state& state, const Weapon_sim& weapon, const Hit_table& hit_table, double damage,
                              bool boss_target = true, bool can_sweep = true);
 
