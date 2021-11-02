@@ -212,6 +212,7 @@ std::vector<double> get_damage_sources(const Damage_sources& damage_sources_vect
         damage_sources_vector.slam_damage / total_damage,
         damage_sources_vector.mortal_strike_damage / total_damage,
         damage_sources_vector.sweeping_strikes_damage / total_damage,
+        damage_sources_vector.devastate_damage / total_damage,
     };
 }
 
@@ -872,7 +873,7 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
     std::vector<std::string> damage_names = {"White MH",      "White OH",         "Bloodthirst", "Execute",
                                              "Heroic Strike", "Cleave",           "Whirlwind",   "Hamstring",
                                              "Deep Wounds",   "Item Hit Effects", "Overpower",   "Slam",
-                                             "Mortal Strike", "Sweeping Strikes", "Sword Specialization"};
+                                             "Mortal Strike", "Sweeping Strikes", "Devastate", "Sword Specialization"};//sword specialization isnt listed as a damage_source
     for (size_t i = 0; i < damage_time_lapse_raw.size(); i++)
     {
         double total_damage = 0;
@@ -1068,6 +1069,7 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
         debug_topic += "DPS hamstring: " + std::to_string(dmg_dist.hamstring_damage * f) + "<br>";
         debug_topic += "DPS deep wounds: " + std::to_string(dmg_dist.deep_wounds_damage * f) + "<br>";
         debug_topic += "DPS item effects: " + std::to_string(dmg_dist.item_hit_effects_damage * f) + "<br><br>";
+        debug_topic += "DPS devastate: " + std::to_string(dmg_dist.devastate_damage * f) + "<br><br>";
 
         auto g = 1.0 / base_dps.samples();
         debug_topic += "Casts:<br>";
@@ -1085,6 +1087,7 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
         debug_topic += "#Hits hamstring: " + std::to_string(dmg_dist.hamstring_count * g) + "<br>";
         debug_topic += "#Hits deep_wounds: " + std::to_string(dmg_dist.deep_wounds_count * g) + "<br>";
         debug_topic += "#Hits item effects: " + std::to_string(dmg_dist.item_hit_effects_count * g) + "<br>";
+        debug_topic += "#Hits devastate " + std::to_string(dmg_dist.devastate_damage * g) + "<br>";
     }
 
     for (auto& v : sample_std_dps_vec)

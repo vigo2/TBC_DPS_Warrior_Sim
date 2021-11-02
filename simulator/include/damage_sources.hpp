@@ -21,6 +21,7 @@ enum class Damage_source
     slam,
     mortal_strike,
     sweeping_strikes,
+    devastate,
     size, // convenience ;)
 };
 
@@ -44,14 +45,14 @@ struct Damage_sources
     {
         return white_mh_damage + white_oh_damage + bloodthirst_damage + mortal_strike_damage + slam_damage +
                overpower_damage + heroic_strike_damage + cleave_damage + whirlwind_damage + hamstring_damage +
-               execute_damage + deep_wounds_damage + item_hit_effects_damage + sweeping_strikes_damage;
+               execute_damage + deep_wounds_damage + item_hit_effects_damage + sweeping_strikes_damage + devastate_damage;
     }
 
     [[nodiscard]] int sum_counts() const
     {
         return white_mh_count + white_oh_count + bloodthirst_count + mortal_strike_count + slam_count +
                overpower_count + heroic_strike_count + cleave_count + whirlwind_count + hamstring_count +
-               execute_count + deep_wounds_count + item_hit_effects_count + sweeping_strikes_count;
+               execute_count + deep_wounds_count + item_hit_effects_count + sweeping_strikes_count + devastate_count;
     }
 
     void add_damage(Damage_source source, double damage);
@@ -70,6 +71,7 @@ struct Damage_sources
     double hamstring_damage{};
     double deep_wounds_damage{};
     double item_hit_effects_damage{};
+    double devastate_damage{};
 
     int white_mh_count{};
     int white_oh_count{};
@@ -85,6 +87,7 @@ struct Damage_sources
     int hamstring_count{};
     int deep_wounds_count{};
     int item_hit_effects_count{};
+    int devastate_count{};
 };
 
 #endif // WOW_SIMULATOR_DAMAGE_SOURCES_HPP

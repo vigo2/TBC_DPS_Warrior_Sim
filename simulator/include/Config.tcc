@@ -57,6 +57,10 @@ void Combat_simulator_config::parse_combat_simulator_config(const T& input)
     combat.use_ms_in_exec_phase = String_helpers::find_string(input.options, "use_ms_in_exec_phase");
     combat.ms_whirlwind_cooldown_thresh = to_millis(fv.find("ms_whirlwind_cooldown_thresh_dd"));
 
+    combat.use_devastate = String_helpers::find_string(input.options, "use_devastate");
+    combat.use_devastate_in_exec_phase = String_helpers::find_string(input.options, "use_devastate_in_exec_phase");
+    combat.devastate_whirlwind_cooldown_thresh = to_millis(fv.find("devastate_whirlwind_cooldown_thresh_dd"));
+
     combat.use_whirlwind = String_helpers::find_string(input.options, "use_whirlwind");
     combat.use_ww_in_exec_phase = String_helpers::find_string(input.options, "use_ww_in_exec_phase");
     combat.whirlwind_rage_thresh = fv.find("whirlwind_rage_thresh_dd");

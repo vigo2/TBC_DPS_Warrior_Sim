@@ -36,13 +36,12 @@ Combat_simulator::Combat_simulator(const Combat_simulator_config& config) : conf
 
 void Combat_simulator::add_talent_effects(const Character& character)
 {
-    execute_rage_cost_ = std::vector<int>{15, 13, 10}[character.talents.improved_execute];
-    heroic_strike_rage_cost_ = 15 - character.talents.improved_heroic_strike;
-    whirlwind_rage_cost_ = 25;
-    mortal_strike_rage_cost_ = 30;
-    bloodthirst_rage_cost_ = 30;
-
-    tactical_mastery_rage_ = 10 + character.talents.tactical_mastery * 5;
+    heroic_strike_rage_cost_ = 15 - character.talents.improved_heroic_strike - character.talents.focused_rage;
+    execute_rage_cost_ = std::vector<int>{15, 13, 10}[character.talents.improved_execute] - character.talents.focused_rage;
+    whirlwind_rage_cost_ = 25 - character.talents.focused_rage;
+    mortal_strike_rage_cost_ = 30 - character.talents.focused_rage;
+    bloodthirst_rage_cost_ = 30 - character.talents.focused_rage;
+    devastate_rage_cost_ = 15 - character.talents.focused_rage - character.talents.improved_sunder_armor;
 
     have_flurry_ = character.talents.flurry > 0;
     flurry_.attack_speed = character.talents.flurry * 0.05;
@@ -51,6 +50,7 @@ void Combat_simulator::add_talent_effects(const Character& character)
     use_rampage_ = character.talents.rampage && config.combat.use_rampage;
     use_bloodthirst_ = character.talents.bloodthirst && config.combat.use_bloodthirst;
     use_mortal_strike_ = character.talents.mortal_strike && config.combat.use_mortal_strike;
+    use_devastate_ = character.talents.devastate && config.combat.use_devastate;
     use_sweeping_strikes_ = character.talents.sweeping_strikes && config.use_sweeping_strikes && config.multi_target_mode_;
 }
 
@@ -449,6 +449,33 @@ void Combat_simulator::mortal_strike(Sim_state& state)
     time_keeper_.mortal_strike_cast(6000 - state.talents.improved_mortal_strike * 200);
     time_keeper_.global_cast(1500);
     state.add_damage(Damage_source::mortal_strike, hit_outcome.damage, time_keeper_.time);
+    logger_.print("Current rage: ", int(rage));
+}
+
+void Combat_simulator::devastate(Sim_state& state)
+{
+    //TODO: Add DPR support
+    logger_.print("Devastate!");
+    int bonus = (config.exposed_armor) ? 0 : sunder_armor_stacks_ * 35;
+    double damage = (state.main_hand_weapon.normalized_swing(state.special_stats)/2 + bonus);
+    const auto& hit_outcome = generate_hit(state, state.main_hand_weapon, hit_table_yellow_mh_, damage);
+    if (hit_outcome.hit_result == Hit_result::miss || hit_outcome.hit_result == Hit_result::dodge)
+    {
+        spend_rage(0.2 * devastate_rage_cost_);
+        if (hit_outcome.hit_result == Hit_result::dodge && has_warbringer_4_set_)
+        {
+            gain_rage(2);
+        }
+    }
+    else
+    {
+        spend_rage(devastate_rage_cost_);
+        maybe_gain_flurry(hit_outcome.hit_result, state.flurry_charges, state.special_stats);
+        hit_effects(state, hit_outcome.hit_result, state.main_hand_weapon);
+        hit_effects(state, hit_outcome.hit_result, state.main_hand_weapon);//double proc chance on devastate
+    }
+    time_keeper_.global_cast(1500);
+    state.add_damage(Damage_source::devastate, hit_outcome.damage, time_keeper_.time);
     logger_.print("Current rage: ", int(rage));
 }
 
@@ -1384,6 +1411,20 @@ void Combat_simulator::execute_phase(Sim_state& state, bool mh_swing)
         }
     }
 
+    if (use_devastate_ && config.combat.use_devastate_in_exec_phase)
+    {
+        bool dt_ww = true;
+        if (config.combat.use_whirlwind)
+        {
+            dt_ww = std::max(time_keeper_.whirlwind_cd(), 100) > config.combat.devastate_whirlwind_cooldown_thresh;
+        }
+        if (rage >= (execute_rage_cost_+devastate_rage_cost_) && dt_ww)
+                    {
+            devastate(state);
+            return;
+        }
+    }
+
     if (use_bloodthirst_ && config.combat.use_bt_in_exec_phase)
     {
         bool bt_ww = true;
@@ -1510,6 +1551,20 @@ void Combat_simulator::normal_phase(Sim_state& state, bool mh_swing)
             return;
         }
     }
+        
+    if (use_devastate_)
+    {
+        bool dt_ww = true;
+        if (config.combat.use_whirlwind)
+        {
+            dt_ww = std::max(time_keeper_.whirlwind_cd(), 100) > config.combat.devastate_whirlwind_cooldown_thresh;
+        }
+        if (time_keeper_.mortal_strike_ready() && rage >= devastate_rage_cost_ && dt_ww)
+        {
+            devastate(state);
+            return;
+        }
+    }
 
     if (config.combat.use_whirlwind)
     {
@@ -1521,6 +1576,10 @@ void Combat_simulator::normal_phase(Sim_state& state, bool mh_swing)
         if (use_mortal_strike_)
         {
             use_ww = std::max(time_keeper_.mortal_strike_cd(), 100) > config.combat.whirlwind_bt_cooldown_thresh;
+        }
+        if (use_devastate_)
+        {
+            use_ww = true;
         }
         if (time_keeper_.whirlwind_ready() && rage > config.combat.whirlwind_rage_thresh && rage >= whirlwind_rage_cost_ && use_ww)
         {
