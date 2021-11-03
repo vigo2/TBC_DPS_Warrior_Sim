@@ -215,14 +215,16 @@ std::vector<double> get_damage_sources(const Damage_sources& damage_sources_vect
     };
 }
 
-std::string print_stat(const std::string& stat_name, double amount)
+std::string print_stat(const std::string& stat_name, double amount, double bonus_amount = -1)
 {
     std::ostringstream stream;
-    stream << stat_name << std::setprecision(4) << "<b>" << amount << "</b><br>";
+    stream << stat_name << std::setprecision(4) << "<b>" << amount;
+    if (bonus_amount > 0) stream << " + " << std::setprecision(4) << bonus_amount;
+    stream << "</b><br>";
     return stream.str();
 }
 
-std::string print_stat(const std::string& stat_name, double amount1, double amount2)
+std::string print_cmp_stat(const std::string& stat_name, double amount1, double amount2)
 {
     std::ostringstream stream;
     stream << stat_name << std::setprecision(4) << "<b>" << amount1 << " &#8594 " << amount2 << "</b><br>";
@@ -231,13 +233,19 @@ std::string print_stat(const std::string& stat_name, double amount1, double amou
 
 std::string get_character_stat(const Character& char1, const Character& char2)
 {
+    const auto& attr1 = char1.total_attributes;
+    const auto& ss1 = char1.total_special_stats;
+
+    const auto& attr2 = char2.total_attributes;
+    const auto& ss2 = char2.total_special_stats;
+
     std::string out_string = "<b>Setup 1 &#8594 Setup 2</b> <br>";
-    out_string += print_stat("Strength: ", char1.total_attributes.strength, char2.total_attributes.strength);
-    out_string += print_stat("Agility: ", char1.total_attributes.agility, char2.total_attributes.agility);
-    out_string += print_stat("Hit: ", char1.total_special_stats.hit, char2.total_special_stats.hit);
-    out_string += print_stat("Crit (spellbook):", char1.total_special_stats.critical_strike, char2.total_special_stats.critical_strike);
-    out_string += print_stat("Attack Power: ", char1.total_special_stats.attack_power, char2.total_special_stats.attack_power);
-    out_string += print_stat("Haste factor: ", 1 + char1.total_special_stats.haste, 1 + char2.total_special_stats.haste);
+    out_string += print_cmp_stat("Strength: ", attr1.strength, attr2.strength);
+    out_string += print_cmp_stat("Agility: ", attr1.agility, attr2.agility);
+    out_string += print_cmp_stat("Hit: ", ss1.hit, ss2.hit);
+    out_string += print_cmp_stat("Crit (spellbook):", ss1.critical_strike, ss2.critical_strike);
+    out_string += print_cmp_stat("Attack Power: ", ss1.attack_power, ss2.attack_power);
+    out_string += print_cmp_stat("Haste factor: ", 1 + ss1.haste, 1 + ss2.haste);
 
     out_string += "<br><b>Armor:</b><br>";
     for (size_t i = 0; i < char1.armor.size(); i++)
@@ -288,7 +296,7 @@ std::string get_character_stat(const Character& character)
     out_string += print_stat("Hit: ", character.total_special_stats.hit);
     out_string += print_stat("Expertise (before rounding down): ", character.total_special_stats.expertise);
     out_string += print_stat("Crit (spellbook): ", character.total_special_stats.critical_strike);
-    out_string += print_stat("Attack Power: ", character.total_special_stats.attack_power);
+    out_string += print_stat("Attack Power: ", character.total_special_stats.attack_power, character.total_special_stats.bonus_attack_power);
     out_string += print_stat("Haste factor: ", 1 + character.total_special_stats.haste);
     if (character.is_dual_wield())
     {
@@ -781,31 +789,36 @@ std::vector<std::string> parse_buff_options(Armory& armory, const Sim_input& inp
     {
         temp_buffs.emplace_back("bloodlust");
     }
+    if (String_helpers::find_string(input.options, "fungal_bloom"))
+    {
+        temp_buffs.emplace_back("fungal_bloom");
+    }
+    if (String_helpers::find_string(input.options, "expose_weakness"))
+    {
+        auto expose_weakness_val = String_helpers::find_value(input.float_options_string, input.float_options_val, "expose_weakness_dd");
+        armory.buffs.expose_weakness.special_stats.bonus_attack_power = 0.25 * expose_weakness_val;
+        temp_buffs.emplace_back("expose_weakness");
+    }
     if (String_helpers::find_string(input.options, "full_polarity"))
     {
-        double full_polarity_val =
-            String_helpers::find_value(input.float_options_string, input.float_options_val, "full_polarity_dd");
+        auto full_polarity_val = String_helpers::find_value(input.float_options_string, input.float_options_val, "full_polarity_dd");
         armory.buffs.full_polarity.special_stats.damage_mod_physical = full_polarity_val / 100.0;
         armory.buffs.full_polarity.special_stats.damage_mod_spell = full_polarity_val / 100.0;
         temp_buffs.emplace_back("full_polarity");
     }
     if (String_helpers::find_string(input.options, "ferocious_inspiration"))
     {
-        double ferocious_inspiration_val =
-            String_helpers::find_value(input.float_options_string, input.float_options_val, "ferocious_inspiration_dd");
-        armory.buffs.ferocious_inspiration.special_stats.damage_mod_physical = ferocious_inspiration_val / 100.0;
-        armory.buffs.ferocious_inspiration.special_stats.damage_mod_spell = ferocious_inspiration_val / 100.0;
+        auto ferocious_inspiration_val = String_helpers::find_value(input.float_options_string, input.float_options_val, "ferocious_inspiration_dd");
+        auto damage_mod = std::pow(1.03, std::round(ferocious_inspiration_val / 3)) - 1;
+        armory.buffs.ferocious_inspiration.special_stats.damage_mod_physical = damage_mod;
+        armory.buffs.ferocious_inspiration.special_stats.damage_mod_spell = damage_mod;
         temp_buffs.emplace_back("ferocious_inspiration");
-    }
-    if (String_helpers::find_string(input.options, "fungal_bloom"))
-    {
-        temp_buffs.emplace_back("fungal_bloom");
     }
     if (String_helpers::find_string(input.options, "battle_squawk"))
     {
-        double battle_squawk_val =
-            String_helpers::find_value(input.float_options_string, input.float_options_val, "battle_squawk_dd");
-        armory.buffs.battle_squawk.special_stats.attack_speed = battle_squawk_val / 100.0;
+        auto battle_squawk_val = String_helpers::find_value(input.float_options_string, input.float_options_val, "battle_squawk_dd");
+        auto attack_speed = std::pow(1.05, std::round(battle_squawk_val / 5)) - 1;
+        armory.buffs.battle_squawk.special_stats.attack_speed = attack_speed;
         temp_buffs.emplace_back("battle_squawk");
     }
 
@@ -849,7 +862,7 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
     const auto& hist_y = simulator.get_hist_y();
 
     const auto& dmg_dist = simulator.get_damage_distribution();
-    const std::vector<double>& dps_dist_raw = get_damage_sources(dmg_dist);
+    const auto& dps_dist_raw = get_damage_sources(dmg_dist);
 
     std::vector<std::string> use_effects_schedule_string{};
     {
@@ -863,8 +876,8 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
         }
     }
 
-    std::vector<std::string> aura_uptimes = simulator.get_aura_uptimes();
-    std::vector<std::string> proc_statistics = simulator.get_proc_statistics();
+    const auto& aura_uptimes = simulator.get_aura_uptimes();
+    const auto& proc_statistics = simulator.get_proc_statistics();
     const auto& damage_time_lapse_raw = simulator.get_damage_time_lapse();
     std::vector<std::string> time_lapse_names;
     std::vector<std::vector<double>> damage_time_lapse;

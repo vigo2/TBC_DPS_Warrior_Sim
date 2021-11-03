@@ -11,9 +11,10 @@ struct Buffs
     // World buffs
     Buff fungal_bloom{"fungal_bloom", Attributes{0, 0}, Special_stats{50, 0, 0}};
 
-    // these are set in "sim_interface.cpp" or "sim_interface_mult.cpp" depending on whats specified
+    // these are set in "sim_interface.cpp" or "sim_interface_mult.cpp" depending on what's specified
     Buff full_polarity{"full_polarity", {}, {}};
     Buff battle_squawk{"battle_squawk", {}, {}};
+    Buff expose_weakness{"expose_weakness", {}, {}};
     Buff ferocious_inspiration{"ferocious_inspiration", {}, {}};
 
     // Player_buffs
@@ -794,7 +795,7 @@ struct Armory
         {Set::warbringer, 2, "warbringer-2pc (2t4)"},
         {Set::warbringer, 4, "warbringer-4pc (4t4)"},
         {Set::destroyer, 2, "destroyer-2pc (2t5)"},
-        {Set::destroyer, 4, "destroyer-2pc (4t5)"},
+        {Set::destroyer, 4, "destroyer-4pc (4t5)"},
     };
 
     [[nodiscard]] const std::vector<Armor>& get_items_in_socket(Socket socket) const;
