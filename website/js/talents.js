@@ -226,6 +226,14 @@ function showHideTalentDiv() {
         document.getElementById("mortal_strike_talent_div").style.display = "none";
     }
 
+    let devastate_talent = document.getElementById("devastate_talent");
+    current_val = parseInt(devastate_talent.getAttribute("data-count"));
+    if (current_val === 1) {
+        document.getElementById("devastate_talent_div").style.display = "block";
+    } else {
+        document.getElementById("devastate_talent_div").style.display = "none";
+    }
+
     let bt_talent = document.getElementById("bloodthirst_talent");
     current_val = parseInt(bt_talent.getAttribute("data-count"));
     if (current_val === 1) {

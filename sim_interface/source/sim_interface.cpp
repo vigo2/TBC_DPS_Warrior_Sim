@@ -1059,6 +1059,7 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
         debug_topic += "DPS white OH: " + std::to_string(dmg_dist.white_oh_damage * f) + "<br>";
         debug_topic += "DPS bloodthirst: " + std::to_string(dmg_dist.bloodthirst_damage * f) + "<br>";
         debug_topic += "DPS mortal strike: " + std::to_string(dmg_dist.mortal_strike_damage * f) + "<br>";
+        debug_topic += "DPS devastate: " + std::to_string(dmg_dist.devastate_damage * f) + "<br><br>";
         debug_topic += "DPS sweeping strikes: " + std::to_string(dmg_dist.sweeping_strikes_damage * f) + "<br>";
         debug_topic += "DPS overpower: " + std::to_string(dmg_dist.overpower_damage * f) + "<br>";
         debug_topic += "DPS slam: " + std::to_string(dmg_dist.slam_damage * f) + "<br>";
@@ -1069,7 +1070,7 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
         debug_topic += "DPS hamstring: " + std::to_string(dmg_dist.hamstring_damage * f) + "<br>";
         debug_topic += "DPS deep wounds: " + std::to_string(dmg_dist.deep_wounds_damage * f) + "<br>";
         debug_topic += "DPS item effects: " + std::to_string(dmg_dist.item_hit_effects_damage * f) + "<br><br>";
-        debug_topic += "DPS devastate: " + std::to_string(dmg_dist.devastate_damage * f) + "<br><br>";
+
 
         auto g = 1.0 / base_dps.samples();
         debug_topic += "Casts:<br>";
