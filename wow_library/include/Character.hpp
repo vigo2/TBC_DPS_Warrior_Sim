@@ -229,7 +229,7 @@ public:
         //int improved_shield_block{};
         //int improved_revenge{};
         int defiance{};
-        //int improved_sunder_armor{};
+        int improved_sunder_armor{};
         //int improved_disarm{};
         //int improved_taunt{};
         //int improved_shield_wall{};
@@ -239,9 +239,9 @@ public:
         int one_handed_weapon_specialization{};
         //int improved_defensive_stance{};
         //int shield_slam{};
-        //int focused_rage{};
-        //int vitality{};
-        //int devastate{};
+        int focused_rage{};
+        int vitality{};
+        int devastate{};
     } talents;
 
     Attributes base_attributes;

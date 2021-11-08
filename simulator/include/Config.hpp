@@ -77,6 +77,10 @@ struct Combat_simulator_config
         bool use_ms_in_exec_phase{};
         int ms_whirlwind_cooldown_thresh{};
 
+        bool use_devastate{};
+        bool use_devastate_in_exec_phase{};
+        int devastate_whirlwind_cooldown_thresh{};
+
         bool use_whirlwind{};
         bool use_ww_in_exec_phase{};
         double whirlwind_rage_thresh{};

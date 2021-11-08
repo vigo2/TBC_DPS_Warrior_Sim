@@ -36,13 +36,14 @@ Combat_simulator::Combat_simulator(const Combat_simulator_config& config) : conf
 
 void Combat_simulator::add_talent_effects(const Character& character)
 {
-    execute_rage_cost_ = std::vector<int>{15, 13, 10}[character.talents.improved_execute];
-    heroic_strike_rage_cost_ = 15 - character.talents.improved_heroic_strike;
-    whirlwind_rage_cost_ = 25;
-    mortal_strike_rage_cost_ = 30;
-    bloodthirst_rage_cost_ = 30;
-
-    tactical_mastery_rage_ = 10 + character.talents.tactical_mastery * 5;
+    heroic_strike_rage_cost_ = 15 - character.talents.improved_heroic_strike - character.talents.focused_rage;
+    execute_rage_cost_ = std::vector<int>{15, 13, 10}[character.talents.improved_execute] - character.talents.focused_rage;
+    whirlwind_rage_cost_ = 25 - character.talents.focused_rage;
+    mortal_strike_rage_cost_ = 30 - character.talents.focused_rage;
+    bloodthirst_rage_cost_ = 30 - character.talents.focused_rage;
+    devastate_rage_cost_ = 15 - character.talents.focused_rage - character.talents.improved_sunder_armor;
+    sunder_armor_rage_cost_ = 15 - character.talents.focused_rage - character.talents.improved_sunder_armor;
+    hamstring_rage_cost_ = 10 - character.talents.focused_rage;
 
     have_flurry_ = character.talents.flurry > 0;
     flurry_.attack_speed = character.talents.flurry * 0.05;
@@ -51,6 +52,7 @@ void Combat_simulator::add_talent_effects(const Character& character)
     use_rampage_ = character.talents.rampage && config.combat.use_rampage;
     use_bloodthirst_ = character.talents.bloodthirst && config.combat.use_bloodthirst;
     use_mortal_strike_ = character.talents.mortal_strike && config.combat.use_mortal_strike;
+    use_devastate_ = character.talents.devastate && config.combat.use_devastate;
     use_sweeping_strikes_ = character.talents.sweeping_strikes && config.use_sweeping_strikes && config.multi_target_mode_;
 }
 
@@ -452,6 +454,43 @@ void Combat_simulator::mortal_strike(Sim_state& state)
     logger_.print("Current rage: ", int(rage));
 }
 
+void Combat_simulator::devastate(Sim_state& state)
+{
+    //TODO: Add DPR support
+    logger_.print("Devastate!");
+    assert(sunder_armor_stacks_ >= 0 && sunder_armor_stacks_ <= 5);
+    int bonus = (apply_delayed_armor_reduction) ? 0 : std::vector<int>{0, 35*2, 35*3, 35*4, 35*5, 35*5}[sunder_armor_stacks_];
+    double damage = ((state.main_hand_weapon.normalized_swing(state.special_stats) - state.special_stats.bonus_damage) / 2 + bonus); //  devastate not affected by bonus damage
+    const auto& hit_outcome = generate_hit(state, state.main_hand_weapon, hit_table_yellow_mh_, damage);
+    if (hit_outcome.hit_result == Hit_result::miss || hit_outcome.hit_result == Hit_result::dodge)
+    {
+        spend_rage(0.2 * devastate_rage_cost_);
+        if (hit_outcome.hit_result == Hit_result::dodge && has_warbringer_4_set_)
+        {
+            gain_rage(2);
+        }
+    }
+    else
+    {
+        spend_rage(devastate_rage_cost_);
+        maybe_gain_flurry(hit_outcome.hit_result, state.flurry_charges, state.special_stats);
+        hit_effects(state, hit_outcome.hit_result, state.main_hand_weapon);
+        if(!apply_delayed_armor_reduction)//  double proc chance on devastate when IEA not applied}
+        {
+            hit_effects(state, hit_outcome.hit_result, state.main_hand_weapon);  
+        }
+        if (sunder_armor_stacks_ < 5)
+        {
+            sunder_armor_stacks_++;
+            logger_.print("Current Sunder Armor stacks: ", sunder_armor_stacks_);
+            recompute_mitigation_ = true;
+        }
+    }
+    time_keeper_.global_cast(1500);
+    state.add_damage(Damage_source::devastate, hit_outcome.damage, time_keeper_.time);
+    logger_.print("Current rage: ", int(rage));
+}
+
 void Combat_simulator::bloodthirst(Sim_state& state)
 {
     if (config.dpr_settings.compute_dpr_bt_)
@@ -610,7 +649,7 @@ void Combat_simulator::hamstring(Sim_state& state)
     time_keeper_.global_cast(1500);
     if (hit_outcome.hit_result == Hit_result::miss || hit_outcome.hit_result == Hit_result::dodge)
     {
-        spend_rage(2);
+        spend_rage(0.2 * hamstring_rage_cost_);
         if (hit_outcome.hit_result == Hit_result::dodge && has_warbringer_4_set_)
         {
             gain_rage(2);
@@ -618,7 +657,7 @@ void Combat_simulator::hamstring(Sim_state& state)
     }
     else
     {
-        spend_rage(10);
+        spend_rage(hamstring_rage_cost_);
         maybe_gain_flurry(hit_outcome.hit_result, state.flurry_charges, state.special_stats);
         hit_effects(state, hit_outcome.hit_result, state.main_hand_weapon);
     }
@@ -633,7 +672,7 @@ void Combat_simulator::sunder_armor(Sim_state& state)
     time_keeper_.global_cast(1500);
     if (hit_outcome.hit_result == Hit_result::miss || hit_outcome.hit_result == Hit_result::dodge)
     {
-        spend_rage(3);
+        spend_rage(0.2 * sunder_armor_rage_cost_);
         if (hit_outcome.hit_result == Hit_result::dodge && has_warbringer_4_set_)
         {
             gain_rage(2);
@@ -641,9 +680,12 @@ void Combat_simulator::sunder_armor(Sim_state& state)
     }
     else
     {
-        spend_rage(15);
+        spend_rage(sunder_armor_rage_cost_);
         hit_effects(state, hit_outcome.hit_result, state.main_hand_weapon);
-        sunder_armor_stacks_++;
+        if(sunder_armor_stacks_ < 5)
+        {
+            sunder_armor_stacks_++;
+        }
         logger_.print("Current Sunder Armor stacks: ", sunder_armor_stacks_);
         recompute_mitigation_ = true;
     }
@@ -1243,7 +1285,12 @@ void Combat_simulator::simulate(const Character& character, const std::function<
                 {
                     sunder_armor_globals = 0;
                 }
-                else if (time_keeper_.global_ready() && rage >= 15)
+                else if (use_devastate_ && time_keeper_.global_ready() && rage >= devastate_rage_cost_)
+                {
+                    devastate(state);
+                    sunder_armor_globals--;
+                }
+                else if (time_keeper_.global_ready() && rage >= sunder_armor_rage_cost_)
                 {
                     sunder_armor(state);
                     sunder_armor_globals--;
@@ -1372,7 +1419,7 @@ void Combat_simulator::execute_phase(Sim_state& state, bool mh_swing)
             ms_ww = std::max(time_keeper_.whirlwind_cd(), 100) > config.combat.bt_whirlwind_cooldown_thresh;
         }
         if (time_keeper_.mortal_strike_ready() && rage >= 30 && ms_ww)
-                    {
+        {
             mortal_strike(state);
             return;
         }
@@ -1386,7 +1433,7 @@ void Combat_simulator::execute_phase(Sim_state& state, bool mh_swing)
             bt_ww = std::max(time_keeper_.whirlwind_cd(), 100) > config.combat.bt_whirlwind_cooldown_thresh;
         }
         if (time_keeper_.blood_thirst_ready() && rage >= 30 && bt_ww)
-                    {
+        {
             bloodthirst(state);
             return;
         }
@@ -1406,6 +1453,20 @@ void Combat_simulator::execute_phase(Sim_state& state, bool mh_swing)
         if (time_keeper_.whirlwind_ready() && rage > config.combat.whirlwind_rage_thresh && rage >= whirlwind_rage_cost_ && use_ww)
         {
             whirlwind(state);
+            return;
+        }
+    }
+
+    if (use_devastate_ && config.combat.use_devastate_in_exec_phase)
+    {
+        bool dt_ww = true;
+        if (config.combat.use_whirlwind)
+        {
+            dt_ww = std::max(time_keeper_.whirlwind_cd(), 100) > config.combat.devastate_whirlwind_cooldown_thresh;
+        }
+        if (rage >= (execute_rage_cost_ + devastate_rage_cost_) && dt_ww)
+        {
+            devastate(state);
             return;
         }
     }
@@ -1470,7 +1531,7 @@ void Combat_simulator::normal_phase(Sim_state& state, bool mh_swing)
         {
             use_sa &= time_keeper_.whirlwind_cd() > config.combat.sunder_armor_cd_thresh;
         }
-        if (rage > config.combat.sunder_armor_rage_thresh && rage >= 15 && use_sa)
+        if (rage > config.combat.sunder_armor_rage_thresh && rage >= sunder_armor_rage_cost_ && use_sa)
         {
             sunder_armor(state);
             return;
@@ -1519,6 +1580,20 @@ void Combat_simulator::normal_phase(Sim_state& state, bool mh_swing)
         if (time_keeper_.whirlwind_ready() && rage > config.combat.whirlwind_rage_thresh && rage >= whirlwind_rage_cost_ && use_ww)
         {
             whirlwind(state);
+            return;
+        }
+    }
+
+    if (use_devastate_)
+    {
+        bool dt_ww = true;
+        if (config.combat.use_whirlwind)
+        {
+            dt_ww = std::max(time_keeper_.whirlwind_cd(), 100) > config.combat.devastate_whirlwind_cooldown_thresh;
+        }
+        if (rage >= devastate_rage_cost_ && dt_ww)
+        {
+            devastate(state);
             return;
         }
     }

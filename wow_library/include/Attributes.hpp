@@ -17,7 +17,7 @@ struct Special_stats
                   double haste = 0, double damage_mod_physical = 0, double stat_multiplier = 0,
                   double bonus_damage = 0, double crit_multiplier = 0, double spell_crit = 0,
                   double damage_mod_spell = 0, double expertise = 0, double sword_expertise = 0, double mace_expertise = 0, double axe_expertise = 0,
-                  int gear_armor_pen = 0, double ap_multiplier = 0, double attack_speed = 0)
+                  int gear_armor_pen = 0, double ap_multiplier = 0, double attack_speed = 0, double str_multiplier = 0)
         : critical_strike{critical_strike}
         , hit{hit}
         , attack_power{attack_power}
@@ -36,6 +36,7 @@ struct Special_stats
         , gear_armor_pen{gear_armor_pen}
         , ap_multiplier{ap_multiplier}
         , attack_speed{attack_speed}
+        , str_multiplier{str_multiplier}
     {
     }
 
@@ -76,6 +77,7 @@ struct Special_stats
             gear_armor_pen + rhs.gear_armor_pen,
             multiplicative_addition(ap_multiplier, rhs.ap_multiplier),
             multiplicative_addition(attack_speed, rhs.attack_speed),
+            multiplicative_addition(str_multiplier, rhs.str_multiplier),
         };
     }
 
@@ -102,6 +104,7 @@ struct Special_stats
             gear_armor_pen - rhs.gear_armor_pen,
             multiplicative_subtraction(ap_multiplier, rhs.ap_multiplier),
             multiplicative_subtraction(attack_speed, rhs.attack_speed),
+            multiplicative_subtraction(str_multiplier, rhs.str_multiplier),
         };
     }
 
@@ -124,6 +127,7 @@ struct Special_stats
     double haste{};
     double damage_mod_physical{};
     double stat_multiplier{};
+    double str_multiplier{};
     double bonus_damage{};
     double crit_multiplier{};
     double spell_crit{};
@@ -154,13 +158,15 @@ public:
     [[nodiscard]] Attributes multiply(const Special_stats& multipliers) const
     {
         const double multiplier = multipliers.stat_multiplier + 1;
-        return {strength * multiplier, agility * multiplier};
+        const double smultiplier = multipliers.str_multiplier + 1;
+        return {strength * multiplier * smultiplier, agility * multiplier};
     }
 
     [[nodiscard]] Special_stats to_special_stats(const Special_stats& multipliers) const
     {
         const double multiplier = multipliers.stat_multiplier + 1;
-        return {agility * multiplier / 33, 0, strength * multiplier * 2};
+        const double smultiplier = multipliers.str_multiplier + 1;
+        return {agility * multiplier / 33, 0, strength * smultiplier* multiplier * 2};
     }
 
     Attributes operator+(const Attributes& rhs) const { return {strength + rhs.strength, agility + rhs.agility}; }

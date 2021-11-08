@@ -229,6 +229,8 @@ public:
 
     void mortal_strike(Sim_state& state);
 
+    void devastate(Sim_state& state);
+
     void bloodthirst(Sim_state& state);
 
     void whirlwind(Sim_state& state);
@@ -365,6 +367,9 @@ private:
     int whirlwind_rage_cost_{};
     int mortal_strike_rage_cost_{};
     int bloodthirst_rage_cost_{};
+    int devastate_rage_cost_{};
+    int sunder_armor_rage_cost_{};
+    int hamstring_rage_cost_{};
     int tactical_mastery_rage_{};
 
     Special_stats flurry_{};
@@ -373,6 +378,7 @@ private:
     bool use_bloodthirst_{};
     bool use_rampage_{};
     bool use_mortal_strike_{};
+    bool use_devastate_{};
     bool use_sweeping_strikes_{};
     bool have_flurry_{};
 

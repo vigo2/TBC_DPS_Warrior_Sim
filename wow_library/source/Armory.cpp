@@ -349,6 +349,7 @@ void Armory::compute_total_stats(Character& character) const
     talent_special_stats.hit = character.talents.precision;
     talent_special_stats.expertise = character.talents.defiance * 2;
     talent_special_stats.ap_multiplier = character.talents.improved_berserker_stance * 0.02;
+    talent_special_stats.str_multiplier = character.talents.vitality * 0.02;
     if (character.is_dual_wield())
     {
         talent_special_stats.damage_mod_physical = character.talents.one_handed_weapon_specialization * 0.02;
@@ -1355,4 +1356,8 @@ void Armory::add_talents_to_character(Character& character, const std::vector<st
     character.talents.tactical_mastery = fv.find("tactical_mastery_talent");
     character.talents.defiance = fv.find("defiance_talent");
     character.talents.one_handed_weapon_specialization = fv.find("one_handed_weapon_specialization_talent");
+    character.talents.devastate = fv.find("devastate_talent");
+    character.talents.improved_sunder_armor = fv.find("improved_sunder_armor_talent");
+    character.talents.focused_rage = fv.find("focused_rage_talent");
+    character.talents.vitality = fv.find("vitality_talent");
 }

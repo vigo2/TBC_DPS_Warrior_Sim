@@ -88,7 +88,6 @@ let not_implemented_talents = [
     "last_stand_talent",
     "improved_shield_block_talent",
     "improved_revenge_talent",
-    "improved_sunder_armor_talent",
     "improved_disarm_talent",
     "improved_taunt_talent",
     "improved_shield_wall_talent",
@@ -96,10 +95,7 @@ let not_implemented_talents = [
     "improved_shield_bash_talent",
     "shield_mastery_talent",
     "improved_defensive_stance_talent",
-    "shield_slam_talent",
-    "focused_rage_talent",
-    "vitality_talent",
-    "devastate_talent"];
+    "shield_slam_talent"];
 
 function load_talent_clear() {
     for (let i = 0; i < talents_vec.length; i++) {
@@ -228,6 +224,14 @@ function showHideTalentDiv() {
         document.getElementById("mortal_strike_talent_div").style.display = "block";
     } else {
         document.getElementById("mortal_strike_talent_div").style.display = "none";
+    }
+
+    let devastate_talent = document.getElementById("devastate_talent");
+    current_val = parseInt(devastate_talent.getAttribute("data-count"));
+    if (current_val === 1) {
+        document.getElementById("devastate_talent_div").style.display = "block";
+    } else {
+        document.getElementById("devastate_talent_div").style.display = "none";
     }
 
     let bt_talent = document.getElementById("bloodthirst_talent");

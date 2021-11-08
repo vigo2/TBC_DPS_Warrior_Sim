@@ -3,7 +3,7 @@
 std::ostream& operator<<(std::ostream& os, Damage_source damage_source)
 {
     static std::string m[] = {"white_mh", "white_oh", "bloodthirst", "execute", "heroic_strike", "cleave",
-                              "whirlwind", "hamstring", "deep_wound", "item_hit_effects", "overpower", "slam", "mortal_strike", "sweeping_strikes"};
+                              "whirlwind", "hamstring", "deep_wound", "item_hit_effects", "overpower", "slam", "mortal_strike", "sweeping_strikes", "devastate"};
     return os << m[static_cast<size_t>(damage_source)];
 }
 
@@ -23,6 +23,7 @@ Damage_sources& Damage_sources::operator+(const Damage_sources& rhs)
     hamstring_damage = hamstring_damage + rhs.hamstring_damage;
     deep_wounds_damage = deep_wounds_damage + rhs.deep_wounds_damage;
     item_hit_effects_damage = item_hit_effects_damage + rhs.item_hit_effects_damage;
+    devastate_damage = devastate_damage + rhs.devastate_damage;
 
     whirlwind_count = whirlwind_count + rhs.whirlwind_count;
     overpower_count = overpower_count + rhs.overpower_count;
@@ -38,6 +39,7 @@ Damage_sources& Damage_sources::operator+(const Damage_sources& rhs)
     hamstring_count = hamstring_count + rhs.hamstring_count;
     deep_wounds_count = deep_wounds_count + rhs.deep_wounds_count;
     item_hit_effects_count = item_hit_effects_count + rhs.item_hit_effects_count;
+    devastate_count = devastate_count + rhs.devastate_count;
     return *(this);
 }
 
@@ -100,6 +102,10 @@ void Damage_sources::add_damage(Damage_source source, double damage)
     case Damage_source::item_hit_effects:
         item_hit_effects_damage += damage;
         item_hit_effects_count++;
+        break;
+    case Damage_source::devastate:
+        devastate_damage += damage;
+        devastate_count++;
         break;
     default:
         assert(false);
