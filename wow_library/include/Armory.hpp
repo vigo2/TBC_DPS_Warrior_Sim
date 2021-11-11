@@ -599,7 +599,7 @@ struct Armory
                 // Phase 2  
                 {"serpent_spine_longbow", Attributes{0.0, 0.0}, Special_stats{0.7246376811594204, 0.0, 38.0, 0, 0.0}, Socket::ranged}, 
                 {"merciless_gladiators_war_edge", Attributes{0.0, 0.0}, Special_stats{0.7246376811594204, 0.0, 28.0, 0, 0.0}, Socket::ranged}, 
-                {"sepentshrine_shuriken", Attributes{0.0, 0.0}, Special_stats{0.9057971014492754, 0.7609384908053266, 0.0, 0, 0.0}, Socket::ranged}, 
+                {"serpentshrine_shuriken", Attributes{0.0, 0.0}, Special_stats{0.9057971014492754, 0.7609384908053266, 0.0, 0, 0.0}, Socket::ranged}, 
                 {"arcanite_steam_pistol", Attributes{0.0, 20.0}, Special_stats{0.0, 1.2048192771084338, 0.0, 0, 0.0}, Socket::ranged}, 
                 {"crystalline_crossbow", Attributes{0.0, 12.0}, Special_stats{0.0, 0.6975269499, 0.0, 0, 0.0}, Socket::ranged}, 
 

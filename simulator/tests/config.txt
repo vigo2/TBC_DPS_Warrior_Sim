@@ -368,7 +368,7 @@ mamas_insurance false
 marksmans_bow false
 merciless_gladiators_war_edge false
 nerubian_slavemaker false
-sepentshrine_shuriken false
+serpentshrine_shuriken false
 serpent_spine_longbow false
 steelhawk_crossbow false
 sunfury_bow_of_the_phoenix false
