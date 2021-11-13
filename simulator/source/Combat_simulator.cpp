@@ -475,7 +475,7 @@ void Combat_simulator::devastate(Sim_state& state)
         spend_rage(devastate_rage_cost_);
         maybe_gain_flurry(hit_outcome.hit_result, state.flurry_charges, state.special_stats);
         hit_effects(state, hit_outcome.hit_result, state.main_hand_weapon);
-        if(!apply_delayed_armor_reduction)//  double proc chance on devastate when IEA not applied}
+        if (!apply_delayed_armor_reduction)  //  double proc chance on devastate when IEA not applied
         {
             hit_effects(state, hit_outcome.hit_result, state.main_hand_weapon);  
         }
@@ -682,7 +682,8 @@ void Combat_simulator::sunder_armor(Sim_state& state)
     {
         spend_rage(sunder_armor_rage_cost_);
         hit_effects(state, hit_outcome.hit_result, state.main_hand_weapon);
-        if(sunder_armor_stacks_ < 5)
+        assert(sunder_armor_stacks_ >= 0 && sunder_armor_stacks_ <= 5);
+        if (sunder_armor_stacks_ < 5)
         {
             sunder_armor_stacks_++;
         }
@@ -1445,6 +1446,20 @@ void Combat_simulator::execute_phase(Sim_state& state, bool mh_swing)
         }
     }
 
+    if (use_devastate_ && config.combat.use_devastate_in_exec_phase)
+    {
+        bool dt_ww = true;
+        if (config.combat.use_whirlwind)
+        {
+            dt_ww = std::max(time_keeper_.whirlwind_cd(), 100) > config.combat.devastate_whirlwind_cooldown_thresh;
+        }
+        if (rage >= (execute_rage_cost_ + devastate_rage_cost_) && dt_ww)
+        {
+            devastate(state);
+            return;
+        }
+    }
+
     if (config.combat.use_whirlwind && config.combat.use_ww_in_exec_phase)
     {
         bool use_ww = true;
@@ -1459,20 +1474,6 @@ void Combat_simulator::execute_phase(Sim_state& state, bool mh_swing)
         if (time_keeper_.whirlwind_ready() && rage > config.combat.whirlwind_rage_thresh && rage >= whirlwind_rage_cost_ && use_ww)
         {
             whirlwind(state);
-            return;
-        }
-    }
-
-    if (use_devastate_ && config.combat.use_devastate_in_exec_phase)
-    {
-        bool dt_ww = true;
-        if (config.combat.use_whirlwind)
-        {
-            dt_ww = std::max(time_keeper_.whirlwind_cd(), 100) > config.combat.devastate_whirlwind_cooldown_thresh;
-        }
-        if (rage >= (execute_rage_cost_ + devastate_rage_cost_) && dt_ww)
-        {
-            devastate(state);
             return;
         }
     }
@@ -1539,7 +1540,14 @@ void Combat_simulator::normal_phase(Sim_state& state, bool mh_swing)
         }
         if (rage > config.combat.sunder_armor_rage_thresh && rage >= sunder_armor_rage_cost_ && use_sa)
         {
-            sunder_armor(state);
+            if (use_devastate_)
+            {
+                devastate(state);
+            }
+            else
+            {
+                sunder_armor(state);
+            }
             return;
         }
     }

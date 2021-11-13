@@ -127,7 +127,6 @@ struct Special_stats
     double haste{};
     double damage_mod_physical{};
     double stat_multiplier{};
-    double str_multiplier{};
     double bonus_damage{};
     double crit_multiplier{};
     double spell_crit{};
@@ -137,9 +136,9 @@ struct Special_stats
     double mace_expertise{};
     double axe_expertise{};
     int gear_armor_pen{};
-
     double ap_multiplier{};
     double attack_speed{};
+    double str_multiplier{};
 };
 
 class Attributes
