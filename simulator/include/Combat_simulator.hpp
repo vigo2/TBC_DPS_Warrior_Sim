@@ -11,6 +11,7 @@
 #include "sim_state.hpp"
 #include "time_keeper.hpp"
 #include "weapon_sim.hpp"
+#include "hit_outcome.hpp"
 #include "hit_result.hpp"
 
 #include <array>
@@ -95,17 +96,6 @@ public:
         int slam_cast_time_;
         bool is_casting_{false};
         int next_finish_{std::numeric_limits<int>::max()};
-    };
-
-    struct Hit_outcome
-    {
-        Hit_outcome() : damage(0), hit_result(Hit_result::TBD), rage_damage(0) {}
-        Hit_outcome(double damage, Hit_result hit_result) : damage(damage), hit_result(hit_result), rage_damage(damage) {}
-        Hit_outcome(double damage, Hit_result hit_result, double rage_damage) : damage(damage), hit_result(hit_result), rage_damage(rage_damage) {}
-
-        double damage;
-        Hit_result hit_result;
-        double rage_damage;
     };
 
     class Damage_multipliers
@@ -339,6 +329,16 @@ public:
     const Over_time_effect anger_management = {"anger_management", {}, 1, 0, 3, 600};
 
 private:
+    Ability ability_bloodthirst{"Bloodthirst", Damage_source::bloodthirst, 1500, 6000, 30, 24};
+    Ability ability_heroic_strike{"Heroic Strike", Damage_source::heroic_strike, 0, 0, 15, 12};
+    Ability ability_execute{"Execute", Damage_source::execute, 1500, 0, 15, 0};
+    Ability ability_whirlwind{"Whirlwind", Damage_source::whirlwind, 1500, 10000, 25, 0};
+    Ability ability_whirlwind_oh{"Whirlwind (OH)", Damage_source::whirlwind_oh, 0, 0, 0, 0};
+
+    Hit_outcome generate_hit(Sim_state& state, Ability& ability, const Weapon_sim& weapon, const Hit_table& hit_table, double damage,
+                                  bool boss_target = true, bool can_sweep = true);
+
+
     [[nodiscard]] static int to_millis(double seconds) { return Time_keeper::to_millis(seconds); }
     [[nodiscard]] int from_offset(double offset) const { return time_keeper_.from_offset(offset); }
 

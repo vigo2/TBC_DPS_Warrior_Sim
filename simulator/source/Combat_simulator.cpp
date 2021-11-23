@@ -156,7 +156,7 @@ void Combat_simulator::compute_hit_tables(const Character& character, const Spec
     }
 }
 
-void Combat_simulator::cout_damage_parse(const Weapon_sim& weapon, const Hit_table& hit_table, const Combat_simulator::Hit_outcome& hit_outcome)
+void Combat_simulator::cout_damage_parse(const Weapon_sim& weapon, const Hit_table& hit_table, const Hit_outcome& hit_outcome)
 {
     if (!logger_.is_enabled()) return;
 
@@ -265,7 +265,41 @@ void Combat_simulator::cout_damage_parse(const Weapon_sim& weapon, const Hit_tab
     }
 }
 
-Combat_simulator::Hit_outcome Combat_simulator::generate_hit(Sim_state& state, const Weapon_sim& weapon, const Hit_table& hit_table,
+Hit_outcome Combat_simulator::generate_hit(Sim_state& state, Ability& ability, const Weapon_sim& weapon, const Hit_table& hit_table,
+                                                             double damage, bool boss_target, bool can_sweep)
+{
+    logger_.print(ability.name);
+
+    // ~some abilities have "special outcomes"
+    //  - sunder_armor -> sunder_armor_stacks_++
+    //  - cleave & whirlwind won't have cumulated damage anymore, which is fine
+    //  - mh/oh swings have "remove_charge", and gain_rage() as special effects
+
+    //if (ability.cooldown > 0) ability.next_cooldown = time_keeper_.time + ability.cooldown;
+    //if (ability.gcd > 0) time_keeper_.global_cast(ability.gcd);
+    ability.cast();
+
+    const auto& hit_outcome = generate_hit(state, weapon, hit_table, damage, boss_target, can_sweep);
+
+    const bool dodgeOrMiss = hit_outcome.isDodgeOrMiss();
+
+    spend_rage(ability.cost);
+    if (ability.refund > 0 && dodgeOrMiss) gain_rage(ability.refund);
+
+    if (ability.after_cast) ability.after_cast(state, hit_outcome);
+
+    // warbringer_4 rage_boost on dodge, maybe special case WW offhand w/ Hit_type
+    maybe_gain_flurry(hit_outcome.hit_result, state.flurry_charges, state.special_stats);
+    // unbridled_wrath ~ Hit_type needed for hit_effects
+    if (!dodgeOrMiss) hit_effects(state, hit_outcome.hit_result, state.main_hand_weapon);
+    state.add_damage(ability.damage_source, hit_outcome.damage, time_keeper_.time);
+    logger_.print("Current rage: ", int(rage));
+
+    return hit_outcome;
+}
+
+
+Hit_outcome Combat_simulator::generate_hit(Sim_state& state, const Weapon_sim& weapon, const Hit_table& hit_table,
                                            double damage, bool boss_target, bool can_sweep)
 {
     logger_.print("Drawing outcome from ", hit_table.name());
@@ -457,14 +491,15 @@ void Combat_simulator::bloodthirst(Sim_state& state)
     if (config.dpr_settings.compute_dpr_bt_)
     {
         spend_rage(hit_table_yellow_mh_.isMissOrDodge() ? 0.2 * bloodthirst_rage_cost_ : bloodthirst_rage_cost_);
-        time_keeper_.blood_thirst_cast(6000);
+        time_keeper_.bloodthirst_cast(6000);
         time_keeper_.global_cast(1500);
         return;
     }
+
     logger_.print("Bloodthirst!");
-    // logger_.print("(DEBUG) AP: ", special_stats.attack_power);
     double damage = state.special_stats.attack_power * 0.45 + state.special_stats.bonus_damage;
-    const auto& hit_outcome = generate_hit(state, state.main_hand_weapon, hit_table_yellow_mh_, damage);
+    generate_hit(state, ability_bloodthirst, state.main_hand_weapon, hit_table_yellow_mh_, damage);
+    /*
     if (hit_outcome.hit_result == Hit_result::miss || hit_outcome.hit_result == Hit_result::dodge)
     {
         spend_rage(0.2 * bloodthirst_rage_cost_);
@@ -483,6 +518,7 @@ void Combat_simulator::bloodthirst(Sim_state& state)
     time_keeper_.global_cast(1500);
     state.add_damage(Damage_source::bloodthirst, hit_outcome.damage, time_keeper_.time);
     logger_.print("Current rage: ", int(rage));
+    */
 }
 
 void Combat_simulator::overpower(Sim_state& state)
@@ -577,6 +613,17 @@ void Combat_simulator::execute(Sim_state& state)
     }
     logger_.print("Execute!");
     double damage = 925 + (rage - execute_rage_cost_) * 21 + state.special_stats.bonus_damage;
+
+    ability_execute.cost = execute_rage_cost_;
+    ability_execute.refund = 0;
+
+    ability_execute.after_cast = [this](Sim_state&, const Hit_outcome& hit_outcome) {
+        if (!hit_outcome.isDodgeOrMiss()) spend_all_rage();
+    };
+
+    generate_hit(state, ability_execute, state.main_hand_weapon, hit_table_yellow_mh_, damage);
+
+    /*
     const auto& hit_outcome = generate_hit(state, state.main_hand_weapon, hit_table_yellow_mh_, damage);
     spend_rage(execute_rage_cost_);
     time_keeper_.global_cast(1500);
@@ -594,6 +641,7 @@ void Combat_simulator::execute(Sim_state& state)
     hit_effects(state, hit_outcome.hit_result, state.main_hand_weapon);
     state.add_damage(Damage_source::execute, hit_outcome.damage, time_keeper_.time);
     logger_.print("Current rage: ", int(rage));
+     */
 }
 
 void Combat_simulator::hamstring(Sim_state& state)
@@ -663,7 +711,7 @@ void Combat_simulator::hit_effects(Sim_state& state, Hit_result hit_result, Weap
     auto extra_attack_procced = false; // melee/next_melee attacks only allow one extra attack per swing (but any number in a chain)
 
     for (auto& hit_effect : weapon.hit_effects)
-    {
+        {
         if (hit_effect.time_counter > time_keeper_.time) continue; // on cooldown
 
         if (!hit_effect.is_procced_by(hit_result)) continue; // wrong trigger
@@ -1003,6 +1051,10 @@ void Combat_simulator::simulate(const Character& character, const std::function<
         mortal_strike_rage_cost_ = 25;
         bloodthirst_rage_cost_ = 25;
     }
+
+    ability_bloodthirst.cast = [this]() { time_keeper_.global_cast(1500); time_keeper_.bloodthirst_cast(6000); };
+    ability_whirlwind.cast = [this, character]() { time_keeper_.global_cast(1500); time_keeper_.whirlwind_cast(10000 - character.talents.improved_whirlwind * 1000); };
+    ability_execute.cast = [this]() { time_keeper_.global_cast(1500); };
 
     const bool is_dual_wield = character.is_dual_wield();
 
@@ -1383,7 +1435,7 @@ void Combat_simulator::execute_phase(Sim_state& state, bool mh_swing)
         {
             bt_ww = std::max(time_keeper_.whirlwind_cd(), 100) > config.combat.bt_whirlwind_cooldown_thresh;
         }
-        if (time_keeper_.blood_thirst_ready() && rage >= 30 && bt_ww)
+        if (time_keeper_.bloodthirst_ready() && rage >= 30 && bt_ww)
                     {
             bloodthirst(state);
             return;
@@ -1395,7 +1447,7 @@ void Combat_simulator::execute_phase(Sim_state& state, bool mh_swing)
         bool use_ww = true;
         if (use_bloodthirst_)
         {
-            use_ww = std::max(time_keeper_.blood_thirst_cd(), 100) > config.combat.whirlwind_bt_cooldown_thresh;
+            use_ww = std::max(time_keeper_.bloodthirst_cd(), 100) > config.combat.whirlwind_bt_cooldown_thresh;
         }
         if (use_mortal_strike_)
         {
@@ -1458,7 +1510,7 @@ void Combat_simulator::normal_phase(Sim_state& state, bool mh_swing)
         }
         if (use_bloodthirst_)
         {
-            use_sa &= time_keeper_.blood_thirst_cd() > config.combat.sunder_armor_cd_thresh;
+            use_sa &= time_keeper_.bloodthirst_cd() > config.combat.sunder_armor_cd_thresh;
         }
         if (use_mortal_strike_)
         {
@@ -1482,7 +1534,7 @@ void Combat_simulator::normal_phase(Sim_state& state, bool mh_swing)
         {
             bt_ww = std::max(time_keeper_.whirlwind_cd(), 100) > config.combat.bt_whirlwind_cooldown_thresh;
         }
-        if (time_keeper_.blood_thirst_ready() && rage >= 30 && bt_ww)
+        if (time_keeper_.bloodthirst_ready() && rage >= 30 && bt_ww)
         {
             bloodthirst(state);
             return;
@@ -1508,7 +1560,7 @@ void Combat_simulator::normal_phase(Sim_state& state, bool mh_swing)
         bool use_ww = true;
         if (use_bloodthirst_)
         {
-            use_ww = std::max(time_keeper_.blood_thirst_cd(), 100) > config.combat.whirlwind_bt_cooldown_thresh;
+            use_ww = std::max(time_keeper_.bloodthirst_cd(), 100) > config.combat.whirlwind_bt_cooldown_thresh;
         }
         if (use_mortal_strike_)
         {
@@ -1526,7 +1578,7 @@ void Combat_simulator::normal_phase(Sim_state& state, bool mh_swing)
         bool use_op = true;
         if (use_bloodthirst_)
         {
-            use_op &= time_keeper_.blood_thirst_cd() > config.combat.overpower_bt_cooldown_thresh;
+            use_op &= time_keeper_.bloodthirst_cd() > config.combat.overpower_bt_cooldown_thresh;
         }
         if (use_mortal_strike_)
         {
@@ -1552,7 +1604,7 @@ void Combat_simulator::normal_phase(Sim_state& state, bool mh_swing)
         }
         if (use_bloodthirst_)
         {
-            use_ham &= time_keeper_.blood_thirst_cd() > config.combat.hamstring_cd_thresh;
+            use_ham &= time_keeper_.bloodthirst_cd() > config.combat.hamstring_cd_thresh;
         }
         if (use_mortal_strike_)
         {

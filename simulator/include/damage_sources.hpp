@@ -21,6 +21,7 @@ enum class Damage_source
     slam,
     mortal_strike,
     sweeping_strikes,
+    whirlwind_oh,
     size, // convenience ;)
 };
 

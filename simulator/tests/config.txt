@@ -10,10 +10,10 @@ legs_dd skulkers_greaves
 boots_dd ironstriders_of_urgency
 ring1_dd ring_of_a_thousand_marks
 ring2_dd shapeshifters_signet
-trinket1_dd badge_of_the_swarmguard
+trinket1_dd bloodlust_brooch
 trinket2_dd dragonspine_trophy
 ranged_dd mamas_insurance
-main_hand_dd dragonmaw
+main_hand_dd the_night_blade
 off_hand_dd the_night_blade
 two_hand_dd none
 beast_lord_helm false
@@ -368,7 +368,7 @@ mamas_insurance false
 marksmans_bow false
 merciless_gladiators_war_edge false
 nerubian_slavemaker false
-serpentshrine_shuriken false
+sepentshrine_shuriken false
 serpent_spine_longbow false
 steelhawk_crossbow false
 sunfury_bow_of_the_phoenix false

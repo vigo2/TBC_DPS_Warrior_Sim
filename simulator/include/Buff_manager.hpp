@@ -51,7 +51,11 @@ struct Combat_buff
         stacks(1),
         next_fade(current_time + hit_effect.duration),
         charges(hit_effect.max_charges),
+        uptime(0),
+        last_gain(current_time),
         max_stacks(hit_effect.max_stacks),
+        //max_stacks_uptime(0),
+        //max_stacks_last_gain(hit_effect.max_stacks == 1 ? current_time : -1),
         per_stack_uptime(hit_effect.max_stacks, 0),
         per_stack_last_gain(hit_effect.max_stacks, current_time) {}
 
@@ -62,9 +66,13 @@ struct Combat_buff
     int next_fade;
     int charges; // alternative way of removing buffs
 
-    const int max_stacks;
-
     // statistics
+    int64_t uptime;
+    int last_gain;
+
+    const int max_stacks;
+    //int64_t max_stacks_uptime; // for hit_effects w/ max_stacks > 1 only
+    //int max_stacks_last_gain;
     std::vector<int64_t> per_stack_uptime;
     std::vector<int> per_stack_last_gain;
 };

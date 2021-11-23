@@ -1,7 +1,7 @@
 #ifndef WOW_SIMULATOR_HIT_RESULT_HPP
 #define WOW_SIMULATOR_HIT_RESULT_HPP
 
-enum class Hit_result:uint8_t
+enum Hit_result:uint8_t
 {
     miss = 0x1,
     dodge = 0x2,

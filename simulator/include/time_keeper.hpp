@@ -4,6 +4,8 @@
 #include <limits>
 #include <cmath>
 
+#include "ability.hpp"
+
 class Time_keeper
 {
 public:
@@ -19,7 +21,7 @@ public:
     {
         mortal_strike_cd_ = -1;
         sweeping_strikes_cd_ = -1;
-        blood_thirst_cd_ = -1;
+        bloodthirst_cd_ = -1;
         rampage_cd_ = -1;
         overpower_cd_ = -1;
         whirlwind_cd_ = -1;
@@ -44,7 +46,7 @@ public:
         if (overpower_cd_ > time && overpower_cd_ < next_event) next_event = overpower_cd_;
         if (sweeping_strikes_cd_ > time && sweeping_strikes_cd_ < next_event) next_event = sweeping_strikes_cd_;
         if (mortal_strike_cd_ > time && mortal_strike_cd_ < next_event) next_event = mortal_strike_cd_;
-        if (blood_thirst_cd_ > time && blood_thirst_cd_ < next_event) next_event = blood_thirst_cd_;
+        if (bloodthirst_cd_ > time && bloodthirst_cd_ < next_event) next_event = bloodthirst_cd_;
         if (rampage_cd_ > time && rampage_cd_ < next_event) next_event = rampage_cd_;
         if (whirlwind_cd_ > time && whirlwind_cd_ < next_event) next_event = whirlwind_cd_;
         if (global_cd_ > time && global_cd_ < next_event) next_event = global_cd_;
@@ -68,9 +70,9 @@ public:
     [[nodiscard]] bool sweeping_strikes_ready() const { return sweeping_strikes_cd_ <= time; }
     [[nodiscard]] int sweeping_strikes_cd() const { return sweeping_strikes_cd_ - time; }
 
-    void blood_thirst_cast(int cd) { blood_thirst_cd_ = time + cd; }
-    [[nodiscard]] bool blood_thirst_ready() const { return blood_thirst_cd_ <= time; }
-    [[nodiscard]] int blood_thirst_cd() const { return blood_thirst_cd_ - time; }
+    void bloodthirst_cast(int cd) { bloodthirst_cd_ = time + cd; }
+    [[nodiscard]] bool bloodthirst_ready() const { return bloodthirst_cd_ <= time; }
+    [[nodiscard]] int bloodthirst_cd() const { return bloodthirst_cd_ - time; }
 
     void mortal_strike_cast(int cd) { mortal_strike_cd_ = time + cd; }
     [[nodiscard]] bool mortal_strike_ready() const { return mortal_strike_cd_ <= time; }
@@ -96,7 +98,7 @@ private:
     int overpower_cd_;
     int rampage_cd_;
     int sweeping_strikes_cd_;
-    int blood_thirst_cd_;
+    int bloodthirst_cd_;
     int mortal_strike_cd_;
     int whirlwind_cd_;
     int global_cd_;

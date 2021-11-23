@@ -42,15 +42,6 @@ void Buff_manager::reset(Sim_state& state)
 
     for (auto& hit_aura : hit_auras)
     {
-        // update hit effect pointers, since hit_effects are permutated now
-        auto mh = std::find_if(hit_effects_mh->begin(), hit_effects_mh->end(), [&hit_aura](auto& he) { return he.name == hit_aura.name; });
-        assert(mh != hit_effects_mh->end());
-        hit_aura.hit_effect_mh = &(*mh);
-
-        auto oh = std::find_if(hit_effects_oh->begin(), hit_effects_oh->end(), [&hit_aura](auto& he) { return he.name == hit_aura.name; });
-        assert(oh != hit_effects_oh->end());
-        hit_aura.hit_effect_oh = &(*oh);
-
         hit_aura.next_fade = Hit_aura::inactive;
         hit_aura.hit_effect_mh->time_counter = std::numeric_limits<int>::max();
         hit_aura.hit_effect_oh->time_counter = std::numeric_limits<int>::max();
@@ -67,8 +58,9 @@ void Buff_manager::reset(Sim_state& state)
 void Buff_manager::update_aura_uptimes(int current_time) {
     for (auto& buff : combat_buffs)
     {
+        if (buff.stacks > 0) buff.uptime += current_time - (buff.last_gain > 0 ? buff.last_gain : 0);
         for (int i = 0; i < buff.stacks; ++i) {
-            buff.per_stack_uptime[i] += current_time - (buff.per_stack_last_gain[i] > 0 ? buff.per_stack_last_gain[i] : 0);
+            buff.per_stack_uptime.at(i) += current_time - (buff.per_stack_last_gain.at(i) > 0 ? buff.per_stack_last_gain.at(i) : 0);
         }
     }
     for (auto& buff : over_time_buffs)
@@ -82,8 +74,9 @@ void Buff_manager::update_aura_uptimes(int current_time) {
     auto m = std::unordered_map<std::string, double>();
     for (const auto& buff : combat_buffs)
     {
-        m[buff.name] = static_cast<double>(buff.per_stack_uptime[0]) * 0.001;
-        for (int i = 1; i < buff.max_stacks; ++i) {
+        if (buff.max_stacks == 1) continue;
+        m[buff.name] = static_cast<double>(buff.uptime) * 0.001;
+        for (int i = 0; i < buff.max_stacks; ++i) {
             m[buff.name + " (" + std::to_string(i + 1) + ")"] = static_cast<double>(buff.per_stack_uptime[i]) * 0.001;
         }
     }
@@ -398,8 +391,9 @@ void Buff_manager::do_fade_buff(Combat_buff& buff, Logger& logger)
         sim_state->special_stats -= ssb;
     }
 
+    buff.uptime += buff.next_fade - (buff.last_gain > 0 ? buff.last_gain : 0);
     for (auto i = 0; i < buff.stacks; ++i) {
-        buff.per_stack_uptime[i] += buff.next_fade - (buff.per_stack_last_gain[i] > 0 ? buff.per_stack_last_gain[i] : 0);
+        buff.per_stack_uptime.at(i) += buff.next_fade - (buff.per_stack_last_gain.at(i) > 0 ? buff.per_stack_last_gain.at(i) : 0);
     }
 
     buff.stacks = 0;
@@ -431,8 +425,9 @@ void Buff_manager::do_add_combat_buff(Hit_effect& hit_effect, int current_time)
     {
         if (buff.next_fade < current_time) assert(buff.stacks == 0 && buff.charges == 0);
         gain_stats(buff.special_stats_boost);
-        buff.per_stack_last_gain[buff.stacks] = current_time;
         buff.stacks += 1;
+        if (buff.stacks == 1) buff.last_gain = current_time;
+        buff.per_stack_last_gain.at(buff.stacks - 1) = current_time;
     }
     buff.next_fade = current_time + hit_effect.duration; // or keep unchanged for "temporary hit effects"
     buff.charges = hit_effect.max_charges;
