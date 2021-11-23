@@ -36,7 +36,7 @@ Combat_simulator::Combat_simulator(const Combat_simulator_config& config) : conf
 
 void Combat_simulator::add_talent_effects(const Character& character)
 {
-    execute_rage_cost_ = std::vector<int>{15, 13, 10}[character.talents.improved_execute];
+    execute_rage_cost_ = std::vector<int>{15, 13, 10}[character.talents.improved_execute] - 3 * has_onslaught_2_set_;
     heroic_strike_rage_cost_ = 15 - character.talents.improved_heroic_strike;
     whirlwind_rage_cost_ = 25;
     mortal_strike_rage_cost_ = 30;
@@ -430,7 +430,7 @@ void Combat_simulator::mortal_strike(Sim_state& state)
         return;
     }
     logger_.print("Mortal Strike!");
-    double damage = (state.main_hand_weapon.normalized_swing(state.special_stats) + 210) * (100 + state.talents.improved_mortal_strike) / 100;
+    double damage = (state.main_hand_weapon.normalized_swing(state.special_stats) + 210) * (100 + state.talents.improved_mortal_strike) / 100 * (100 + 5 * has_onslaught_4_set_) / 100;
     const auto& hit_outcome = generate_hit(state, state.main_hand_weapon, hit_table_yellow_mh_, damage);
     if (hit_outcome.hit_result == Hit_result::miss || hit_outcome.hit_result == Hit_result::dodge)
     {
@@ -444,7 +444,7 @@ void Combat_simulator::mortal_strike(Sim_state& state)
     {
         spend_rage(mortal_strike_rage_cost_);
         maybe_gain_flurry(hit_outcome.hit_result, state.flurry_charges, state.special_stats);
-        hit_effects(state, hit_outcome.hit_result, state.main_hand_weapon);
+        hit_effects(state, hit_outcome.hit_result, state.main_hand_weapon, Hit_type::spell, {}, Special_type::ms_bt);
     }
     time_keeper_.mortal_strike_cast(6000 - state.talents.improved_mortal_strike * 200);
     time_keeper_.global_cast(1500);
@@ -463,7 +463,7 @@ void Combat_simulator::bloodthirst(Sim_state& state)
     }
     logger_.print("Bloodthirst!");
     // logger_.print("(DEBUG) AP: ", special_stats.attack_power);
-    double damage = state.special_stats.attack_power * 0.45 + state.special_stats.bonus_damage;
+    double damage = (state.special_stats.attack_power * 0.45 + state.special_stats.bonus_damage) * (100 + 5 * has_onslaught_4_set_) / 100;
     const auto& hit_outcome = generate_hit(state, state.main_hand_weapon, hit_table_yellow_mh_, damage);
     if (hit_outcome.hit_result == Hit_result::miss || hit_outcome.hit_result == Hit_result::dodge)
     {
@@ -477,7 +477,7 @@ void Combat_simulator::bloodthirst(Sim_state& state)
     {
         spend_rage(bloodthirst_rage_cost_);
         maybe_gain_flurry(hit_outcome.hit_result, state.flurry_charges, state.special_stats);
-        hit_effects(state, hit_outcome.hit_result, state.main_hand_weapon);
+        hit_effects(state, hit_outcome.hit_result, state.main_hand_weapon, Hit_type::spell, {}, Special_type::ms_bt);
     }
     time_keeper_.blood_thirst_cast(6000);
     time_keeper_.global_cast(1500);
@@ -650,7 +650,8 @@ void Combat_simulator::sunder_armor(Sim_state& state)
     logger_.print("Current rage: ", int(rage));
 }
 
-void Combat_simulator::hit_effects(Sim_state& state, Hit_result hit_result, Weapon_sim& weapon, Hit_type hit_type, Extra_attack_chain chain)
+void Combat_simulator::hit_effects(Sim_state& state, Hit_result hit_result, Weapon_sim& weapon, Hit_type hit_type, Extra_attack_chain chain,
+                                    Special_type special_type)
 {
     maybe_add_rampage_stack(Hit_result::hit, state.rampage_stacks, state.special_stats);
 
@@ -666,7 +667,15 @@ void Combat_simulator::hit_effects(Sim_state& state, Hit_result hit_result, Weap
     {
         if (hit_effect.time_counter > time_keeper_.time) continue; // on cooldown
 
-        if (!hit_effect.is_procced_by(hit_result)) continue; // wrong trigger
+        if (!hit_effect.is_procced_by(hit_result)) // wrong trigger
+        {
+            // darkmoon_card_wrath charges are removed on any crit hit
+            if (hit_effect.name == "darkmoon_card_wrath")
+            {
+                buff_manager_.remove_charge(hit_effect, time_keeper_.time, logger_);
+            }
+            continue;
+        }
 
         auto probability = hit_effect.ppm > 0 ? hit_effect.ppm * weapon.swing_speed / 60 : hit_effect.probability;
         if (probability < 1 && get_uniform_random(1) >= probability) continue; // no chance ;)
@@ -735,6 +744,12 @@ void Combat_simulator::hit_effects(Sim_state& state, Hit_result hit_result, Weap
             {
                 hit_effects(state, hit_outcome.hit_result, state.main_hand_weapon);
             }
+            break;
+        }
+        case Hit_effect::Type::ashtongue_talisman_of_valor: {
+            if (special_type != Special_type::ms_bt) break;
+            on_proc(hit_effect, "PROC: ", hit_effect.name, " stats increased for ", hit_effect.duration * 0.001, "s");
+            buff_manager_.add_combat_buff(hit_effect, time_keeper_.time);
             break;
         }
         default:
@@ -1003,6 +1018,8 @@ void Combat_simulator::simulate(const Character& character, const std::function<
         mortal_strike_rage_cost_ = 25;
         bloodthirst_rage_cost_ = 25;
     }
+    has_onslaught_2_set_ = character.has_set_bonus(Set::onslaught, 2);
+    has_onslaught_4_set_ = character.has_set_bonus(Set::onslaught, 4);
 
     const bool is_dual_wield = character.is_dual_wield();
 

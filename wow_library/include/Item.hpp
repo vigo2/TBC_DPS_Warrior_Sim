@@ -59,6 +59,10 @@ enum class Set
     doomplate,
     warbringer,
     destroyer,
+    onslaught,
+    the_fists_of_fury,
+    the_twin_blades_of_azzinoth,
+    the_twin_blades_of_azzinoth_non_demon,
 };
 
 /* enum class Gem_bonus
@@ -160,12 +164,14 @@ public:
         damage_magic,
         reduce_armor, // deprecated
         rage_boost,
+        ashtongue_talisman_of_valor,
     };
 
     // TODO(vigo) turn into an enum class; it's uint8_t for now, so there's fewer Armory changes
     struct Proc_type {
         static constexpr uint8_t hits = (uint8_t)Hit_result::glancing | (uint8_t)Hit_result::crit | (uint8_t)Hit_result::hit;
         static constexpr uint8_t crits = (uint8_t)Hit_result::crit;
+        static constexpr uint8_t non_crits = (uint8_t)Hit_result::glancing | (uint8_t)Hit_result::hit;
     };
 
     Hit_effect() = default;
@@ -181,9 +187,9 @@ public:
         duration(to_millis(duration)),
         cooldown(to_millis(cooldown)),
         probability(probability),
-        proc_type(proc_type), // unused
+        proc_type(proc_type),
         max_charges(max_charges),
-        armor_reduction(armor_reduction), // unused
+        armor_reduction(armor_reduction),
         ppm(ppm),
         affects_both_weapons(affects_both_weapons), // unused
         max_stacks(max_stacks) {}

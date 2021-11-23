@@ -38,6 +38,12 @@ public:
         bool sword_spec;
     };
 
+    enum class Special_type
+    {
+        none,
+        ms_bt,
+    };
+
     struct Ability_queue_manager
     {
         [[nodiscard]] bool is_ability_queued() const { return heroic_strike_queued || cleave_queued; }
@@ -227,7 +233,8 @@ public:
         logger_.print(args...);
     }
 
-    void hit_effects(Sim_state& state, Hit_result hit_result, Weapon_sim& weapon, Hit_type hit_type = Hit_type::spell, Extra_attack_chain chain = {});
+    void hit_effects(Sim_state& state, Hit_result hit_result, Weapon_sim& weapon, Hit_type hit_type = Hit_type::spell, Extra_attack_chain chain = {},
+                    Special_type special_type = Special_type::none);
 
     void overpower(Sim_state& state);
 
@@ -392,6 +399,8 @@ private:
 
     bool has_warbringer_4_set_{};
     bool has_destroyer_2_set_{};
+    bool has_onslaught_2_set_{};
+    bool has_onslaught_4_set_{};
 
     Over_time_effect deep_wound_effect_{"deep_wound", {}, 0, 0, 3, 12};
     Hit_effect battle_stance_{"battle_stance", Hit_effect::Type::stat_boost, {}, {-3.0, 0, 0}, 0, 1.5, 0, 0};
