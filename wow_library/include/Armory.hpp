@@ -777,8 +777,8 @@ struct Armory
                 {"merciless_gladiators_greatsword", Attributes{42.0, 0.0}, Special_stats{1.9021739130434785, 1.14140773620799, 0.0, 0, 0.0}, 3.6, 365, 549, Weapon_socket::two_hand, Weapon_type::sword}, 
 
                 // Phase 3
-                {"cataclysms_edge", Attributes{75.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.00, 0, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 335}, 3.5, 386, 580, Weapon_socket::two_hand, Weapon_type::sword},
-                {"vengeful_gladiators_greatsword", Attributes{46.0, 0.0}, Special_stats{2.083333333, 0.9511731135, 0.0, 0.00, 0, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 98}, 3.6, 386, 580, Weapon_socket::one_hand, Weapon_type::sword}, 
+                {"cataclysms_edge", Attributes{75.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.0, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 335}, 3.5, 386, 580, Weapon_socket::two_hand, Weapon_type::sword},
+                {"vengeful_gladiators_greatsword", Attributes{46.0, 0.0}, Special_stats{2.083333333, 0.9511731135, 0.0, 0.00, 0, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 98}, 3.6, 386, 580, Weapon_socket::two_hand, Weapon_type::sword}, 
             };
 
     std::vector<Weapon> two_handed_axes_polearm_t
@@ -814,8 +814,8 @@ struct Armory
 
                 // Phase 3
                 {"halberd_of_desolation", Attributes{0.0, 51.0}, Special_stats{0.0, 1.9023462270133165, 100.0, 0, 0.0}, 3.5, 365, 548, Weapon_socket::two_hand, Weapon_type::axe}, 
-                {"soul_cleaver", Attributes{65.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.00, 0, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 315.0}, 3.7, 386, 579, Weapon_socket::two_hand, Weapon_type::axe},
-                {"vengeful_gladiators_decapitator", Attributes{0.0, 0.0}, Special_stats{2.083333333, 0.9511731135, 92.0, 0.00, 0, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 98}, 3.6, 386, 580, Weapon_socket::one_hand, Weapon_type::axe}, 
+                {"soul_cleaver", Attributes{65.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.00, 0, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 315}, 3.7, 386, 579, Weapon_socket::two_hand, Weapon_type::axe},
+                {"vengeful_gladiators_decapitator", Attributes{0.0, 0.0}, Special_stats{2.083333333, 0.9511731135, 92.0, 0.00, 0, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 98}, 3.6, 386, 580, Weapon_socket::two_hand, Weapon_type::axe}, 
             };
 
     std::vector<Weapon> two_handed_maces_t
@@ -886,7 +886,7 @@ struct Armory
                 {"messenger_of_fate", Attributes{0.0, 22.0}, Special_stats{0.0, 0.0, 44.0, 0, 0.0}, 1.4, 112, 169, Weapon_socket::one_hand, Weapon_type::dagger}, 
                 {"shard_of_azzinoth", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 64.0, 0, 0.0}, 1.9, 161, 242, Weapon_socket::one_hand, Weapon_type::dagger}, 
                 {"trackers_blade", Attributes{0.0, 0.0}, Special_stats{1.0416666666666667, 1.2682308180088777, 44.0, 0, 0.0}, 1.5, 105, 196, Weapon_socket::one_hand, Weapon_type::dagger}, 
-                {"boundless_agony", Attributes{0.0, 0.0}, Special_stats{1.0869565217391306, 0.0, 0.0, 0, 0.00, 0, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 210}, 1.8, 144, 217, Weapon_socket::one_hand, Weapon_type::dagger}, 
+                {"boundless_agony", Attributes{0.0, 0.0}, Special_stats{1.0869565217391306, 0.0, 0.0, 0, 0.00, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 210}, 1.8, 144, 217, Weapon_socket::one_hand, Weapon_type::dagger}, 
             };
 
     std::vector<Weapon> maces_t
