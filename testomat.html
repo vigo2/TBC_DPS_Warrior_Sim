@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>testomat</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+
+<h1>Welcome</h1>
+
+<!--<canvas id="line-chart-hist"></canvas>-->
+
+
+<canvas id="bar-chart-cooldowns"></canvas>
+
+
+<!--
+<script>
+    let hist_x = JSON.parse("[640,660,680,700,720,740,760,780,800,820,840,860,880,900,920,940,960,980,1000,1020,1040,1060,1080,1100,1120,1140,1160,1180,1200,1220,1240,1260,1280,1300,1320,1340,1360,1380,1400,1420,1440,1460,1480,1500,1520,1540,1560,1580,1600,1620,1640,1660]");
+    let hist_y = JSON.parse("[1,1,2,2,2,4,10,13,31,63,81,126,225,311,420,640,831,1041,1311,1701,1950,2281,2656,2867,3080,3241,3267,3164,3114,3077,2668,2384,2039,1799,1465,1197,838,635,472,346,225,146,102,82,40,19,10,5,9,2,2,2]");
+
+    Chart.defaults.global.defaultFontSize = 36;
+    Chart.defaults.global.defaultFontStyle = 'Bold';
+    Chart.defaults.scale.gridLines.color = "black";
+
+    let total = hist_y.reduce((a, v) => a + v);
+    let sum = 0;
+    let limits = [0.025, 0.25, 0.475, 1].map(v => v * total);
+    let colors = ["#9EC9E6", "#77B4DC", "#519FD2", "#3786B8"];
+    let index = 0;
+    let colorMap = new Array(hist_y.length).fill("#3786B8");
+    for (let i = 0; i < hist_y.length; ++i) {
+        sum += hist_y[i];
+        if (sum > 0.5 * total) break;
+        if (sum >= limits[index]) ++index;
+        colorMap[i] = colors[index];
+    }
+    sum = 0;
+    index = 0;
+    for (let i = hist_y.length - 1; i > 0; --i) {
+        sum += hist_y[i];
+        if (sum > 0.5 * total) break;
+        if (sum >= limits[index]) ++index;
+        colorMap[i] = colors[index];
+    }
+
+    let colorFunc = function(ctx) {
+        if (ctx.dataIndex === undefined) return;
+        if (ctx.dataset === undefined) return;
+
+        return colorMap[ctx.dataIndex];
+
+        if (ctx.dataIndex === 0) sum = 0;
+
+        let oldSum = sum;
+        sum += ctx.dataset.data[ctx.dataIndex];
+        if (sum < 0.25 * total || oldSum > 0.75 * total) {
+            return "#9EC9E6";
+        }
+        return "#3786B8";
+    }
+
+    new Chart(document.getElementById("line-chart-hist"), {
+        type: 'bar',
+        data: {
+            labels: hist_x,
+            datasets: [{
+                data: hist_y,
+                label: { text: "Simulator results", fillStyle: "red" },
+                backgroundColor: colorFunc,
+            }]
+        },
+        options: {
+            legend: {
+                labels: {
+                    fontColor: "black",
+                }
+            },
+            title: {
+                fontSize: 60,
+                fontColor: "black",
+                display: true,
+                text: 'Damage histogram'
+            },
+            scales: {
+                yAxes: [{
+                    gridLines: {
+                        color: "rgba(0, 0, 0, 0.5)",
+                    },
+                    ticks: {
+                        fontColor: "black",
+                    },
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Frequency',
+                        fontColor: "black",
+                    }
+                }],
+                xAxes: [{
+                    gridLines: {
+                        color: "rgba(0, 0, 0, 0.5)",
+                    },
+                    ticks: {
+                        fontColor: "black",
+                        maxTicksLimit: 30,
+                        maxRotation: 0
+                    },
+                    scaleLabel: {
+                        fontColor: "black",
+                        display: true,
+                        labelString: 'DPS'
+                    }
+                }]
+            }
+        }
+    });
+
+    let canvas = document.getElementById("line-chart-hist");
+    canvas.maintainAspectRatio = true;
+    canvas.style.height = '450px';
+    canvas.style.width = '675px';
+
+    // next
+</script>
+-->
+
+<script>
+    let raw = [
+        "bloodrage 16.608550",
+        "deep_wound 96.864287",
+        "anger_management 100.000000",
+        "mongoose_oh 24.074170",
+        "badge_of_the_swarmguard (5) 35.607553",
+        "badge_of_the_swarmguard (6) 32.629730",
+        "badge_of_the_swarmguard (1) 47.441649",
+        "badge_of_the_swarmguard (4) 38.639998",
+        "mongoose_mh 36.275261",
+        "badge_of_the_swarmguard (2) 44.671275",
+        "battle_shout 100.000000",
+        "windfury_attack 1.305075",
+        "dragonspine_trophy 26.006166",
+        "badge_of_the_swarmguard (3) 41.694651",
+        "the_night_blade (1) 32.126595",
+        "dragonmaw 27.223547",
+        "the_night_blade (3) 3.070810",
+        "the_night_blade (2) 9.958282",
+        "Flurry 71.527534",
+        "'Heroic_strike_bug' 25.180730",
+        "Rampage 91.248660",
+    ];
+
+    for (let r of raw) {
+        let p = r.split(" ");
+        let [ name, stack, uptime ] = p.length === 3 ? p : [ p[0], "(1)", p[1] ];
+        
+    }
+
+    // parse this shit
+</script>
+
+
+<script>
+    let raw = ["bloodrage 290.000 10.000","bloodlust_brooch 280.000 20.000","bloodrage 230.000 10.000","battle_shout 180.000 120.000","bloodrage 170.000 10.000","bloodlust_brooch 160.000 20.000","bloodrage 110.000 10.000","battle_shout 60.000 120.000","bloodrage 50.000 10.000","bloodlust_brooch 40.000 20.000","battle_shout -60.000 120.000"];
+
+    let byName = new Map();
+    for (let r of raw) {
+        let [ name, start, duration ] = r.split(" ");
+        start = parseFloat(start);
+        duration = parseFloat(duration);
+        if (!byName.has(name)) byName.set(name, []);
+        byName.get(name).push([start,start+duration]);
+    }
+
+    let labels = [];
+    let maxLength = 0;
+    for (let [k, v] of byName.entries()) {
+        labels.push(k);
+        if (v.length > maxLength) maxLength = v.length;
+    }
+
+    let allColors = ["green", "orange", "red", "lime", "brown", "pink"];
+
+    let dataSets = [];
+    let colors = allColors.slice(0, byName.size);
+    for (let i = 0; i < maxLength; ++i) {
+        let dataSet = {
+            data: [],
+            backgroundColor: colors,
+        };
+        for (let v of byName.values()) {
+            dataSet.data.push(i < v.length ? v[i] : []);
+        }
+        dataSets.push(dataSet);
+    }
+
+    console.log(JSON.stringify(dataSets));
+
+    Chart.defaults.global.defaultFontSize = 36;
+    Chart.defaults.global.defaultFontStyle = 'Bold';
+    Chart.defaults.scale.gridLines.color = "black";
+    Chart.defaults.scale.gridLines.display = false;
+
+    new Chart(document.getElementById("bar-chart-cooldowns"), {
+        type: "horizontalBar",
+        data: {
+            labels: labels,
+            datasets: dataSets,
+        },
+        options: {
+            tooltips: {
+                mode: "point",
+                callbacks: {
+                    label: function(tti, data) {
+                        const x = data.datasets[tti.datasetIndex].data[tti.index];
+                        return x[0] + ".." + x[1];
+                    }
+                }
+            },
+            legend: {
+                display: false
+            },
+            title: {
+                text: "Use Effect Schedule"
+            },
+            scales: {
+                yAxes: [{
+                    stacked: true,
+                    scaleLabel: {
+                        labelString: "Use Effect"
+                    },
+                }],
+                xAxes: [{
+                    gridLines: {
+                        display: true,
+                    },
+                    scaleLabel: {
+                        labelString: "Time"
+                    },
+                    ticks: {
+                        min: 0
+                    }
+                }]
+            }
+        }
+    });
+
+    canvas = document.getElementById("bar-chart-cooldowns");
+    canvas.maintainAspectRatio = true;
+    canvas.responsive = false;
+    canvas.style.height = "450px";
+    canvas.style.width = "675px";
+</script>
+
+
+</body>
+</html>
