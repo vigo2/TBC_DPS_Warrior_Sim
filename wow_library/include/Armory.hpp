@@ -339,6 +339,7 @@ struct Armory
                 {"onslaught_breastplate", Attributes{53.0, 34.0}, Special_stats{0.0, 1.0145846544071022, 0.0, 0, 0.00, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 126}, Socket::chest, Set::onslaught}, 
                 {"shadowprowlers_chestguard", Attributes{32.0, 40.0}, Special_stats{0.0, 0.5072923272035511, 0.0, 0, 0.0}, Socket::chest}, 
                 {"vengeful_gladiators_plate_chestpiece", Attributes{39.0, 0.0}, Special_stats{1.7663043478260871, 0.7609384908053266, 0.0, 0, 0.00, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 84}, Socket::chest}, 
+                {"midnight_chestguard", Attributes{0.0, 0.0}, Special_stats{2.083333333, 1.838934686, 106}, Socket::chest},
             };
 
     std::vector<Armor> wrists_t
