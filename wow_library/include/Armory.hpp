@@ -430,7 +430,7 @@ struct Armory
                 {"merciless_gladiators_plate_gauntlets", Attributes{33.0, 0.0}, Special_stats{1.3134057971014494, 0.0, 0.0, 0, 0.0}, Socket::hands}, 
 
                 // Phase 3
-                {"pillager's_gauntlets", Attributes{38.0, 0.0}, Special_stats{0.0, 1.14140773620799, 0.0, 0, 0.024096385542168676}, Socket::hands}, 
+                {"pillagers_gauntlets", Attributes{38.0, 0.0}, Special_stats{0.0, 1.14140773620799, 0.0, 0, 0.024096385542168676}, Socket::hands}, 
                 {"fist_of_mukoa", Attributes{0.0, 25.0}, Special_stats{0.0, 0.0, 76.0, 0, 0.023462270133164237}, Socket::hands}, 
                 {"grips_of_silent_justice", Attributes{40.0, 0.0}, Special_stats{0.0, 0.9511731135066582, 0.0, 0, 0.00, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 175}, Socket::hands}, 
                 {"grips_of_damnation", Attributes{0.0, 27.0}, Special_stats{0.0, 0.0, 76.0, 0, 0.023462270133164237}, Socket::hands}, 
