@@ -4803,8 +4803,10 @@
     <div class="content">
         <b>Cooldowns:</b><br>
         (Cooldowns are queued towards the end of the fight, with a one second margin)<br>
-        <!-- <input type="checkbox" id="death_wish" checked>
-        <label for="death_wish"> Use death wish</label><br> -->
+
+        <input type="checkbox" id="reverse_cooldown">
+        <label for="reverse_cooldown"> Use cooldown at the start of the fight instead (Except Bloodlust)</label><br>
+
         <div class="hide_description" id="death_wish_talent_div">
             <input type="checkbox" id="death_wish" checked>
             <label for="death_wish"> Use death wish</label><br>
@@ -4852,6 +4854,10 @@
 
         <input type="checkbox" id="bloodlust">
         <label for="bloodlust"> Bloodlust</label><br>
+
+        <input type="checkbox" id="enable_extra_bloodlust">
+        <label for="enable_extra_bloodlust"> Extra bloodlust (Casted at the start of the fight) <input type="number" id="extra_bloodlust_dd" name="quantity"
+            min="0" max="4" value="1" step="1"></label><br>
 
         <input type="checkbox" id="recklessness">
         <label for="recklessness"> Use recklessness</label><br><br>
@@ -5299,7 +5305,8 @@
         "periodic_damage_interval_dd", "periodic_damage_amount_dd", "execute_phase_percentage_dd",
         "re_queue_abilities_dd", "sunder_armor_globals_dd",
         "slam_spam_max_time_dd", "slam_latency_dd", "slam_spam_rage_dd", "slam_rage_thresh_dd", "berserking_haste_dd",
-        "full_polarity_dd", "extra_target_percentage_dd", "battle_squawk_dd", "rampage_use_thresh_dd", "ferocious_inspiration_dd", "unleashed_rage_dd", "expose_weakness_dd"];
+        "full_polarity_dd", "extra_target_percentage_dd", "battle_squawk_dd", "rampage_use_thresh_dd", "ferocious_inspiration_dd", "unleashed_rage_dd",
+        "extra_bloodlust_dd", "expose_weakness_dd"];
 
     let sim_options = ["faerie_fire", "exposed_armor", "curse_of_recklessness", "death_wish", "enable_blood_fury", "expose_weakness",
         "enable_berserking", "enable_unleashed_rage", "recklessness", "mighty_rage_potion", "debug_on", "use_bt_in_exec_phase", "use_ww_in_exec_phase", "use_hs_in_exec_phase",
@@ -5308,7 +5315,7 @@
         "multi_target_mode", "essence_of_the_red", "periodic_damage", "can_trigger_enrage",
         "ability_queue", "first_hit_heroic_strike", "use_slam", "use_sl_in_exec_phase", "use_ms_in_exec_phase", "use_mortal_strike",
         "use_sweeping_strikes", "dont_use_hm_when_ss", "fungal_bloom", "full_polarity", "battle_squawk", "ferocious_inspiration",
-        "drums_of_battle", "haste_potion", "bloodlust", "insane_strength_potion", "heroic_potion"];
+        "drums_of_battle", "haste_potion", "bloodlust", "insane_strength_potion", "heroic_potion", "reverse_cooldown"];
 
     let stat_weigths = ["stat_weight_strength", "stat_weight_agility", "stat_weight_ap", "stat_weight_crit",
         "stat_weight_hit", "stat_weight_expertise", "stat_weight_haste", "stat_weight_arpen", "stat_weight_bonus_damage"];
