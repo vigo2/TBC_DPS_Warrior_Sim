@@ -84,8 +84,8 @@ Use_effects::Schedule Use_effects::compute_schedule(std::vector<Use_effect>& use
             {
                 cooldown = 180000;
             }
-            // Match death wish with 2 mins cd on fight time where you can fit them
-            else if (sim_time >= 270000 && use_effect.get().name == "death_wish")
+            // Match death wish / 3 mins cd with 2 mins cd on fight time where you can fit them
+            else if (sim_time >= 270000 && cooldown == 180000 && use_effect.get().name != "battle_shout")
             {
                 cooldown = 240000;
             }
