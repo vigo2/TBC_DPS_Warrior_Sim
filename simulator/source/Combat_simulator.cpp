@@ -1667,6 +1667,20 @@ void Combat_simulator::add_use_effects(const Character& character)
                 Use_effect{"battle_shout", Use_effect::Effect_socket::unique, {}, ss, -10, duration, duration, true});
             continue;
         }
+        if (use_effect.name == "battle_shout_preshout_bonus")
+        {
+            auto duration = 120 * (1 + 0.1 * character.talents.booming_voice);
+            Special_stats ss;
+            ss.attack_power = 0;
+            if (config.solarians_sapphire_preshout && !character.has_item("solarians_sapphire")) ss.attack_power += 70;
+            if (config.t2_set_preshout) ss.attack_power += 30;
+            if (character.talents.commanding_presence > 0) ss.attack_power *= 1 + 0.05 * character.talents.commanding_presence;
+
+            // Cooldown set at 360s to never cast it more than once
+            use_effects_.emplace_back(
+                Use_effect{"battle_shout_preshout_bonus", Use_effect::Effect_socket::unique, {}, ss, 0, duration, 360, false});
+            continue;
+        }
         use_effects_.emplace_back(use_effect);
     }
 

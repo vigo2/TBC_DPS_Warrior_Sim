@@ -1084,6 +1084,10 @@ void Armory::add_buffs_to_character(Character& character, const std::vector<std:
     {
         character.add_buff(buffs.battle_shout);
     }
+    if (String_helpers::find_string(buffs_vec, "battle_shout_preshout_bonus"))
+    {
+        character.add_buff(buffs.battle_shout_preshout_bonus);
+    }
     if (String_helpers::find_string(buffs_vec, "blessing_of_kings"))
     {
         character.add_buff(buffs.blessing_of_kings);

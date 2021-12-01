@@ -19,6 +19,8 @@ struct Buffs
 
     // Player_buffs
     Buff battle_shout{"battle_shout", {}, {}, 0, {}, {{"battle_shout", Use_effect::Effect_socket::unique, {}, {0, 0, 306}, -10, 120, 120, true}}};
+    // battle_shout_preshout_bonus AP is applied in Combat_simulator.cpp. Cooldown is set at 360s to never cast it more than once
+    Buff battle_shout_preshout_bonus{"battle_shout_preshout_bonus", {}, {}, 0, {}, {{"battle_shout_preshout_bonus", Use_effect::Effect_socket::unique, {}, {0, 0, 0}, 0, 120, 360, true}}};
     Buff blessing_of_kings{"blessing_of_kings", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0, 0, 0.1}};
     Buff blessing_of_might{"blessing_of_might", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 264}};
     Buff gift_of_the_wild{"gift_of_the_wild", Attributes{18.9, 18.9}, Special_stats{0.0, 0.0, 0.0}};

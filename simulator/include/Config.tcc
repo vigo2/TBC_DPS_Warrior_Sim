@@ -34,6 +34,9 @@ void Combat_simulator_config::parse_combat_simulator_config(const T& input)
     initial_rage = fv.find("initial_rage_dd");
     sunder_armor_globals_ = fv.find("sunder_armor_globals_dd", 0);
 
+    solarians_sapphire_preshout = String_helpers::find_string(input.options, "solarians_sapphire_preshout");
+    t2_set_preshout = String_helpers::find_string(input.options, "t2_set_preshout");
+
     enable_bloodrage = true;
     enable_recklessness = String_helpers::find_string(input.options, "recklessness");
     enable_blood_fury = String_helpers::find_string(input.options, "enable_blood_fury");

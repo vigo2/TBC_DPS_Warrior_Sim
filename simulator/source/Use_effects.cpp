@@ -117,8 +117,8 @@ Use_effects::Schedule Use_effects::compute_schedule(std::vector<Use_effect>& use
     {
         for (auto& use_effect : schedule)
         {
-            // extra_bloodlust is always reversed
-            if (use_effect.second.get().name == "extra_bloodlust")
+            // extra_bloodlust and battle_shout_preshout_bonus is always reversed
+            if (use_effect.second.get().name == "extra_bloodlust" || use_effect.second.get().name == "battle_shout_preshout_bonus")
             {
                 use_effect.first = 0 + use_effect.first;
             }

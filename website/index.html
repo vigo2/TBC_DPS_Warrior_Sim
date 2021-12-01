@@ -4443,6 +4443,18 @@
             <input type="checkbox" id="battle_squawk">
             <label for="battle_squawk">Battle squawk:</label>
             <input type="number" id="battle_squawk_dd" name="quantity" min="0" max="25" value="5" step="5">% haste.
+
+            <div class="hide_description" id="battle_shout_preshout_bonus_buff_div">
+                <input type="checkbox" id="battle_shout_preshout_bonus"
+                       onclick="show_div('battle_shout_preshout_bonus', 'battle_shout_preshout_bonus_div')">
+                <label for="battle_shout_preshout_bonus"> Apply Battle Shout Preshout Bonus</label><br>
+                <div class="description" id="battle_shout_preshout_bonus_div">
+                    <input type="checkbox" id="solarians_sapphire_preshout">
+                    <label for="solarians_sapphire_preshout"> Solarian's Sapphire (Disabled if item is equipped).</label><br>
+                    <input type="checkbox" id="t2_set_preshout">
+                    <label for="t2_set_preshout"> T2 Set Bonus.</label><br>
+                </div>
+            </div>
         </div>
         <br><br>
         <div class="checkbox_div">
@@ -5259,7 +5271,7 @@
 
     let buffs = ["battle_shout", "blessing_of_kings", "blessing_of_might", "gift_of_the_wild", "leader_of_the_pack", "trueshot_aura", "improved_hunters_mark",
         "windfury_totem", "strength_of_earth_totem", "grace_of_air_totem", "improved_seal_of_the_crusader", "improved_sanctity_aura",
-        "heroic_presence", "blood_frenzy", "braided_eternium_chain", "improved_faerie_fire"];
+        "heroic_presence", "blood_frenzy", "braided_eternium_chain", "improved_faerie_fire", "battle_shout_preshout_bonus"];
     let buffs_input = [];
 
     let consumables = ["elixir_mongoose", "blessed_sunfruit", "roasted_clefthoof", "juju_power",
@@ -5315,7 +5327,8 @@
         "multi_target_mode", "essence_of_the_red", "periodic_damage", "can_trigger_enrage",
         "ability_queue", "first_hit_heroic_strike", "use_slam", "use_sl_in_exec_phase", "use_ms_in_exec_phase", "use_mortal_strike",
         "use_sweeping_strikes", "dont_use_hm_when_ss", "fungal_bloom", "full_polarity", "battle_squawk", "ferocious_inspiration",
-        "drums_of_battle", "haste_potion", "bloodlust", "insane_strength_potion", "heroic_potion", "reverse_cooldown", "enable_extra_bloodlust"];
+        "drums_of_battle", "haste_potion", "bloodlust", "insane_strength_potion", "heroic_potion", "reverse_cooldown", "enable_extra_bloodlust",
+        "solarians_sapphire_preshout", "t2_set_preshout"];
 
     let stat_weigths = ["stat_weight_strength", "stat_weight_agility", "stat_weight_ap", "stat_weight_crit",
         "stat_weight_hit", "stat_weight_expertise", "stat_weight_haste", "stat_weight_arpen", "stat_weight_bonus_damage"];
