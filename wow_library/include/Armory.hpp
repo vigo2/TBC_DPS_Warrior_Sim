@@ -633,7 +633,10 @@ struct Armory
                 {"unstoppable_aggressors_ring", Attributes{36.0, 0.0}, Special_stats{1.358695652173913, 0.0, 0.0, 0, 0.0}, Socket::ring}, 
                 {"stormrage_signet_ring", Attributes{0.0, 0.0}, Special_stats{0.0, 1.9023462270133165, 66.0, 0, 0.00, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 126}, Socket::ring}, 
                 {"vindicators_band_of_triumph", Attributes{0.0, 0.0}, Special_stats{1.177536231884058, 0.0, 44.0, 0, 0.00, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 56}, Socket::ring}, 
-                {"band_of_the_eternal_champion", Attributes{0.0, 29.0}, Special_stats{0.0, 0.0, 60.0, 0, 0.0}, Socket::ring, Set::none, {{"band_of_the_eternal_champion", Hit_effect::Type::stat_boost, {}, {0, 0, 160}, 0, 10, 60, 1}}},  
+                {"band_of_the_eternal_champion", Attributes{0.0, 29.0}, Special_stats{0.0, 0.0, 60.0, 0, 0.0}, Socket::ring, Set::none, {{"band_of_the_eternal_champion", Hit_effect::Type::stat_boost, {}, {0, 0, 160}, 0, 10, 60, 1}}}, 
+
+                // Phase 4
+                {"signet_of_primal_wrath", Attributes{0.0, 28.0}, Special_stats{0.0, 0.0, 58.0, 0, 0.00, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 126}, Socket::ring},  
             };
 
     std::vector<Armor> trinket_t
@@ -672,6 +675,9 @@ struct Armory
                 {"ashtongue_talisman_of_valor", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.0}, Socket::trinket, Set::none, {{"ashtongue_talisman_of_valor", Hit_effect::Type::ashtongue_talisman_of_valor, {55, 0}, {}, 0, 12, 0, .25}}},
                 {"darkmoon_card_crusade", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0}, Socket::trinket, Set::none, {{"darkmoon_card_crusade", Hit_effect::Type::stat_boost, {}, {0, 0, 6}, 0, 10, 0, 1, 0, 1, 0, 20}}},
                 {"darkmoon_card_wrath", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.0}, Socket::trinket, Set::none, {{"darkmoon_card_wrath", Hit_effect::Type::stat_boost, {}, {0.7699275362, 0, 0}, 0, 10, 0, 1, Hit_effect::Proc_type::non_crits, 0, 0, 130}}}, 
+
+                // Phase 4
+                {"berserkers_call", Attributes{0, 0}, Special_stats{0, 0, 90}, Socket::trinket, Set::none, {}, {{"berserkers_call", Use_effect::Effect_socket::shared, {0,  0}, {0, 0, 360}, 0, 20, 120, true}}},
             };
 
     std::vector<Armor> ranged_t
