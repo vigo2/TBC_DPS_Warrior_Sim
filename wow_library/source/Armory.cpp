@@ -215,7 +215,7 @@ Hit_effect Armory::enchant_hit_effect(Weapon& weapon, Enchant::Type type)
     case Enchant::Type::mongoose:
         return {weapon.socket == Socket::off_hand ? "mongoose_oh" : "mongoose_mh", Hit_effect::Type::stat_boost, {0, 120}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.02}, 0, 15, 0, weapon.swing_speed / 60};
     case Enchant::Type::executioner:
-        return {"executioner", Hit_effect::Type::stat_boost, {}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 840}, 0, 15, 0, weapon.swing_speed / 60};
+        return {weapon.socket == Socket::off_hand ? "executioner_oh" : "executioner_mh", Hit_effect::Type::stat_boost, {}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 840}, 0, 15, 0, weapon.swing_speed / 60};
     default:
         return {"none", Hit_effect::Type::none, {}, {}, 0, 0, 0, 0};
     }
@@ -792,6 +792,10 @@ void Armory::add_enchants_to_character(Character& character, const std::vector<s
     {
         character.add_enchant(Socket::main_hand, Enchant::Type::mongoose);
     }
+    else if (String_helpers::find_string(ench_vec, "mexecutioner"))
+    {
+        character.add_enchant(Socket::main_hand, Enchant::Type::executioner);
+    }
     else if (String_helpers::find_string(ench_vec, "m+15 agility"))
     {
         character.add_enchant(Socket::main_hand, Enchant::Type::agility);
@@ -816,6 +820,10 @@ void Armory::add_enchants_to_character(Character& character, const std::vector<s
     else if (String_helpers::find_string(ench_vec, "omongoose"))
     {
         character.add_enchant(Socket::off_hand, Enchant::Type::mongoose);
+    }
+    else if (String_helpers::find_string(ench_vec, "oexecutioner"))
+    {
+        character.add_enchant(Socket::off_hand, Enchant::Type::executioner);
     }
     else if (String_helpers::find_string(ench_vec, "o+15 agility"))
     {

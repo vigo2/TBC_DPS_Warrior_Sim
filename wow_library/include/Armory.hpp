@@ -715,6 +715,11 @@ struct Armory
                 {"black_bow_of_the_betrayer", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 26.0, 0, 0.0}, Socket::ranged}, 
                 {"bristleblitz_striker", Attributes{0.0, 0.0}, Special_stats{1.1322463768115942, 0.0, 0.0, 0, 0.0}, Socket::ranged}, 
                 {"vengeful_gladiators_war_edge", Attributes{0.0, 0.0}, Special_stats{0.7699275362318841, 0.0, 30.0, 0, 0.0}, Socket::ranged}, 
+
+                // Phase 4
+                {"ancient_amani_longbow", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 38.0, 0, 0.00, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 126}, Socket::ranged}, 
+                {"tuskbreaker", Attributes{0.0, 0.0}, Special_stats{0.0, 1.141407736, 38.0}, Socket::ranged}, 
+
             };
 
     std::vector<Armor> none_t {};
