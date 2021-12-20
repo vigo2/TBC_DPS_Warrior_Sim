@@ -215,7 +215,7 @@ Hit_effect Armory::enchant_hit_effect(Weapon& weapon, Enchant::Type type)
     case Enchant::Type::mongoose:
         return {weapon.socket == Socket::off_hand ? "mongoose_oh" : "mongoose_mh", Hit_effect::Type::stat_boost, {0, 120}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.02}, 0, 15, 0, weapon.swing_speed / 60};
     case Enchant::Type::executioner:
-        return {weapon.socket == Socket::off_hand ? "executioner_oh" : "executioner_mh", Hit_effect::Type::stat_boost, {}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 840}, 0, 15, 0, weapon.swing_speed / 60};
+        return {"executioner", Hit_effect::Type::stat_boost, {}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 840}, 0, 15, 0, weapon.swing_speed / 60};
     default:
         return {"none", Hit_effect::Type::none, {}, {}, 0, 0, 0, 0};
     }
