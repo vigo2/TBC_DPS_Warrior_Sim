@@ -289,6 +289,9 @@ struct Armory
                 // Phase 3
                 {"shadowmoon_destroyers_drape", Attributes{0.0, 0.0}, Special_stats{1.0869565217391306, 1.077996195307546, 72.0, 0, 0.0}, Socket::back}, 
                 {"cloak_of_darkness", Attributes{23.0, 0.0}, Special_stats{1.0869565217391306, 0.0, 0.0, 0, 0.0}, Socket::back}, 
+
+                // Phase 4
+                {"dorys_embrace", Attributes{0.0, 0.0}, Special_stats{0.9057971014, 0.0, 46.0, 0, 0.00, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 112}, Socket::back}
             };
 
     std::vector<Armor> chest_t
