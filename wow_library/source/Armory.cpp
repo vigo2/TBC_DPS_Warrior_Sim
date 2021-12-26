@@ -792,6 +792,10 @@ void Armory::add_enchants_to_character(Character& character, const std::vector<s
     {
         character.add_enchant(Socket::main_hand, Enchant::Type::mongoose);
     }
+    else if (String_helpers::find_string(ench_vec, "mexecutioner"))
+    {
+        character.add_enchant(Socket::main_hand, Enchant::Type::executioner);
+    }
     else if (String_helpers::find_string(ench_vec, "m+15 agility"))
     {
         character.add_enchant(Socket::main_hand, Enchant::Type::agility);
@@ -816,6 +820,10 @@ void Armory::add_enchants_to_character(Character& character, const std::vector<s
     else if (String_helpers::find_string(ench_vec, "omongoose"))
     {
         character.add_enchant(Socket::off_hand, Enchant::Type::mongoose);
+    }
+    else if (String_helpers::find_string(ench_vec, "oexecutioner"))
+    {
+        character.add_enchant(Socket::off_hand, Enchant::Type::executioner);
     }
     else if (String_helpers::find_string(ench_vec, "o+15 agility"))
     {
@@ -1083,6 +1091,10 @@ void Armory::add_buffs_to_character(Character& character, const std::vector<std:
     if (String_helpers::find_string(buffs_vec, "battle_shout"))
     {
         character.add_buff(buffs.battle_shout);
+    }
+    if (String_helpers::find_string(buffs_vec, "battle_shout_preshout_bonus"))
+    {
+        character.add_buff(buffs.battle_shout_preshout_bonus);
     }
     if (String_helpers::find_string(buffs_vec, "blessing_of_kings"))
     {

@@ -32,7 +32,7 @@ int Use_effects::get_next_available_time(const Schedule& schedule, int check_tim
 }
 
 Use_effects::Schedule Use_effects::compute_schedule(std::vector<Use_effect>& use_effects, const Special_stats& special_stats,
-                          int sim_time, double total_ap)
+                          int sim_time, double total_ap, bool reverse_cooldown)
 {
     Schedule schedule;
     std::vector<Use_effect_ref> shared_effects{};
@@ -57,13 +57,19 @@ Use_effects::Schedule Use_effects::compute_schedule(std::vector<Use_effect>& use
         int test_time = 0;
         for (int i = 0; i < 10; i++)
         {
-            test_time = get_next_available_time(schedule, test_time, use_effect.get().duration);
+            int cooldown = use_effect.get().cooldown;
+            // Match death wish cooldown (180s) if fight time doesn't allow more usage out of 2 min cd. This is to stack death wish and 2 min cd together
+            if (sim_time >= 210000 && sim_time <= 260000 && cooldown == 120000)
+            {
+                cooldown = 180000;
+            }
+            test_time = get_next_available_time(schedule, test_time, cooldown);
             if (test_time >= sim_time)
             {
                 break;
             }
             schedule.emplace_back(test_time, use_effect);
-            test_time += use_effect.get().cooldown;
+            test_time += cooldown;
         }
     }
 
@@ -72,18 +78,55 @@ Use_effects::Schedule Use_effects::compute_schedule(std::vector<Use_effect>& use
         int test_time = 0;
         for (int i = 0; i < 10; i++)
         {
+            int cooldown = use_effect.get().cooldown;
+            // Except battle shout
+            if (sim_time >= 210000 && sim_time <= 260000 && cooldown == 120000 && use_effect.get().name != "battle_shout")
+            {
+                cooldown = 180000;
+            }
+            // Match death wish / 3 mins cd with 2 mins cd on fight time where you can fit them
+            else if (sim_time >= 270000 && cooldown == 180000 && use_effect.get().name != "battle_shout")
+            {
+                cooldown = 240000;
+            }
             if (test_time >= sim_time)
             {
                 break;
             }
             schedule.emplace_back(test_time, use_effect);
-            test_time += use_effect.get().cooldown;
+            test_time += cooldown;
         }
     }
 
-    for (auto& use_effect : schedule)
+    if (reverse_cooldown)
     {
-        use_effect.first = sim_time - use_effect.first - use_effect.second.get().duration;
+        for (auto& use_effect : schedule)
+        {
+            // unleashed_rage and bloodlust would never be reversed
+            if (use_effect.second.get().name == "unleashed_rage" || use_effect.second.get().name == "bloodlust")
+            {
+                use_effect.first = sim_time - use_effect.first - use_effect.second.get().duration;
+            }
+            else
+            {
+                use_effect.first = 0 + use_effect.first;
+            }
+        }
+    }
+    else
+    {
+        for (auto& use_effect : schedule)
+        {
+            // extra_bloodlust and battle_shout_preshout_bonus is always reversed
+            if (use_effect.second.get().name == "extra_bloodlust" || use_effect.second.get().name == "battle_shout_preshout_bonus")
+            {
+                use_effect.first = 0 + use_effect.first;
+            }
+            else
+            {
+                use_effect.first = sim_time - use_effect.first - use_effect.second.get().duration;
+            }
+        }
     }
 
     std::sort(schedule.begin(), schedule.end(),[](const auto& a, const auto& b) {

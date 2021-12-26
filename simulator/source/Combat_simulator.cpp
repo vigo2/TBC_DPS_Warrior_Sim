@@ -1667,6 +1667,20 @@ void Combat_simulator::add_use_effects(const Character& character)
                 Use_effect{"battle_shout", Use_effect::Effect_socket::unique, {}, ss, -10, duration, duration, true});
             continue;
         }
+        if (use_effect.name == "battle_shout_preshout_bonus")
+        {
+            auto duration = 120 * (1 + 0.1 * character.talents.booming_voice);
+            Special_stats ss;
+            ss.attack_power = 0;
+            if (config.solarians_sapphire_preshout && !character.has_item("solarians_sapphire")) ss.attack_power += 70;
+            if (config.t2_set_preshout) ss.attack_power += 30;
+            if (character.talents.commanding_presence > 0) ss.attack_power *= 1 + 0.05 * character.talents.commanding_presence;
+
+            // Cooldown set at 360s to never cast it more than once
+            use_effects_.emplace_back(
+                Use_effect{"battle_shout_preshout_bonus", Use_effect::Effect_socket::unique, {}, ss, 0, duration, 360, false});
+            continue;
+        }
         use_effects_.emplace_back(use_effect);
     }
 
@@ -1676,6 +1690,19 @@ void Combat_simulator::add_use_effects(const Character& character)
         ss.ap_multiplier = 0.1;
         use_effects_.emplace_back(
             Use_effect{"unleashed_rage",Use_effect::Effect_socket::unique, {}, ss,0, config.sim_time - config.unleashed_rage_start_,config.sim_time + 5,false});
+    }
+
+    if (config.enable_extra_bloodlust > 0)
+    {
+        // Time before the execute phase bloodlust
+        double available_time = config.sim_time - 40;
+        if (available_time > 0)
+        {
+            auto duration = std::min(config.sim_time - 40, 40 * config.extra_bloodlust_count_);
+            use_effects_.emplace_back(
+                Use_effect{"extra_bloodlust", Use_effect::Effect_socket::unique, {}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, .3},
+                          0, duration, 600, false});
+        }
     }
 }
 
@@ -1717,7 +1744,7 @@ Use_effects::Schedule Combat_simulator::compute_use_effects_schedule(const Chara
         ap_equiv = get_character_ap_equivalent(character.total_special_stats, character.weapons[0],
                                                sim_time, {});
     }
-    return Use_effects::compute_schedule(use_effects_, character.total_special_stats, sim_time, ap_equiv);
+    return Use_effects::compute_schedule(use_effects_, character.total_special_stats, sim_time, ap_equiv, config.reverse_cooldown);
 }
 
 void Combat_simulator::init_histogram()

@@ -54,6 +54,9 @@ struct Combat_simulator_config
     double initial_rage{};
     int sunder_armor_globals_{};
 
+    bool solarians_sapphire_preshout{};
+    bool t2_set_preshout{};
+
     bool enable_bloodrage{};
     bool enable_recklessness{};
     bool enable_blood_fury{};
@@ -61,6 +64,9 @@ struct Combat_simulator_config
     double berserking_haste_{};
     bool use_death_wish{};
     bool use_sweeping_strikes{};
+    bool enable_extra_bloodlust{};
+    double extra_bloodlust_count_{};
+    bool reverse_cooldown{};
 
     bool enable_unleashed_rage{};
     double unleashed_rage_start_{};

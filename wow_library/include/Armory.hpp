@@ -19,6 +19,8 @@ struct Buffs
 
     // Player_buffs
     Buff battle_shout{"battle_shout", {}, {}, 0, {}, {{"battle_shout", Use_effect::Effect_socket::unique, {}, {0, 0, 306}, -10, 120, 120, true}}};
+    // battle_shout_preshout_bonus AP is applied in Combat_simulator.cpp. Cooldown is set at 360s to never cast it more than once
+    Buff battle_shout_preshout_bonus{"battle_shout_preshout_bonus", {}, {}, 0, {}, {{"battle_shout_preshout_bonus", Use_effect::Effect_socket::unique, {}, {0, 0, 0}, 0, 120, 360, true}}};
     Buff blessing_of_kings{"blessing_of_kings", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0, 0, 0.1}};
     Buff blessing_of_might{"blessing_of_might", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 264}};
     Buff gift_of_the_wild{"gift_of_the_wild", Attributes{18.9, 18.9}, Special_stats{0.0, 0.0, 0.0}};
@@ -287,6 +289,9 @@ struct Armory
                 // Phase 3
                 {"shadowmoon_destroyers_drape", Attributes{0.0, 0.0}, Special_stats{1.0869565217391306, 1.077996195307546, 72.0, 0, 0.0}, Socket::back}, 
                 {"cloak_of_darkness", Attributes{23.0, 0.0}, Special_stats{1.0869565217391306, 0.0, 0.0, 0, 0.0}, Socket::back}, 
+
+                // Phase 4
+                {"dorys_embrace", Attributes{0.0, 0.0}, Special_stats{0.9057971014, 0.0, 46.0, 0, 0.00, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 112}, Socket::back}
             };
 
     std::vector<Armor> chest_t
@@ -430,7 +435,7 @@ struct Armory
                 {"merciless_gladiators_plate_gauntlets", Attributes{33.0, 0.0}, Special_stats{1.3134057971014494, 0.0, 0.0, 0, 0.0}, Socket::hands}, 
 
                 // Phase 3
-                {"pillager's_gauntlets", Attributes{38.0, 0.0}, Special_stats{0.0, 1.14140773620799, 0.0, 0, 0.024096385542168676}, Socket::hands}, 
+                {"pillagers_gauntlets", Attributes{38.0, 0.0}, Special_stats{0.0, 1.14140773620799, 0.0, 0, 0.024096385542168676}, Socket::hands}, 
                 {"fist_of_mukoa", Attributes{0.0, 25.0}, Special_stats{0.0, 0.0, 76.0, 0, 0.023462270133164237}, Socket::hands}, 
                 {"grips_of_silent_justice", Attributes{40.0, 0.0}, Special_stats{0.0, 0.9511731135066582, 0.0, 0, 0.00, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 175}, Socket::hands}, 
                 {"grips_of_damnation", Attributes{0.0, 27.0}, Special_stats{0.0, 0.0, 76.0, 0, 0.023462270133164237}, Socket::hands}, 
@@ -631,7 +636,10 @@ struct Armory
                 {"unstoppable_aggressors_ring", Attributes{36.0, 0.0}, Special_stats{1.358695652173913, 0.0, 0.0, 0, 0.0}, Socket::ring}, 
                 {"stormrage_signet_ring", Attributes{0.0, 0.0}, Special_stats{0.0, 1.9023462270133165, 66.0, 0, 0.00, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 126}, Socket::ring}, 
                 {"vindicators_band_of_triumph", Attributes{0.0, 0.0}, Special_stats{1.177536231884058, 0.0, 44.0, 0, 0.00, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 56}, Socket::ring}, 
-                {"band_of_the_eternal_champion", Attributes{0.0, 29.0}, Special_stats{0.0, 0.0, 60.0, 0, 0.0}, Socket::ring, Set::none, {{"band_of_the_eternal_champion", Hit_effect::Type::stat_boost, {}, {0, 0, 160}, 0, 10, 60, 1}}},  
+                {"band_of_the_eternal_champion", Attributes{0.0, 29.0}, Special_stats{0.0, 0.0, 60.0, 0, 0.0}, Socket::ring, Set::none, {{"band_of_the_eternal_champion", Hit_effect::Type::stat_boost, {}, {0, 0, 160}, 0, 10, 60, 1}}}, 
+
+                // Phase 4
+                {"signet_of_primal_wrath", Attributes{0.0, 28.0}, Special_stats{0.0, 0.0, 58.0, 0, 0.00, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 126}, Socket::ring},  
             };
 
     std::vector<Armor> trinket_t
@@ -670,6 +678,9 @@ struct Armory
                 {"ashtongue_talisman_of_valor", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.0}, Socket::trinket, Set::none, {{"ashtongue_talisman_of_valor", Hit_effect::Type::ashtongue_talisman_of_valor, {55, 0}, {}, 0, 12, 0, .25}}},
                 {"darkmoon_card_crusade", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0}, Socket::trinket, Set::none, {{"darkmoon_card_crusade", Hit_effect::Type::stat_boost, {}, {0, 0, 6}, 0, 10, 0, 1, 0, 1, 0, 20}}},
                 {"darkmoon_card_wrath", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.0}, Socket::trinket, Set::none, {{"darkmoon_card_wrath", Hit_effect::Type::stat_boost, {}, {0.7699275362, 0, 0}, 0, 10, 0, 1, Hit_effect::Proc_type::non_crits, 0, 0, 130}}}, 
+
+                // Phase 4
+                {"berserkers_call", Attributes{0, 0}, Special_stats{0, 0, 90}, Socket::trinket, Set::none, {}, {{"berserkers_call", Use_effect::Effect_socket::shared, {0,  0}, {0, 0, 360}, 0, 20, 120, true}}},
             };
 
     std::vector<Armor> ranged_t
@@ -707,6 +718,11 @@ struct Armory
                 {"black_bow_of_the_betrayer", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 26.0, 0, 0.0}, Socket::ranged}, 
                 {"bristleblitz_striker", Attributes{0.0, 0.0}, Special_stats{1.1322463768115942, 0.0, 0.0, 0, 0.0}, Socket::ranged}, 
                 {"vengeful_gladiators_war_edge", Attributes{0.0, 0.0}, Special_stats{0.7699275362318841, 0.0, 30.0, 0, 0.0}, Socket::ranged}, 
+
+                // Phase 4
+                {"ancient_amani_longbow", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 38.0, 0, 0.00, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 126}, Socket::ranged}, 
+                {"tuskbreaker", Attributes{0.0, 0.0}, Special_stats{0.0, 1.141407736, 38.0}, Socket::ranged}, 
+
             };
 
     std::vector<Armor> none_t {};
