@@ -243,7 +243,7 @@ double estimate_special_stats_high(const Special_stats& special_stats)
                        special_stats.damage_mod_physical * 3000 * special_stats.critical_strike / 100;
 
     high_estimation +=
-        special_stats.attack_power + special_stats.hit * hit_w + special_stats.critical_strike * crit_w + special_stats.expertise * expertise_w;
+        special_stats.attack_power + special_stats.hit * hit_w + special_stats.critical_strike * crit_w + special_stats.expertise * expertise_w + special_stats.gear_armor_pen * arpen_w;
     return high_estimation;
 }
 
@@ -257,7 +257,7 @@ double estimate_special_stats_low(const Special_stats& special_stats)
                       special_stats.damage_mod_physical * 1500 * special_stats.critical_strike / 100;
 
     low_estimation += special_stats.attack_power + special_stats.hit * hit_w_cap +
-                      special_stats.critical_strike * crit_w_cap + special_stats.expertise + expertise_w;
+                      special_stats.critical_strike * crit_w_cap + special_stats.expertise + expertise_w + special_stats.gear_armor_pen * arpen_w;
     return low_estimation;
 }
 
@@ -272,6 +272,7 @@ bool estimate_special_stats_smart_no_skill(const Special_stats& special_stats1, 
     diff.attack_power > 0 ? res_2.attack_power = diff.attack_power : res_1.attack_power = -diff.attack_power;
     diff.bonus_damage > 0 ? res_2.bonus_damage = diff.bonus_damage : res_1.bonus_damage = -diff.bonus_damage;
     diff.expertise > 0 ? res_2.expertise = diff.expertise : res_1.expertise = -diff.expertise;
+    diff.gear_armor_pen > 0 ? res_2.gear_armor_pen = diff.gear_armor_pen : res_1.gear_armor_pen = -diff.gear_armor_pen;
     double ap_1 = estimate_special_stats_high(res_1);
     double ap_2 = estimate_special_stats_low(res_2);
     return ap_2 > ap_1;
@@ -293,6 +294,7 @@ double estimate_stat_diff(Special_stats special_stats1, Special_stats special_st
     diff.sword_expertise > 0 ? res_2.sword_expertise = diff.sword_expertise : res_1.sword_expertise = -diff.sword_expertise;
     diff.mace_expertise > 0 ? res_2.mace_expertise = diff.mace_expertise : res_1.mace_expertise = -diff.mace_expertise;
     diff.expertise > 0 ? res_2.expertise = diff.expertise : res_1.expertise = -diff.expertise;
+    diff.gear_armor_pen > 0 ? res_2.gear_armor_pen = diff.gear_armor_pen : res_1.gear_armor_pen = -diff.gear_armor_pen;
     double ap_1 = estimate_special_stats_high(res_1);
     double ap_2 = estimate_special_stats_low(res_2);
     return ap_2 - ap_1;

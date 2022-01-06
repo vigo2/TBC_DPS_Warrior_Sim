@@ -281,7 +281,6 @@ struct Armory
                 {"cloak_of_the_fallen_god", Attributes{11.0, 26.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.0}, Socket::back}, 
 
                 // Phase 2
-                {"cloak_of_darkness", Attributes{23.0, 0.0}, Special_stats{1.0869565217391306, 0.0, 0.0, 0, 0.0}, Socket::back}, 
                 {"thalassian_wildercloak", Attributes{0.0, 28.0}, Special_stats{0.0, 0.0, 68.0, 0, 0.0}, Socket::back}, 
                 {"razor_scale_battlecloak", Attributes{33.0, 23.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.0}, Socket::back}, 
                 {"crystalweave_cape", Attributes{0.0, 15.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.01648700063}, Socket::back}, 

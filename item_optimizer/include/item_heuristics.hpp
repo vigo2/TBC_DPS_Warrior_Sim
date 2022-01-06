@@ -13,6 +13,7 @@ constexpr double hit_w = 45;
 constexpr double hit_w_cap = 15;
 constexpr double expertise_w = 10;
 constexpr double ap_per_coh = 50 / 6.2;
+constexpr double arpen_w = 0.3;
 
 double get_character_ap_equivalent(const Special_stats& special_stats, const Weapon& mh_wep, const Weapon& oh_wep,
                                    double sim_time, const std::vector<Use_effect>& use_effects);

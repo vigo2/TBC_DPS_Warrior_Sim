@@ -67,7 +67,7 @@ std::vector<std::string> get_float_options_string()
 
 std::vector<double> get_float_options_val()
 {
-    return {50.0, 50.0, 10.0, 2.0, 50.0, 0.0, 2.0, 25.0, 2.0, 2.0, 60.0, 63.0, 3731, 5, 63, 15, 70, 90};
+    return {50.0, 50.0, 10.0, 0.0, 5.0, 1.0, 0.0, 2.0, 2.0, 5.0, 2.0, 0.0, 60.0, 73.0, 7700, 5, 73, 15, 70, 90};
 }
 
 std::vector<std::string> get_talents_string()

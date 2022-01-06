@@ -186,7 +186,8 @@ bool is_strictly_weaker_wep(const Weapon_struct& wep_struct1, const Weapon_struc
                       (special_stats2.axe_expertise >= special_stats1.axe_expertise) &&
                       (special_stats2.sword_expertise >= special_stats1.sword_expertise) &&
                       (special_stats2.mace_expertise >= special_stats1.mace_expertise) &&
-                      (special_stats2.expertise >= special_stats1.expertise);
+                      (special_stats2.expertise >= special_stats1.expertise) &&
+                      (special_stats2.gear_armor_pen >= special_stats1.gear_armor_pen);
 
     if (socket == Weapon_socket::main_hand)
     {
@@ -205,7 +206,8 @@ bool is_strictly_weaker_wep(const Weapon_struct& wep_struct1, const Weapon_struc
                    (special_stats2.axe_expertise > special_stats1.axe_expertise) ||
                    (special_stats2.sword_expertise > special_stats1.sword_expertise) ||
                    (special_stats2.mace_expertise > special_stats1.mace_expertise) ||
-                   (special_stats2.expertise > special_stats1.expertise);
+                   (special_stats2.expertise > special_stats1.expertise) ||
+                   (special_stats2.gear_armor_pen > special_stats1.gear_armor_pen);
 
     if (socket == Weapon_socket::main_hand)
     {
