@@ -290,7 +290,8 @@ struct Armory
                 {"cloak_of_darkness", Attributes{23.0, 0.0}, Special_stats{1.0869565217391306, 0.0, 0.0, 0, 0.0}, Socket::back}, 
 
                 // Phase 4
-                {"dorys_embrace", Attributes{0.0, 0.0}, Special_stats{0.9057971014, 0.0, 46.0, 0, 0.00, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 112}, Socket::back}
+                {"dorys_embrace", Attributes{0.0, 0.0}, Special_stats{0.9057971014, 0.0, 46.0, 0, 0.00, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 112}, Socket::back},
+                {"cloak_of_fiends", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 46.0, 0, 0.01585288523}, Socket::back}
             };
 
     std::vector<Armor> chest_t
