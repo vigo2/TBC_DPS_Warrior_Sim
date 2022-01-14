@@ -375,13 +375,15 @@ void Combat_simulator::unbridled_wrath(Sim_state& state, const Weapon_sim& weapo
     }
 }
 
-bool Combat_simulator::start_cast_slam(bool mh_swing, const Weapon_sim& weapon)
+bool Combat_simulator::start_cast_slam(Sim_state& state, bool mh_swing, const Weapon_sim& weapon)
 {
-    if (mh_swing || weapon.next_swing - time_keeper_.time > config.combat.slam_spam_max_time)
+    double next_swing = to_millis(weapon.swing_speed) / (1 + state.special_stats.haste);
+
+    if (mh_swing && next_swing >= config.combat.slam_spam_max_time)
     {
         if ((mh_swing && rage > config.combat.slam_rage_thresh) || rage > config.combat.slam_spam_rage)
         {
-            logger_.print("Starting to cast slam.", " Latency: ", config.combat.slam_latency, " ms");
+            logger_.print("Starting to cast slam.", " Latency: ", config.combat.slam_latency, " ms.");
             slam_manager.cast_slam(time_keeper_.time + config.combat.slam_latency);
             time_keeper_.global_cast(1500 + config.combat.slam_latency);
             spend_rage(15); // reserve slam cost, to prevent usage while slam is casting (e.g. use effects)
@@ -1372,7 +1374,7 @@ void Combat_simulator::execute_phase(Sim_state& state, bool mh_swing)
         assert(!slam_manager.is_slam_casting());
         if (rage >= 15)
         {
-            if (start_cast_slam(mh_swing, state.main_hand_weapon))
+            if (start_cast_slam(state, mh_swing, state.main_hand_weapon))
             {
                 return;
             }
@@ -1459,7 +1461,7 @@ void Combat_simulator::normal_phase(Sim_state& state, bool mh_swing)
         assert(!slam_manager.is_slam_casting());
         if (rage >= 15)
         {
-            if (start_cast_slam(mh_swing, state.main_hand_weapon))
+            if (start_cast_slam(state, mh_swing, state.main_hand_weapon))
             {
                 return;
             }
