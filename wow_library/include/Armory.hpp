@@ -391,6 +391,7 @@ struct Armory
                 {"bindings_of_lighting_reflexes", Attributes{0.0, 21.0}, Special_stats{0.0, 0.0, 56.0, 0, 0.017121116043119847}, Socket::wrist}, 
                 {"swiftstrike_bracers", Attributes{0.0, 20.0}, Special_stats{0.0, 0.0, 50.0, 0, 0.017121116043119847}, Socket::wrist}, 
                 {"swiftsteel_bracers", Attributes{35.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.017121116043119847}, Socket::wrist}, 
+                {"vindicators_plate_bracers", Attributes{25.0, 0.0}, Special_stats{0.9510869565, 0.0, 0.0}, Socket::wrist}, 
             };
 
     std::vector<Armor> hands_t
@@ -588,6 +589,7 @@ struct Armory
                 {"shadowmasters_boots", Attributes{0.0, 30.0}, Special_stats{0.7699275362318841, 0.0, 76.0, 0, 0.0}, Socket::boots}, 
                 {"quickstriders_moccasins", Attributes{0.0, 28.0}, Special_stats{0.0, 0.9511731135066582, 58.0, 0, 0.0}, Socket::boots}, 
                 {"black_featherlight_boots", Attributes{0.0, 0.0}, Special_stats{0.0, 2.155992390615092, 98.0, 0, 0.0}, Socket::boots}, 
+                {"vindicators_plate_boots", Attributes{35.0, 0.0}, Special_stats{1.585144928, 0.0, 0.0}, Socket::boots}, 
             };
 
     std::vector<Armor> ring_t
