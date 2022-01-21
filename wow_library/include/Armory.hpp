@@ -589,7 +589,7 @@ struct Armory
                 {"shadowmasters_boots", Attributes{0.0, 30.0}, Special_stats{0.7699275362318841, 0.0, 76.0, 0, 0.0}, Socket::boots}, 
                 {"quickstriders_moccasins", Attributes{0.0, 28.0}, Special_stats{0.0, 0.9511731135066582, 58.0, 0, 0.0}, Socket::boots}, 
                 {"black_featherlight_boots", Attributes{0.0, 0.0}, Special_stats{0.0, 2.155992390615092, 98.0, 0, 0.0}, Socket::boots}, 
-                {"vindicators_plate_boots", Attributes{35.0, 0.0}, Special_stats{1.585144928, 0.0, 0.0}, Socket::boots}, 
+                {"vindicators_plate_greaves", Attributes{35.0, 0.0}, Special_stats{1.585144928, 0.0, 0.0}, Socket::boots}, 
             };
 
     std::vector<Armor> ring_t
