@@ -114,7 +114,8 @@ function load_talent_dual_wield_fury() {
     document.getElementById("improved_heroic_strike_talent").setAttribute("data-count", "3");
     document.getElementById("improved_thunder_clap_talent").setAttribute("data-count", "3");
     document.getElementById("deflection_talent").setAttribute("data-count", "2");
-    document.getElementById("iron_will_talent").setAttribute("data-count", "3");
+    document.getElementById("iron_will_talent").setAttribute("data-count", "5");
+    document.getElementById("improved_overpower_talent").setAttribute("data-count", "1");
     document.getElementById("anger_management_talent").setAttribute("data-count", "1");
     document.getElementById("deep_wounds_talent").setAttribute("data-count", "3");
     document.getElementById("impale_talent").setAttribute("data-count", "2");
@@ -127,10 +128,9 @@ function load_talent_dual_wield_fury() {
     document.getElementById("sweeping_strikes_talent").setAttribute("data-count", "1");
     document.getElementById("flurry_talent").setAttribute("data-count", "5");
     document.getElementById("bloodthirst_talent").setAttribute("data-count", "1");
-    document.getElementById("precision_talent").setAttribute("data-count", "3");
     document.getElementById("improved_whirlwind_talent").setAttribute("data-count", "1");
     document.getElementById("improved_berserker_stance_talent").setAttribute("data-count", "5");
-    document.getElementById("rampage_talent").setAttribute("data-count", "1");
+    document.getElementById("death_wish_talent").setAttribute("data-count", "1");
 
     displayTalentBootup();
     calcTotalTalents();
