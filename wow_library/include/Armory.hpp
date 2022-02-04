@@ -768,7 +768,8 @@ struct Armory
                 {"warglaive_of_azzinoth_mh_non_demon", Attributes{0.0, 22.0}, Special_stats{0.0, 1.3316423589093216, 44.0, 0, 0.0}, 2.8, 214, 398, Weapon_socket::main_hand, Weapon_type::sword, {}, Set::the_twin_blades_of_azzinoth_non_demon},
                 {"blade_of_infamy", Attributes{0.0, 28.0}, Special_stats{0.0, 0.0, 56.0, 0, 0.0}, 2.6, 182, 339, Weapon_socket::one_hand, Weapon_type::sword},
                 {"vengeful_gladiators_slicer", Attributes{0.0, 0.0}, Special_stats{0.9510869565, 0.5072923272, 34.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 49}, 2.6, 214, 322, Weapon_socket::one_hand, Weapon_type::sword}, 
-                {"vengeful_gladiators_quickblade", Attributes{0.0, 0.0}, Special_stats{0.9510869565, 0.5072923272, 34.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 49}, 1.5, 108, 201, Weapon_socket::one_hand, Weapon_type::sword}, 
+                {"vengeful_gladiators_quickblade", Attributes{0.0, 0.0}, Special_stats{0.9510869565, 0.5072923272, 34.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 49}, 1.5, 108, 201, Weapon_socket::one_hand, Weapon_type::sword},
+                {"the_unbreakable_will", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0,}, 1.6, 112, 209, Weapon_socket::one_hand, Weapon_type::sword},
                 // off_hand
                 {"warglaive_of_azzinoth_oh", Attributes{0.0, 0.0}, Special_stats{1.0416666666666667, 0.0, 44, 0, 0.0}, 1.4, 107, 199, Weapon_socket::off_hand, Weapon_type::sword, {}, Set::the_twin_blades_of_azzinoth},
                 {"warglaive_of_azzinoth_oh_non_demon", Attributes{0.0, 0.0}, Special_stats{1.0416666666666667, 0.0, 44, 0, 0.0}, 1.4, 107, 199, Weapon_socket::off_hand, Weapon_type::sword, {}, Set::the_twin_blades_of_azzinoth_non_demon},
