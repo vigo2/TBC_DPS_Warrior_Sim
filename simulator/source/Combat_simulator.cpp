@@ -1700,7 +1700,7 @@ void Combat_simulator::add_use_effects(const Character& character)
         double available_time = config.sim_time - 40;
         if (available_time > 0)
         {
-            auto duration = std::min(config.sim_time - 40, 40 * config.extra_bloodlust_count_);
+            auto duration = std::min(std::max(available_time, 40.0), 40 * config.extra_bloodlust_count_);
             use_effects_.emplace_back(
                 Use_effect{"extra_bloodlust", Use_effect::Effect_socket::unique, {}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, .3},
                           0, duration, 600, false});
