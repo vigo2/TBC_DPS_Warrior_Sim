@@ -238,7 +238,7 @@ public:
 
     void overpower(Sim_state& state);
 
-    bool start_cast_slam(bool mh_swing, const Weapon_sim& weapon);
+    bool start_cast_slam(Sim_state& state, bool mh_swing, const Weapon_sim& weapon);
 
     void slam(Sim_state& state);
 
