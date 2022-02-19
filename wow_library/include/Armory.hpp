@@ -638,7 +638,7 @@ struct Armory
                 {"unstoppable_aggressors_ring", Attributes{36.0, 0.0}, Special_stats{1.358695652173913, 0.0, 0.0, 0, 0.0}, Socket::ring}, 
                 {"stormrage_signet_ring", Attributes{0.0, 0.0}, Special_stats{0.0, 1.9023462270133165, 66.0, 0, 0.00, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 126}, Socket::ring}, 
                 {"vindicators_band_of_triumph", Attributes{0.0, 0.0}, Special_stats{1.177536231884058, 0.0, 44.0, 0, 0.00, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 56}, Socket::ring}, 
-                {"band_of_the_eternal_champion", Attributes{0.0, 29.0}, Special_stats{0.0, 0.0, 60.0, 0, 0.0}, Socket::ring, Set::none, {{"band_of_the_eternal_champion", Hit_effect::Type::stat_boost, {}, {0, 0, 160}, 0, 10, 60, 1}}}, 
+                {"band_of_the_eternal_champion", Attributes{0.0, 29.0}, Special_stats{0.0, 0.0, 60.0, 0, 0.0}, Socket::ring, Set::none, {{"band_of_the_eternal_champion", Hit_effect::Type::stat_boost, {}, {0, 0, 160}, 0, 10, 60, 0, 0, 1, 0, 0, 1}}}, 
 
                 // Phase 4
                 {"signet_of_primal_wrath", Attributes{0.0, 28.0}, Special_stats{0.0, 0.0, 58.0, 0, 0.00, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 126}, Socket::ring},  
@@ -969,7 +969,7 @@ struct Armory
         {Set::destroyer, 4, "destroyer-4pc (4t5)"},
         {Set::onslaught, 2, "onslaught-2pc (2t6)"},
         {Set::onslaught, 4, "onslaught-4pc (4t6)"},
-        {Set::the_fists_of_fury, 2, "the_fists_of_fury", {}, {}, {"the_fists_of_fury", Hit_effect::Type::damage_magic, {}, {}, 125, 0, 0, 0, 0, 0, 0, 0, 1}},
+        {Set::the_fists_of_fury, 2, "the_fists_of_fury", {}, {}, {"the_fists_of_fury", Hit_effect::Type::damage_magic, {}, {}, 125, 0, 0, 0, 0, 0, 0, 0, 2}},
         {Set::the_twin_blades_of_azzinoth, 2, "the_twin_blades_of_azzinoth", {}, {0, 0, 200}, {"the_twin_blades_of_azzinoth", Hit_effect::Type::stat_boost, {}, {0, 0, 0, 0, 0.2853519341}, 0, 10, 45, 0, 0, 0, 0, 0, 1}},
         {Set::the_twin_blades_of_azzinoth_non_demon, 2, "the_twin_blades_of_azzinoth_non_demon", {}, {}, {"the_twin_blades_of_azzinoth_non_demon", Hit_effect::Type::stat_boost, {}, {0, 0, 0, 0, 0.2853519341}, 0, 10, 45, 0, 0, 0, 0, 0, 1}},
         
