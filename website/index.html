@@ -1690,7 +1690,7 @@
 
         <p class="select-title">Select mode:</p><br>
         <input type="checkbox" id="normal_mode" checked
-               onclick="unique_checkboxes('normal_mode', ['do_comparison']);
+               onclick="unique_checkboxes('normal_mode', ['multiple_mode', 'do_comparison']);
                         unique_div(['armor_single', 'standard_description_div'],['armor_multiple', 'compare_div', 'multi_description_div'])">
         <label for="normal_mode"> <b>Standard</b>: Simulate the above selected item configuration. </label><br>
         <div class="description" id="standard_description_div">
@@ -1707,8 +1707,23 @@
         </div>
         <br>
 
+        <input type="checkbox" id="multiple_mode"
+               onclick="unique_checkboxes('multiple_mode', ['normal_mode', 'do_comparison']);
+                        unique_div(['armor_multiple', 'multi_description_div'],['armor_single','standard_description_div', 'compare_div'])">
+        <label for="multiple_mode"><b>Multi-mode</b>: Enable selection of multiple items from the same slot.</label><br>
+        <div class="description" style="display:none" id="multi_description_div">
+            <b>Information:</b> More items selected means that the optimizer will run for a longer time. It will break
+            automatically when it has found the best set <b>OR</b> when the max optimization timer is reached.<br>
+            <label for="max_optimize_time_dd">Max optimization time: (30-180s):</label>
+            <input type="number" id="max_optimize_time_dd" name="quantity" min="30" max="180" value="90"> seconds.<br>
+            <input type="checkbox" id="display_multi_debug">
+            <label for="display_multi_debug">Output debug information from the optimizer (shown at the
+                bottom)</label>
+        </div>
+        <br>
+
         <input type="checkbox" id="do_comparison"
-               onclick="unique_checkboxes('do_comparison', ['normal_mode']);
+               onclick="unique_checkboxes('do_comparison', ['multiple_mode', 'normal_mode']);
                         unique_div(['compare_div', 'armor_single'],['armor_multiple', 'multi_description_div'])">
         <label for="do_comparison"><b>Comparison</b>: Add a configuration file to compare against</label>
         <div class="description" style="display:none" id="compare_div">
