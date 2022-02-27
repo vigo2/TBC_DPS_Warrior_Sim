@@ -986,7 +986,7 @@ Sim_output Sim_interface::simulate(const Sim_input& input)
     }
 
     std::string item_strengths_string;
-    if (String_helpers::find_string(input.options, "item_strengths") || String_helpers::find_string(input.options, "wep_strengths"))
+    if (String_helpers::find_string(input.options, "suggestion_disclaimer") && (String_helpers::find_string(input.options, "item_strengths") || String_helpers::find_string(input.options, "wep_strengths")))
     {
         item_strengths_string = "<b>Character items and proposed upgrades:</b><br>";
 
