@@ -4519,6 +4519,9 @@
                 // console.log(dd_name[0]);
                 if (dd_name.length === 2) {
                     // console.log(dd_name[1]);
+                    if (dd_name[1] === "true" || dd_name[1] === "false"){
+                        continue;
+                    }
                     selectElement(dd_name[0], dd_name[1])
                 } else {
                     // console.log(dd_name[1] + " " + dd_name[2]);
