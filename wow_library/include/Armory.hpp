@@ -494,6 +494,9 @@ struct Armory
                 {"belt_of_seething_fury", Attributes{48.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.024096385542168676}, Socket::belt}, 
                 {"valestalker_girdle", Attributes{0.0, 27.0}, Special_stats{0.0, 0.0, 76.0, 0, 0.022828154724159798}, Socket::belt}, 
                 {"vindicators_plate_belt", Attributes{35.0, 0.0}, Special_stats{1.585144927536232, 0.0, 0.0, 0, 0.0}, Socket::belt}, 
+
+                // Phase 4
+                {"chain_of_unleashed_rage", Attributes{34.0, 0.0}, Special_stats{0.0, 0.8877615726062144, 0.0, 0, 0.00, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 154}, Socket::belt}, 
             };
 
     std::vector<Armor> legs_t
