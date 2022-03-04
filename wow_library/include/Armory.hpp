@@ -916,9 +916,11 @@ struct Armory
             {
                 // Phase 1
                 // main_hand / one_hand
-                {"dragonmaw", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.0}, 2.7, 172, 320, Weapon_socket::main_hand, Weapon_type::mace, {{"dragonmaw", Hit_effect::Type::stat_boost, {}, {0, 0, 0, 0, .134}, 0, 10, 0, 2.7 / 60}}}, 
+                {"dragonmaw_mh", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.0}, 2.7, 172, 320, Weapon_socket::main_hand, Weapon_type::mace, {{"dragonmaw_mh", Hit_effect::Type::stat_boost, {}, {0, 0, 0, 0, .134}, 0, 10, 0, 2.7 / 60}}}, 
+                {"dragonmaw_oh", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.0}, 2.7, 172, 320, Weapon_socket::main_hand, Weapon_type::mace, {{"dragonmaw_oh", Hit_effect::Type::stat_boost, {}, {0, 0, 0, 0, .134}, 0, 10, 0, 2.7 / 60}}}, 
                 {"fools_bane", Attributes{0.0, 0.0}, Special_stats{1.0869565217391306, 0.0, 30.0, 0, 0.0}, 2.6, 159, 296, Weapon_socket::main_hand, Weapon_type::mace},
-                {"drakefist_hammer", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.0}, 2.7, 159, 296, Weapon_socket::main_hand, Weapon_type::mace, {{"drakefist_hammer", Hit_effect::Type::stat_boost, {}, {0, 0, 0, 0, .134}, 0, 10, 0, 2.7 / 60}}}, 
+                {"drakefist_hammer_mh", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.0}, 2.7, 159, 296, Weapon_socket::main_hand, Weapon_type::mace, {{"drakefist_hammer_mh", Hit_effect::Type::stat_boost, {}, {0, 0, 0, 0, .134}, 0, 10, 0, 2.7 / 60}}}, 
+                {"drakefist_hammer_oh", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.0}, 2.7, 159, 296, Weapon_socket::main_hand, Weapon_type::mace, {{"drakefist_hammer_oh", Hit_effect::Type::stat_boost, {}, {0, 0, 0, 0, .134}, 0, 10, 0, 2.7 / 60}}}, 
                 {"runic_hammer", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 50.0, 0, 0.0}, 2.4, 140, 261, Weapon_socket::one_hand, Weapon_type::mace}, 
                 {"bloodskull_destroyer", Attributes{0.0, 0.0}, Special_stats{0.9510869565217392, 0.0, 22.0, 0, 0.0}, 2.6, 130, 243, Weapon_socket::one_hand, Weapon_type::mace}, 
                 {"terokks_nightmace", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.00, 0, 0, 0, 0, 0, 0, 4.819277108433735}, 2.0, 100, 187, Weapon_socket::one_hand, Weapon_type::mace},
@@ -926,7 +928,8 @@ struct Armory
 
                 // Phase 2
                 // main_hand / one_hand
-                {"dragonstrike", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.0}, 2.7, 184, 343, Weapon_socket::main_hand, Weapon_type::mace, {{"dragonstrike", Hit_effect::Type::stat_boost, {}, {0, 0, 0, 0, .134}, 0, 10, 0, 2.7 / 60}}}, 
+                {"dragonstrike_mh", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.0}, 2.7, 184, 343, Weapon_socket::one_hand, Weapon_type::mace, {{"dragonstrike_mh", Hit_effect::Type::stat_boost, {}, {0, 0, 0, 0, .134}, 0, 10, 0, 2.7 / 60}}}, 
+                {"dragonstrike_oh", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.0}, 2.7, 184, 343, Weapon_socket::one_hand, Weapon_type::mace, {{"dragonstrike_oh", Hit_effect::Type::stat_boost, {}, {0, 0, 0, 0, .134}, 0, 10, 0, 2.7 / 60}}}, 
                 {"rod_of_the_sun_king", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 52.0, 0, 0.0}, 2.7, 189, 352, Weapon_socket::one_hand, Weapon_type::mace, {{"rod_of_the_sun_king", Hit_effect::Type::rage_boost, {}, {}, 5, 0, 0, 2.7 / 60}}},
 
                 // Phase 3
