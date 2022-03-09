@@ -88,6 +88,13 @@ function select_loadout_mult(selected_items, selected_weapons, selected_enchants
     }
 }
 
+function load_preset() {
+    var presetEl = document.getElementById('preset');
+    var presetVal = presetEl.options[presetEl.selectedIndex].value;
+    var evalFunc = Function("return (" + presetVal + ");");
+    evalFunc();
+}
+
 
 function load_naxxgear() {
     let selected_items = ["lionheart_helm", "stormrages_talisman_of_seething", "conquerors_spaulders",
