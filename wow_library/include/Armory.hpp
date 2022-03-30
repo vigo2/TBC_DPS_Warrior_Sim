@@ -181,6 +181,12 @@ struct Armory
                 {"cursed_vision_of_sargeras", Attributes{0.0, 39.0}, Special_stats{1.7210144927536233, 1.3316423589093216, 108.0, 0, 0.0}, Socket::head}, 
                 {"onslaught_battle-helm", Attributes{54.0, 41.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.00, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 105}, Socket::head, Set::onslaught}, 
                 {"vengeful_gladiators_plate_helm", Attributes{39.0, 0.0}, Special_stats{1.585144927536232, 0.7609384908053266, 0.0, 0, 0.00, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 84}, Socket::head}, 
+            
+                // Phase 4
+                {"amani_mask_of_death", Attributes{46.0, 0.0}, Special_stats{0.0, 2.09, 0.0, 0, 0.0}, Socket::head},
+                {"coif_of_the_jungle_stalker", Attributes{0.0, 36.0}, Special_stats{0.0, 0.0, 72, 0, 0.00, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 140}, Socket::head},
+                {"grimgrin_faceguard", Attributes{0.0, 40.0}, Special_stats{0.0, 1.52, 82, 0, 0.0}, Socket::head}, 
+                
             };
 
     std::vector<Armor> neck_t
@@ -214,6 +220,9 @@ struct Armory
                 {"choker_of_serrated_blades", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 70, 0, 0.00, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 175}, Socket::neck}, 
                 {"choker_of_endless_nightmares", Attributes{0.0, 0.0}, Special_stats{1.2228260869565217, 1.3316423589093216, 72, 0, 0.0}, Socket::neck}, 
                 {"vindicators_pendant_of_triumph", Attributes{0.0, 0.0}, Special_stats{0.996376811594203, 0.0, 50, 0, 0.0}, Socket::neck}, 
+                
+                // Phase 4
+                {"brooch_of_deftness", Attributes{0.0, 0.0}, Special_stats{0, 1.40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5.326569435637287}, Socket::neck}, 
             };
 
     std::vector<Armor> shoulder_t
@@ -251,6 +260,11 @@ struct Armory
                 {"shoulders_of_lighting_reflexes", Attributes{0.0, 27.0}, Special_stats{0.0, 0.0, 74.0, 0, 0.023462270133164237}, Socket::shoulder}, 
                 {"swiftsteel_shoulders", Attributes{47.0, 0.0}, Special_stats{0.0, 1.2048192771084338, 0.0, 0, 0.02219403931515536}, Socket::shoulder}, 
                 {"onslaught_shoulderblades", Attributes{39.0, 39.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.00, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 91}, Socket::shoulder, Set::onslaught}, 
+            
+                // Phase 4
+                {"pauldrons_of_gruesome_fate", Attributes{42.0, 0.0}, Special_stats{0.0, 1.46, 0.0, 0, 0.0, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 154}, Socket::shoulder}, 
+                {"shoulderpads_of_dancing_blades", Attributes{0.0, 33.0}, Special_stats{0.0, 1.01, 68.0, 0, 0.0}, Socket::shoulder}, 
+                {"pauldrons_of_primal_fury", Attributes{0.0, 28.0}, Special_stats{0.0, 1.27, 58.0, 0, 0.0}, Socket::shoulder}, 
             };
 
     std::vector<Armor> back_t
@@ -345,6 +359,11 @@ struct Armory
                 {"shadowprowlers_chestguard", Attributes{32.0, 40.0}, Special_stats{0.0, 0.5072923272035511, 0.0, 0, 0.0}, Socket::chest}, 
                 {"vengeful_gladiators_plate_chestpiece", Attributes{39.0, 0.0}, Special_stats{1.7663043478260871, 0.7609384908053266, 0.0, 0, 0.00, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 84}, Socket::chest}, 
                 {"midnight_chestguard", Attributes{0.0, 0.0}, Special_stats{2.083333333, 1.838934686, 106}, Socket::chest},
+
+                // Phase 4
+                {"bloodstained_elven_battlevest", Attributes{46.0, 0.0}, Special_stats{1.59, 0.0, 0.0, 0, 0.00, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 161}, Socket::chest}, 
+                {"shadowtooth_trollskin_cuirass", Attributes{0.0, 45.0}, Special_stats{0.0, 0.0, 92, 0, 0.00, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 210}, Socket::chest},
+                {"arrow-fall_chestguard", Attributes{0.0, 39.0}, Special_stats{0.0, 0.0, 78, 0.0, 0.0190}, Socket::chest},
             };
 
     std::vector<Armor> wrists_t
@@ -391,7 +410,11 @@ struct Armory
                 {"bindings_of_lighting_reflexes", Attributes{0.0, 21.0}, Special_stats{0.0, 0.0, 56.0, 0, 0.017121116043119847}, Socket::wrist}, 
                 {"swiftstrike_bracers", Attributes{0.0, 20.0}, Special_stats{0.0, 0.0, 50.0, 0, 0.017121116043119847}, Socket::wrist}, 
                 {"swiftsteel_bracers", Attributes{35.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.017121116043119847}, Socket::wrist}, 
-                {"vindicators_plate_bracers", Attributes{25.0, 0.0}, Special_stats{0.9510869565, 0.0, 0.0}, Socket::wrist}, 
+                {"vindicators_plate_bracers", Attributes{25.0, 0.0}, Special_stats{0.9510869565, 0.0, 0.0}, Socket::wrist},
+
+                // Phase 4
+                {"eternium_rage_shackles", Attributes{32.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.00, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 150}, Socket::wrist},
+                {"master_assassin_wristwraps", Attributes{0.0, 17.0}, Special_stats{0.82, 0.0, 50}, Socket::wrist},
             };
 
     std::vector<Armor> hands_t
@@ -442,6 +465,11 @@ struct Armory
                 {"grips_of_damnation", Attributes{0.0, 27.0}, Special_stats{0.0, 0.0, 76.0, 0, 0.023462270133164237}, Socket::hands}, 
                 {"onslaught_gauntlets", Attributes{41.0, 30.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.00, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 91}, Socket::hands, Set::onslaught}, 
                 {"vengeful_gladiators_plate_gauntlets", Attributes{37.0, 0.0}, Special_stats{1.4492753623188408, 0.0, 0.0, 0, 0.0}, Socket::hands}, 
+            
+                // Phase 4
+                {"furious_deathgrips", Attributes{34.0, 0.0}, Special_stats{0.0, 1.59, 0.0, 0, 0.0}, Socket::hands},
+                {"tricksters_stickyfingers", Attributes{0.0, 30.0}, Special_stats{0.0, 0.0, 68, 0, 0.0159}, Socket::hands}, 
+
             };
 
     std::vector<Armor> belt_t
@@ -494,6 +522,10 @@ struct Armory
                 {"belt_of_seething_fury", Attributes{48.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.024096385542168676}, Socket::belt}, 
                 {"valestalker_girdle", Attributes{0.0, 27.0}, Special_stats{0.0, 0.0, 76.0, 0, 0.022828154724159798}, Socket::belt}, 
                 {"vindicators_plate_belt", Attributes{35.0, 0.0}, Special_stats{1.585144927536232, 0.0, 0.0, 0, 0.0}, Socket::belt}, 
+
+                // Phase 4
+                {"chain_of_unleashed_rage", Attributes{34.0, 0.0}, Special_stats{0.0, 0.8877615726062144, 0.0, 0, 0.00, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 154}, Socket::belt},
+                {"bladeangels_money_belt", Attributes{0.0, 25.0}, Special_stats{0.95, 0.0, 58, 0, 0.00, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 77}, Socket::belt},
             };
 
     std::vector<Armor> legs_t
@@ -546,6 +578,11 @@ struct Armory
                 {"legguards_of_endless_rage", Attributes{70.0, 0.0}, Special_stats{2.0833333333333335, 1.2048192771084338, 0.0, 0, 0.0}, Socket::legs}, 
                 {"onslaught_greaves", Attributes{62.0, 41.0}, Special_stats{0.0, 0.8877615726062144, 0.0, 0, 0.00, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 105}, Socket::legs, Set::onslaught}, 
                 {"vengeful_gladiators_plate_legguards", Attributes{51.0, 0.0}, Special_stats{2.1286231884057973, 0.7609384908053266, 0.0, 0, 0.00, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 84}, Socket::legs}, 
+            
+                // Phase 4
+                {"bloodthirsters_wargreaves", Attributes{46.0, 0.0}, Special_stats{0.0, 2.41, 0.0, 0, 0.0}, Socket::legs},
+                {"shallow-grave_trousers", Attributes{0.0, 45.0}, Special_stats{0.0, 0.0, 92.0, 0, 0.0190}, Socket::legs}, 
+
             };
 
     std::vector<Armor> boots_t
@@ -589,7 +626,12 @@ struct Armory
                 {"shadowmasters_boots", Attributes{0.0, 30.0}, Special_stats{0.7699275362318841, 0.0, 76.0, 0, 0.0}, Socket::boots}, 
                 {"quickstriders_moccasins", Attributes{0.0, 28.0}, Special_stats{0.0, 0.9511731135066582, 58.0, 0, 0.0}, Socket::boots}, 
                 {"black_featherlight_boots", Attributes{0.0, 0.0}, Special_stats{0.0, 2.155992390615092, 98.0, 0, 0.0}, Socket::boots}, 
-                {"vindicators_plate_greaves", Attributes{35.0, 0.0}, Special_stats{1.585144928, 0.0, 0.0}, Socket::boots}, 
+                {"vindicators_plate_greaves", Attributes{35.0, 0.0}, Special_stats{1.585144928, 0.0, 0.0}, Socket::boots},
+
+                // Phase 4
+                {"skullshatter_warboots", Attributes{30.0, 0.0}, Special_stats{1.31, 0.0, 0.0, 0, 0.0}, Socket::boots},
+                {"shadowhunters_treads", Attributes{0.0, 26.0}, Special_stats{0.0, 0.0, 66.0, 0, 0.00, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 105}, Socket::boots},
+                {"nynjahs_tabi_boots", Attributes{0.0, 29.0}, Special_stats{0.0, 1.40, 60.0, 0, 0.0}, Socket::boots}, 
             };
 
     std::vector<Armor> ring_t
@@ -723,7 +765,7 @@ struct Armory
 
                 // Phase 4
                 {"ancient_amani_longbow", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 38.0, 0, 0.00, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 126}, Socket::ranged}, 
-                {"tuskbreaker", Attributes{0.0, 0.0}, Special_stats{0.0, 1.141407736, 38.0}, Socket::ranged}, 
+                {"tuskbreaker", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 38.0, 0, 0.01141407736}, Socket::ranged}, 
 
             };
 
@@ -773,6 +815,11 @@ struct Armory
                 // off_hand
                 {"warglaive_of_azzinoth_oh", Attributes{0.0, 21.0}, Special_stats{1.0416666666666667, 0.0, 44, 0, 0.0}, 1.4, 107, 199, Weapon_socket::off_hand, Weapon_type::sword, {}, Set::the_twin_blades_of_azzinoth},
                 {"warglaive_of_azzinoth_oh_non_demon", Attributes{0.0, 21.0}, Special_stats{1.0416666666666667, 0.0, 44, 0, 0.0}, 1.4, 107, 199, Weapon_socket::off_hand, Weapon_type::sword, {}, Set::the_twin_blades_of_azzinoth_non_demon},
+           
+                // Phase 4
+                // main_hand / one_hand
+                {"heartless", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 42.0, 0, 0.0127}, 2.6, 174, 323, Weapon_socket::one_hand, Weapon_type::sword}, 
+                {"akilzons_talonblade", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 52.0, 0, 0.0114}, 1.5, 100, 187, Weapon_socket::one_hand, Weapon_type::sword}, 
            };
 
 
@@ -799,6 +846,10 @@ struct Armory
                 // Phase 3
                 {"cataclysms_edge", Attributes{75.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.0, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 335}, 3.5, 386, 580, Weapon_socket::two_hand, Weapon_type::sword},
                 {"vengeful_gladiators_greatsword", Attributes{46.0, 0.0}, Special_stats{2.083333333, 0.9511731135, 0.0, 0.00, 0, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 98}, 3.6, 386, 580, Weapon_socket::two_hand, Weapon_type::sword}, 
+            
+                // Phase 4
+                {"jin-rokh_the_great_apocalypse", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 120.0, 0, 0.0285, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 0}, 3.7, 380, 570, Weapon_socket::two_hand, Weapon_type::sword},
+
             };
 
     std::vector<Weapon> two_handed_axes_polearm_t
@@ -836,6 +887,9 @@ struct Armory
                 {"halberd_of_desolation", Attributes{0.0, 51.0}, Special_stats{0.0, 1.9023462270133165, 100.0, 0, 0.0}, 3.5, 365, 548, Weapon_socket::two_hand, Weapon_type::axe}, 
                 {"soul_cleaver", Attributes{65.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.00, 0, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 315}, 3.7, 386, 579, Weapon_socket::two_hand, Weapon_type::axe},
                 {"vengeful_gladiators_decapitator", Attributes{0.0, 0.0}, Special_stats{2.083333333, 0.9511731135, 92.0, 0.00, 0, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 98}, 3.6, 386, 580, Weapon_socket::two_hand, Weapon_type::axe}, 
+            
+                // Phase 4
+                {"trollbane", Attributes{0.0, 39.0}, Special_stats{0.0, 0.0, 94.0, 0, 0.0}, 3.6, 358, 537, Weapon_socket::two_hand, Weapon_type::axe}, 
             };
 
     std::vector<Weapon> two_handed_maces_t
@@ -857,11 +911,11 @@ struct Armory
             {
                 // Phase 1
                 // main_hand / one_hand
-                {"black_planar_edge", Attributes{0.0, 0.0}, Special_stats{0.9510869565217392, 0.0, 44.0, 0, 0.0}, 2.7, 172, 320, Weapon_socket::main_hand, Weapon_type::axe}, 
+                {"black_planar_edge", Attributes{0.0, 0.0}, Special_stats{0.9510869565217392, 0.0, 44.0, 0, 0.0}, 2.7, 172, 320, Weapon_socket::one_hand, Weapon_type::axe}, 
                 {"gladiators_cleaver", Attributes{0.0, 0.0}, Special_stats{0.6793478260869565, 0.570703868103995, 28.0, 0, 0.0}, 2.6, 189, 285, Weapon_socket::one_hand, Weapon_type::axe}, 
                 {"gladiators_hacker", Attributes{0.0, 0.0}, Special_stats{0.6793478260869565, 0.570703868103995, 28.0, 0, 0.0}, 1.5, 95, 178, Weapon_socket::one_hand, Weapon_type::axe}, 
                 {"the_decapitator", Attributes{0.0, 0.0}, Special_stats{1.2228260869565217, 0.0, 0.0, 0, 0.0}, 2.6, 167, 312, Weapon_socket::main_hand, Weapon_type::axe, {{"the_decapitator", Hit_effect::Type::damage_physical, {}, {}, 540, 0, 180, 1}}}, 
-                {"the_planar_edge", Attributes{0.0, 0.0}, Special_stats{0.9057971014492754, 0.0, 42.0, 0, 0.0}, 2.7, 159, 296, Weapon_socket::main_hand, Weapon_type::axe}, 
+                {"the_planar_edge", Attributes{0.0, 0.0}, Special_stats{0.9057971014492754, 0.0, 42.0, 0, 0.0}, 2.7, 159, 296, Weapon_socket::one_hand, Weapon_type::axe}, 
                 {"fel_edged_battleaxe", Attributes{0.0, 0.0}, Special_stats{0.9510869565217392, 0.8877615726062144, 0.0, 0, 0.0}, 2.2, 128, 239, Weapon_socket::one_hand, Weapon_type::axe}, 
                 {"firebrand_battleaxe", Attributes{17.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.00, 0, 0, 0, 0, 0, 0, 3.5510462904248574}, 2.4, 120, 224, Weapon_socket::one_hand, Weapon_type::axe}, 
                 {"the_harvester_of_souls", Attributes{16.0, 0.0}, Special_stats{0.6793478260869565, 0.0, 0.0, 0, 0.0}, 2.6, 130, 243, Weapon_socket::one_hand, Weapon_type::axe}, 
@@ -872,7 +926,7 @@ struct Armory
 
                 // Phase 2
                 // main_hand / one_hand
-                {"wicked_edge_of_the_planes", Attributes{0.0, 0.0}, Special_stats{1.0416666666666667, 0.0, 48.0, 0, 0.0}, 2.7, 184, 343, Weapon_socket::main_hand, Weapon_type::axe}, 
+                {"wicked_edge_of_the_planes", Attributes{0.0, 0.0}, Special_stats{1.0416666666666667, 0.0, 48.0, 0, 0.0}, 2.7, 184, 343, Weapon_socket::one_hand, Weapon_type::axe}, 
                 {"netherbane", Attributes{0.0, 25.0}, Special_stats{0.0, 0.0, 40.0, 0, 0.0}, 2.6, 175, 327, Weapon_socket::one_hand, Weapon_type::axe},
                 {"merciless_gladiators_cleaver", Attributes{0.0, 0.0}, Special_stats{0.8605072464, 0.634115409, 30.0, 0, 0.0}, 2.6, 177, 330, Weapon_socket::one_hand, Weapon_type::axe}, 
 
@@ -882,6 +936,10 @@ struct Armory
                 {"the_brutalizer", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.00, 0, 0, 0, 0, 0, 0, 0, 5.326569435637286}, 1.6, 128, 193, Weapon_socket::one_hand, Weapon_type::axe}, 
                 {"vengeful_gladiators_cleaver", Attributes{0.0, 0.0}, Special_stats{0.9510869565, 0.5072923272, 34.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 49}, 2.6, 214, 322, Weapon_socket::one_hand, Weapon_type::axe}, 
                 {"vengeful_gladiators_hacker", Attributes{0.0, 0.0}, Special_stats{0.9510869565, 0.5072923272, 34.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 49}, 1.5, 108, 201, Weapon_socket::one_hand, Weapon_type::axe}, 
+            
+                // Phase 4
+                // main_hand / one_hand
+                {"cleaver_of_the_unforgiving", Attributes{0.0, 0.0}, Special_stats{0.0, 0.76, 0.0, 0, 0.0}, 1.6, 110, 205, Weapon_socket::one_hand, Weapon_type::axe},
             };
 
     std::vector<Weapon> daggers_t
@@ -907,15 +965,20 @@ struct Armory
                 {"shard_of_azzinoth", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 64.0, 0, 0.0}, 1.9, 161, 242, Weapon_socket::one_hand, Weapon_type::dagger}, 
                 {"trackers_blade", Attributes{0.0, 0.0}, Special_stats{1.0416666666666667, 1.2682308180088777, 44.0, 0, 0.0}, 1.5, 105, 196, Weapon_socket::one_hand, Weapon_type::dagger}, 
                 {"boundless_agony", Attributes{0.0, 0.0}, Special_stats{1.0869565217391306, 0.0, 0.0, 0, 0.00, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 210}, 1.8, 144, 217, Weapon_socket::one_hand, Weapon_type::dagger}, 
+            
+                // Phase 4
+                {"dagger_of_bad_mojo", Attributes{0.0, 21.0}, Special_stats{0.0, 0.0, 40, 0, 0.0, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 140}, 1.8, 137, 207, Weapon_socket::one_hand, Weapon_type::dagger}, 
+                {"prowlers_strikeblade", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 42, 0, 0.0, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 140}, 1.5, 100, 187, Weapon_socket::one_hand, Weapon_type::dagger}, 
+                {"umbral_shiv", Attributes{0.0, 12.0}, Special_stats{0.0, 0.82, 0.0, 0, 0.0, 0, 0, 0, 0, 0, 0, 0.0, 0, 0, 0, 140}, 1.8, 137, 207, Weapon_socket::one_hand, Weapon_type::dagger}, 
             };
 
     std::vector<Weapon> maces_t
             {
                 // Phase 1
                 // main_hand / one_hand
-                {"dragonmaw", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.0}, 2.7, 172, 320, Weapon_socket::main_hand, Weapon_type::mace, {{"dragonmaw", Hit_effect::Type::stat_boost, {}, {0, 0, 0, 0, .134}, 0, 10, 0, 2.7 / 60}}}, 
+                {"dragonmaw", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.0}, 2.7, 172, 320, Weapon_socket::one_hand, Weapon_type::mace, {{"bs_mace_haste", Hit_effect::Type::stat_boost, {}, {0, 0, 0, 0, .134}, 0, 10, 0, 2.7 / 60}}}, 
                 {"fools_bane", Attributes{0.0, 0.0}, Special_stats{1.0869565217391306, 0.0, 30.0, 0, 0.0}, 2.6, 159, 296, Weapon_socket::main_hand, Weapon_type::mace},
-                {"drakefist_hammer", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.0}, 2.7, 159, 296, Weapon_socket::main_hand, Weapon_type::mace, {{"drakefist_hammer", Hit_effect::Type::stat_boost, {}, {0, 0, 0, 0, .134}, 0, 10, 0, 2.7 / 60}}}, 
+                {"drakefist_hammer", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.0}, 2.7, 159, 296, Weapon_socket::one_hand, Weapon_type::mace, {{"bs_mace_haste", Hit_effect::Type::stat_boost, {}, {0, 0, 0, 0, .134}, 0, 10, 0, 2.7 / 60}}}, 
                 {"runic_hammer", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 50.0, 0, 0.0}, 2.4, 140, 261, Weapon_socket::one_hand, Weapon_type::mace}, 
                 {"bloodskull_destroyer", Attributes{0.0, 0.0}, Special_stats{0.9510869565217392, 0.0, 22.0, 0, 0.0}, 2.6, 130, 243, Weapon_socket::one_hand, Weapon_type::mace}, 
                 {"terokks_nightmace", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.00, 0, 0, 0, 0, 0, 0, 4.819277108433735}, 2.0, 100, 187, Weapon_socket::one_hand, Weapon_type::mace},
@@ -923,7 +986,7 @@ struct Armory
 
                 // Phase 2
                 // main_hand / one_hand
-                {"dragonstrike", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.0}, 2.7, 184, 343, Weapon_socket::main_hand, Weapon_type::mace, {{"dragonstrike", Hit_effect::Type::stat_boost, {}, {0, 0, 0, 0, .134}, 0, 10, 0, 2.7 / 60}}}, 
+                {"dragonstrike", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 0.0, 0, 0.0}, 2.7, 184, 343, Weapon_socket::one_hand, Weapon_type::mace, {{"bs_mace_haste", Hit_effect::Type::stat_boost, {}, {0, 0, 0, 0, .134}, 0, 10, 0, 2.7 / 60}}}, 
                 {"rod_of_the_sun_king", Attributes{0.0, 0.0}, Special_stats{0.0, 0.0, 52.0, 0, 0.0}, 2.7, 189, 352, Weapon_socket::one_hand, Weapon_type::mace, {{"rod_of_the_sun_king", Hit_effect::Type::rage_boost, {}, {}, 5, 0, 0, 2.7 / 60}}},
 
                 // Phase 3
@@ -955,6 +1018,12 @@ struct Armory
                 {"claw_of_molten_fury", Attributes{0.0, 20.0}, Special_stats{0.0, 0.0, 38.0, 0, 0.0}, 2.7, 216, 325, Weapon_socket::main_hand, Weapon_type::unarmed, {}, Set::the_fists_of_fury},
                 // off_hand
                 {"fist_of_molten_fury", Attributes{0.0, 20.0}, Special_stats{0.0, 0.0, 38, 0, 0.0}, 1.5, 120, 181, Weapon_socket::off_hand, Weapon_type::unarmed, {}, Set::the_fists_of_fury},
+            
+                // Phase 4
+                // main_hand / one_hand
+                {"rage", Attributes{0.0, 20.0}, Special_stats{0.59, 0.0, 0, 0, 0.0}, 2.6, 174, 323, Weapon_socket::main_hand, Weapon_type::unarmed},
+                // off_hand
+                {"fury", Attributes{0.0, 0.0}, Special_stats{0.0, 1.27, 26, 0, 0.0}, 2.6, 174, 323, Weapon_socket::off_hand, Weapon_type::unarmed},
             };
 
     std::vector<Set_bonus> set_bonuses{

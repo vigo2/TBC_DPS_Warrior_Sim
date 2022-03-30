@@ -1380,7 +1380,7 @@ void Combat_simulator::execute_phase(Sim_state& state, bool mh_swing)
         }
     }
 
-    if (config.combat.use_slam && config.combat.use_sl_in_exec_phase)
+    if (config.combat.use_slam && state.main_hand_weapon.weapon_socket == Weapon_socket::two_hand && config.combat.use_sl_in_exec_phase)
     {
         assert(!slam_manager.is_slam_casting());
         if (rage >= 15)
@@ -1467,7 +1467,7 @@ void Combat_simulator::normal_phase(Sim_state& state, bool mh_swing)
         }
     }
 
-    if (config.combat.use_slam)
+    if (config.combat.use_slam && state.main_hand_weapon.weapon_socket == Weapon_socket::two_hand)
     {
         assert(!slam_manager.is_slam_casting());
         if (rage >= 15)
